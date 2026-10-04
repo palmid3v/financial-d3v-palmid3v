@@ -1,0 +1,19 @@
+# Binaries
+/bin/
+/dist/
+
+# Go tooling
+*.test
+*.out
+coverage.out
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -512,3 +512,67 @@ AI can accelerate implementation, exploration, testing and documentation. Archit
 ---
 
 **Financial D3V · PALMI-D3V · October 4, 2026**
+
+## Implementation checkpoint — Approved Phases 1–3
+
+Status: **APPROVED / IMPLEMENTED FOUNDATION**
+
+The approved product, domain and database direction has now been materialized in the repository.
+
+### Implemented
+
+- Go 1.27 module.
+- Initial HTTP API entry point.
+- GET /health endpoint.
+- Deterministic Money value object using integer minor units and explicit currency.
+- Currency mismatch protection in domain arithmetic.
+- Core Phase 2 entities.
+- PostgreSQL migration 001 with foreign keys, checks, indexes and ownership references.
+- Domain unit tests.
+- GitHub Actions CI for test and build.
+- Documentation index and technical design documents.
+- Desktop + mobile UI/UX contract.
+- Dark Mode established as the primary visual experience.
+
+### Validation performed
+
+- Domain money arithmetic is covered by unit tests.
+- Go test/build are enforced by CI.
+- Database integrity is expressed through PostgreSQL constraints and foreign keys.
+- No Colombian payroll or tax rules have been invented.
+
+### Remaining before Phase 4 completion
+
+- Application/service layer.
+- Configuration loading.
+- Structured logging.
+- HTTP error model.
+- Request validation.
+- Middleware.
+- Repository interfaces and PostgreSQL adapter.
+- Database migration runner.
+- Integration tests against PostgreSQL.
+
+### UI checkpoint
+
+The approved mockup is a visual direction, not a source of financial truth.
+
+Desktop:
+- persistent sidebar;
+- dashboard cards;
+- charts;
+- account/transaction summaries.
+
+Mobile:
+- compact top bar;
+- stacked cards;
+- bottom navigation;
+- quick transaction action.
+
+Dark Mode is the primary theme for both surfaces.
+
+### Next execution point
+
+**Phase 4 — Go backend foundation**, followed by **Phase 5 — Accounts and transactions**.
+
+Do not skip validation between phases.

@@ -22,12 +22,45 @@ The platform is intended to cover:
 - Earnings and deductions
 - Security and auditability
 
+## Current foundation
+
+Phases 1–3 are approved and the initial implementation foundation is now in place:
+
+- Go 1.27 module.
+- HTTP health endpoint.
+- Deterministic Money value object using integer minor units.
+- Core domain entities.
+- PostgreSQL migration covering the approved domain foundation.
+- Domain tests.
+- GitHub Actions CI.
+- Technical documentation.
+- Responsive UI/UX contract with Dark Mode as the primary theme.
+
+## UI direction
+
+The approved product mockup targets both desktop and mobile.
+
+Dark Mode is the primary experience, with:
+
+- dashboard-first navigation;
+- responsive desktop sidebar;
+- mobile bottom navigation;
+- quick transaction action;
+- financial KPI cards;
+- account, budget, savings and transaction summaries;
+- accessible positive/negative states.
+
+See docs/14-UI-UX-DESIGN.md.
+
 ## Project documentation
 
-- [Project context](./CONTEXT.md)
-- [Step-by-step roadmap](./STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md)
-
-The `docs/` directory will contain the detailed product, architecture, domain, database, API, security, testing, deployment and Go-learning documentation.
+- CONTEXT.md
+- STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md
+- docs/README.md
+- docs/03-ARCHITECTURE.md
+- docs/04-DOMAIN-MODEL.md
+- docs/05-DATABASE-DESIGN.md
+- docs/07-FINANCIAL-RULES.md
 
 ## Development philosophy
 
@@ -41,8 +74,8 @@ The repository is the source of truth for the project.
 
 When continuing development from another chat, start with:
 
-1. `CONTEXT.md`
-2. `STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md`
+1. CONTEXT.md
+2. STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md
 3. Current repository tree
 4. Current implementation and tests
 

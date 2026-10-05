@@ -8,9 +8,9 @@ Operational execution guide and phase checklist for Financial-D3v.
 
 **Product identity:** Private personal-finance application + financial learning workspace.
 
-**Current checkpoint:** FASES 1–17 APPROVED / BUILT; FASES 18–24 IMPLEMENTED / VALIDATION PENDING.
+**Current checkpoint:** FASES 1–17 APPROVED / BUILT; FASES 18–24 IMPLEMENTED / VALIDATION PENDING; FASE 25 IMPLEMENTED / VALIDATION PENDING.
 
-**Next validation target:** FASES 23–24 local build/runtime validation. After approval, continue with FASE 25 — Private production deployment.
+**Next validation target:** FASE 25 — Complete Savings + Debt UX local build/runtime validation. After approval, continue with FASE 26 — Authentication / production security hardening.
 
 ---
 
@@ -412,11 +412,11 @@ Checklist:
 
 ---
 
-# 3. PRIVATE PRODUCTION — FASE 25+
+# 3. PRODUCT COMPLETION — FASE 25\n\n## FASE 25 — Complete Savings + Debt UX\n\n- [x] Savings goal creation/list/detail\n- [x] Savings contribution workflow\n- [x] Savings progress/remaining/history\n- [x] Savings education context\n- [x] Debt creation/list/detail\n- [x] Debt payment workflow\n- [x] Principal/interest/fees validation\n- [x] Debt payment history\n- [x] Backend-authoritative debt balance\n- [x] Loading/empty/error states\n- [x] Mobile-first workflow\n- [ ] Local frontend build\n- [ ] Runtime savings validation\n- [ ] Runtime debt validation\n- [ ] Mobile UX review\n- [ ] Explicit user approval\n\n**Status: IMPLEMENTED / VALIDATION PENDING**\n\n---\n\n# 4. PRIVATE PRODUCTION — FASE 26+
 
 FASE 25+ is a continuing production track.
 
-## FASE 25 — Private production deployment
+## FASE 27 — Private production deployment
 
 - [ ] Production Firebase project
 - [ ] Production Firestore
@@ -432,7 +432,7 @@ FASE 25+ is a continuing production track.
 
 **Status: PLANNED**
 
-## FASE 26 — Data protection and recovery
+## FASE 28 — Backup / recovery
 
 - [ ] Automated backups
 - [ ] Restore procedure
@@ -444,7 +444,7 @@ FASE 25+ is a continuing production track.
 
 **Status: PLANNED**
 
-## FASE 27 — Observability and reliability
+## FASE 30 — Observability
 
 - [ ] Structured production logs
 - [ ] Error monitoring
@@ -457,7 +457,7 @@ FASE 25+ is a continuing production track.
 
 **Status: PLANNED**
 
-## FASE 28 — Financial data quality
+## FASE 29 — Financial data integrity
 
 - [ ] Duplicate-entry protections
 - [ ] Transaction consistency hardening
@@ -469,7 +469,7 @@ FASE 25+ is a continuing production track.
 
 **Status: PLANNED**
 
-## FASE 29 — Historical financial intelligence
+## FASE 31 — Historical financial intelligence
 
 - [ ] Historical dashboard
 - [ ] Net-worth history
@@ -482,7 +482,7 @@ FASE 25+ is a continuing production track.
 
 **Status: PLANNED**
 
-## FASE 30+ — Continuous product evolution
+## FASE 32+ — Continuous product evolution
 
 Potential tracks:
 
@@ -521,7 +521,7 @@ Therefore:
 
 ## 5. FASES 18–24 implementation checkpoint\n\nThe following product modules are implemented on the FASE 18–20 branch:\n\n- [x] FASE 18 — Transactions UX implementation\n- [x] FASE 19 — Accounts UX implementation\n- [x] FASE 20 — Budget UX implementation\n- [x] FASE 21 — Savings UX implementation\n- [x] FASE 22 — Debt UX implementation\n- [x] FASE 23 — Net Worth UX implementation\n- [x] FASE 24 — Education UX implementation\n- [ ] Local frontend build after these changes\n- [ ] Runtime transaction creation/listing validation\n- [ ] Runtime account creation/balance validation\n- [ ] Runtime budget creation/summary validation\n- [ ] Runtime savings goal/contribution validation\n- [ ] Runtime debt/payment validation\n- [ ] Runtime net-worth validation\n- [ ] Runtime education validation\n- [ ] Mobile UX review\n- [ ] Explicit user approval of completion\n\nThese phases are **not yet marked APPROVED / BUILT** until validation is completed.\n\n---\n\n# 6. Current next step
 
-**NEXT: Validate FASES 23–24, then FASE 25 — Private production deployment**
+**NEXT: Validate FASE 25 — Complete Savings + Debt UX, then FASE 26 — Authentication / production security hardening**
 
 Do not add another infrastructure phase before completing the core product experience unless a real technical requirement appears.
 

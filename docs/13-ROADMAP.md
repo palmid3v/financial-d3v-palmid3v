@@ -11,7 +11,7 @@ This roadmap is the authoritative execution checklist. A phase is only **BUILT**
 
 - [x] **PLATFORM — FASES 1–17**
 - [ ] **PRODUCT — FASES 18–24**
-- [ ] **PRIVATE PRODUCTION — FASE 25+**
+- [ ] **PRODUCT COMPLETION — FASE 25**\n- [ ] **PRIVATE PRODUCTION — FASE 26+**
 
 Core product loop:
 
@@ -344,7 +344,7 @@ FASE 25+ is intentionally a continuing production track rather than one artifici
 
 **Status: PLANNED**
 
-## FASE 26 — Data protection and recovery
+## FASE 28 — Backup / recovery
 - [ ] Automated backup strategy
 - [ ] Restore procedure
 - [ ] Data export
@@ -355,7 +355,7 @@ FASE 25+ is intentionally a continuing production track rather than one artifici
 
 **Status: PLANNED**
 
-## FASE 27 — Observability and reliability
+## FASE 30 — Observability
 - [ ] Structured production logs
 - [ ] Error monitoring
 - [ ] API latency visibility
@@ -367,7 +367,7 @@ FASE 25+ is intentionally a continuing production track rather than one artifici
 
 **Status: PLANNED**
 
-## FASE 28 — Financial data quality
+## FASE 29 — Financial data integrity
 - [ ] Duplicate-entry protections
 - [ ] Stronger transaction consistency
 - [ ] Balance reconciliation
@@ -378,7 +378,7 @@ FASE 25+ is intentionally a continuing production track rather than one artifici
 
 **Status: PLANNED**
 
-## FASE 29 — Historical financial intelligence
+## FASE 31 — Historical financial intelligence
 - [ ] Historical dashboard
 - [ ] Net-worth history
 - [ ] Spending trends
@@ -390,7 +390,7 @@ FASE 25+ is intentionally a continuing production track rather than one artifici
 
 **Status: PLANNED**
 
-## FASE 30+ — Continuous product evolution
+## FASE 32+ — Continuous product evolution
 Potential future tracks:
 - [ ] Better data import workflows
 - [ ] Additional financial education
@@ -424,14 +424,14 @@ For every phase:
 
 **FASES 1–17: APPROVED / BUILT**
 
-**FASES 18–24: IMPLEMENTED / VALIDATION PENDING**
+**FASES 18–24: IMPLEMENTED / VALIDATION PENDING**\n\n**FASE 25: IMPLEMENTED / VALIDATION PENDING**
 
 User approval covers the scope of FASES 20–22. FASES 18–20 are included in the implementation branch as their prerequisite product foundation. Completion still requires local build/runtime validation and explicit phase approval.
 
-**NEXT CHECKPOINT: Validate FASES 23–24, then continue to FASE 25 — Private production deployment**
+**NEXT CHECKPOINT: Validate FASE 25 — Complete Savings + Debt UX, then continue to FASE 26 — Authentication / production security hardening**
 
 The platform is complete enough to stop expanding infrastructure and start completing the actual personal-finance product experience.
 
 ---
 
-Financial-D3v · PALMI-D3V · October 5, 2026
+Financial-D3v · PALMI-D3V · October 4, 2026

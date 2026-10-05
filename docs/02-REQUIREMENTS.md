@@ -1,66 +1,55 @@
-# Requirements
+# Requirements — New Product Baseline
 
-## Functional foundation
+**Status: FASE 2 PENDING**
 
-### Personal finance
-- Manage financial accounts.
-- Record income, expenses and transfers.
-- Categorize transactions.
-- Define budgets.
-- Track savings goals and contributions.
-- Track debts and payments.
-- Track assets and liabilities.
-- Calculate net worth.
-- Produce cash-flow and financial summaries.
+These requirements derive from the new personal-finance-first vision.
 
-### Financial education
-- Explain relevant financial concepts.
-- Connect explanations to the user's own records.
-- Show why a metric changed.
-- Explain budget utilization.
-- Explain savings progress.
-- Explain debt balances and payments.
-- Explain net-worth movement.
-- Maintain a financial glossary and learning area.
-- Provide educational prompts without presenting them as guaranteed financial advice.
+## Core
+- Accounts
+- Transactions
+- Income
+- Expenses
+- Transfers
+- Categories
+- Reproducible balances
 
-### Payroll
-- Represent employees.
-- Represent contracts.
-- Represent payroll periods and runs.
-- Represent earnings and deductions.
-- Version payroll rules before authoritative calculations.
+## Planning
+- Budgets
+- Planned vs actual
+- Savings goals
+- Contributions
+- Progress
 
-## Private application requirements
+## Understanding
+- Cash flow
+- Spending patterns
+- Savings progress
+- Financial explanations
+- Monthly review
 
-- The application is private and personal.
-- Runtime is intentionally controlled by the owner.
-- Financial records are not public.
-- Database access must be restricted.
-- Authentication is planned through Firebase Auth.
-- Authorization and ownership checks remain server-side.
-- Secrets and Firebase credentials must never be committed.
+## Education
+- Contextual lessons
+- Financial glossary
+- Fact / calculation / interpretation / action model
+- Source metadata for external authoritative claims
+
+## Future domains
+Debts, assets, liabilities, net worth and payroll are future requirements, not Phase 1 implementation requirements.
 
 ## Non-functional
+- Private application
+- React + Vite
+- Tailwind CSS
+- Dark Mode
+- Vite PWA
+- Go 1.27
+- REST/HTTP
+- Firebase Firestore
+- Firebase Auth later
+- GitHub Actions
+- Markdown
+- Deterministic monetary calculations
+- Responsive UX
+- Testable financial behavior
 
-- Go 1.27 backend.
-- React + Vite frontend.
-- Tailwind CSS.
-- Dark Mode as primary visual theme.
-- Vite PWA.
-- Firebase Firestore persistence.
-- REST/HTTP API.
-- Deterministic monetary representation.
-- Testable domain behavior.
-- Responsive desktop and mobile UX.
-- Clear error handling.
-- Traceable financial calculations.
-
-## Explicit exclusions
-
-- No invented Colombian payroll/tax rules.
-- No public SaaS assumptions in the initial product.
-- No financial data sharing by default.
-- No automatic execution of financial transactions.
-- No frontend duplication of authoritative business rules.
-- No educational content presented as individualized professional financial advice.
+A requirement is not automatically a domain entity. FASE 2 determines the correct domain language and relationships.

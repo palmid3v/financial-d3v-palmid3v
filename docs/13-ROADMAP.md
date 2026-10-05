@@ -39,9 +39,9 @@ The existing Firebase authentication work remains available, but it is no longer
 - [x] Implement encrypted file export.
 - [ ] Build Vault Gate UI.
 - [ ] Build vault create/open/lock lifecycle.
-- [ ] Build auto-lock.
+- [x] Build auto-lock (15-minute inactivity timeout).
 - [ ] Add browser persistence audit.
-- [ ] Add tamper/wrong-password tests.
+- [x] Add tamper/wrong-password tests.
 - [ ] Complete security review.
 
 ## FASE 28 — Vault data migration

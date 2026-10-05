@@ -1,112 +1,433 @@
 # Roadmap — Financial-D3v
 
-The product reset on October 4, 2026 remains the authoritative roadmap baseline.
+**Baseline:** October 5, 2026  
+**Product identity:** Private personal-finance application + financial learning workspace.
+
+This roadmap is the authoritative execution checklist. A phase is only **BUILT** after implementation, validation and documentation are complete. Future phases are planned work and are not considered implemented merely because backend contracts already exist.
+
+---
+
+## Product lifecycle
+
+- [x] **PLATFORM — FASES 1–17**
+- [ ] **PRODUCT — FASES 18–24**
+- [ ] **PRIVATE PRODUCTION — FASE 25+**
+
+Core product loop:
+
+**Record → Categorize → Understand → Plan → Save → Review → Learn → Adjust**
+
+---
+
+# PLATFORM — FASES 1–17
 
 ## FASE 1 — Product definition
-**APPROVED / BUILT**
+- [x] Private personal-finance product definition
+- [x] Financial-learning model
+- [x] Savings-first outcome
+- [x] Privacy and product boundaries
+- [x] Approved technology stack
 
-Private personal-finance product definition, financial-learning model, savings-first outcome, privacy boundaries and approved stack.
+**Status: APPROVED / BUILT**
 
 ## FASE 2 — Financial Domain Model v2
-**APPROVED / BUILT**
+- [x] Money
+- [x] Account
+- [x] Transaction
+- [x] Category
+- [x] Budget
+- [x] Savings Goal
+- [x] Financial Period
+- [x] Domain invariants and tests
 
-Money, Account, Transaction, Category, Budget, Savings Goal and Financial Period were defined with domain invariants, balance semantics and tests. FASE 7 now also persists savings contributions and derives goal progress and required pace.
+**Status: APPROVED / BUILT**
 
 ## FASE 3 — Firestore persistence design
-**APPROVED / BUILT**
+- [x] Owner-scoped collections
+- [x] Repository contracts
+- [x] Persistence DTOs
+- [x] Serialization/mapping boundaries
+- [x] Query patterns
+- [x] Composite indexes
 
-Owner-scoped collections, repository contracts, persistence DTOs, serialization rules, query patterns, composite indexes and mapping boundaries.
+**Status: APPROVED / BUILT**
 
 ## FASE 4 — Go application foundation
-**APPROVED / BUILT**
+- [x] Configuration
+- [x] Firebase/Firestore initialization
+- [x] Repository wiring
+- [x] HTTP foundation
+- [x] Health/readiness
+- [x] Errors, request IDs and logging
+- [x] Application-service boundaries
 
-Configuration, Firebase/Firestore initialization, repository adapters, HTTP foundation, health/readiness, errors, request IDs, logging and application-service boundaries.
+**Status: APPROVED / BUILT**
 
 ## FASE 5 — Accounts and transactions
-**APPROVED / BUILT**
+- [x] Account workflow
+- [x] Transaction workflow
+- [x] Balance calculation
+- [x] Owner scoping
+- [x] Currency validation
 
-First usable financial workflow: Account → Transaction → Balance, with owner scoping and currency validation.
+**Status: APPROVED / BUILT**
 
 ## FASE 6 — Budgeting
-**APPROVED / BUILT**
+- [x] Expense categories
+- [x] Budget periods
+- [x] Category limits
+- [x] Actuals from authoritative transaction ledger
+- [x] Remaining budget
+- [x] Utilization
+- [x] Overspending detection
+- [x] Planned vs actual
 
-Budget periods, expense-category limits, planned-versus-actual calculations, utilization, remaining amounts, overspending detection and category endpoints.
+**Status: APPROVED / BUILT**
 
 ## FASE 7 — Savings and financial habits
-**APPROVED / BUILT**
+- [x] Savings goals
+- [x] Contributions
+- [x] Goal progress
+- [x] Remaining target
+- [x] Completion percentage
+- [x] Required pace
+- [x] Contribution history signals
 
-Savings goals, contribution records, goal progress, remaining amount, completion percentage, required daily pace and contribution-history signals.
+**Status: APPROVED / BUILT**
 
 ## FASE 8 — Financial education
-**APPROVED / BUILT**
+- [x] FACT
+- [x] CALCULATION
+- [x] INTERPRETATION
+- [x] ACTION
+- [x] Contextual insights
+- [x] Initial education topics
 
-Financial education cards and contextual insights using the FACT → CALCULATION → INTERPRETATION → ACTION model. Initial topics cover cash flow, budget utilization, savings progress, transaction categorization and debt basics. Debt accounting remains FASE 9.
+**Status: APPROVED / BUILT**
 
 ## FASE 9 — Debts
-**APPROVED / BUILT**
+- [x] Debt obligations
+- [x] Balances
+- [x] Principal/interest/fees
+- [x] Payment history
+- [x] Debt status
+- [x] Debt context
 
-Debt obligations, balances, principal/interest/fees payment components, payment history, debt status and debt-specific financial context.
+**Status: APPROVED / BUILT**
 
 ## FASE 10 — Assets, liabilities and net worth
-**APPROVED / BUILT**
+- [x] Assets
+- [x] Generic liabilities
+- [x] Debt liabilities
+- [x] Account-position integration
+- [x] Net-worth calculation
+- [x] Currency validation
+- [x] Double-counting boundaries
 
-Assets, generic liabilities, debt liabilities, account-position integration and net-worth calculation with explicit double-counting boundaries.
+**Status: APPROVED / BUILT**
 
 ## FASE 11 — Reports and financial dashboard
-**APPROVED / BUILT**
+- [x] Period reports
+- [x] Income
+- [x] Expenses
+- [x] Net cash flow
+- [x] Spending by category
+- [x] Budget/savings/debt context
+- [x] Net-worth context
+- [x] Dashboard data
 
-Period reports, cash flow, spending analysis, budget/savings/debt context and explainable dashboard metrics. See `docs/PHASE-11-REPORTS-DASHBOARD.md`.
+**Status: APPROVED / BUILT**
 
 ## FASE 12 — Authentication, privacy and audit
-**APPROVED / BUILT**
+- [x] Firebase ID-token verification
+- [x] Owner authorization
+- [x] Owner-scoped audit
+- [x] Request IDs
+- [x] Authentication-token exclusion from audit
+- [x] Request-body exclusion from audit
+- [x] Local owner fallback only when auth is disabled
 
-Firebase ID-token verification, owner authorization, privacy boundaries and owner-scoped audit events. See `docs/PHASE-12-AUTH-PRIVACY-AUDIT.md`.
+**Status: APPROVED / BUILT**
 
 ## FASE 13 — Frontend product
-**APPROVED / BUILT**
+- [x] React + Vite
+- [x] Tailwind
+- [x] PWA
+- [x] Dark Mode
+- [x] Mobile-first shell
+- [x] Dashboard API integration
 
-React + Vite + Tailwind + PWA + Dark Mode, mobile-first product shell connected to the dashboard API. See `docs/PHASE-13-FRONTEND.md`.
+**Status: APPROVED / BUILT**
 
 ## FASE 14 — Testing hardening
-**APPROVED / BUILT**
+- [x] Financial/domain test coverage
+- [x] Payroll/domain tests
+- [x] Frontend production build validation
+- [x] CI build path
 
-Payroll domain tests, explicit financial-domain coverage and frontend build validation were added to the CI path. See `docs/PHASE-14-TESTING-HARDENING.md`.
+**Status: APPROVED / BUILT**
 
 ## FASE 15 — Payroll
-**APPROVED / BUILT**
+- [x] Payroll employees
+- [x] Payroll periods
+- [x] Gross/deductions/net calculation
+- [x] Owner scoping
+- [x] Specialized-domain boundary
 
-Payroll is implemented as a specialized owner-scoped domain without changing the product identity. It deliberately avoids unverified Colombian legal/tax compliance claims. See `docs/PHASE-15-PAYROLL.md`.
+**Status: APPROVED / BUILT**
 
 ## FASE 16 — Private deployment and operations
-**APPROVED / BUILT**
+- [x] Production configuration gates
+- [x] CORS allowlist
+- [x] Container artifacts
+- [x] Nginx frontend runtime
+- [x] CI reproducibility
+- [x] Health/readiness semantics
+- [x] Secrets boundaries
+- [x] Backup/recovery documentation
 
-Environment safety gates, configurable CORS, provider-neutral container artifacts, CI reproducibility, health/readiness semantics, secrets boundaries, backup requirements and recovery procedures. See `docs/PHASE-16-PRIVATE-DEPLOYMENT-OPERATIONS.md` and `docs/OPERATIONS-RUNBOOK.md`.
+**Status: APPROVED / BUILT**
 
 ## FASE 17 — Production readiness & product UX
-**APPROVED / BUILT**
+- [x] Product-wide visual direction
+- [x] Responsive desktop/mobile navigation
+- [x] Dashboard information hierarchy
+- [x] Financial metric context
+- [x] Education surface
+- [x] Loading/error/retry states
+- [x] Private-workspace messaging
+- [x] Frontend production build
+- [x] Backend tests/build
+- [x] Runtime health/readiness validation
+- [x] Documentation refresh
 
-Final readiness review with a product-wide UI/UX pass, responsive navigation, dashboard information hierarchy, explainable financial states, education surfaces, loading/error states and private-workspace boundaries. See `docs/PHASE-17-PRODUCTION-READINESS-UX.md`.
+**Status: APPROVED / BUILT**
 
-### Current checkpoint
+---
+
+# PRODUCT — FASES 18–24
+
+These phases turn the validated platform into the day-to-day personal-finance product. Existing backend capabilities are reused; frontend modules become fully functional one by one.
+
+## FASE 18 — Transactions UX
+- [ ] Transactions screen
+- [ ] Fast transaction entry
+- [ ] Income/expense/transfer flows
+- [ ] Account selection
+- [ ] Category selection
+- [ ] Date and description
+- [ ] Transaction list
+- [ ] Search/filter
+- [ ] Loading/empty/error states
+- [ ] Mobile-first interaction
+- [ ] API integration
+- [ ] Tests/build validation
+- [ ] Documentation update
+
+**Status: PLANNED**
+
+## FASE 19 — Accounts UX
+- [ ] Accounts screen
+- [ ] Account list
+- [ ] Account creation/edit flow
+- [ ] Account type and currency
+- [ ] Balance presentation
+- [ ] Account detail
+- [ ] Transaction relationship
+- [ ] Empty/loading/error states
+- [ ] Mobile-first interaction
+- [ ] API integration
+- [ ] Tests/build validation
+- [ ] Documentation update
+
+**Status: PLANNED**
+
+## FASE 20 — Budget UX
+- [ ] Budget overview
+- [ ] Budget period selection
+- [ ] Category budget entry
+- [ ] Planned vs actual visualization
+- [ ] Utilization
+- [ ] Remaining amount
+- [ ] Overspending state
+- [ ] Education context
+- [ ] Empty/loading/error states
+- [ ] API integration
+- [ ] Tests/build validation
+- [ ] Documentation update
+
+**Status: PLANNED**
+
+## FASE 21 — Savings UX
+- [ ] Savings goals screen
+- [ ] Goal creation
+- [ ] Goal detail
+- [ ] Contribution entry
+- [ ] Progress visualization
+- [ ] Remaining amount
+- [ ] Target-date context
+- [ ] Required-pace context
+- [ ] Contribution history
+- [ ] Education context
+- [ ] API integration
+- [ ] Tests/build validation
+- [ ] Documentation update
+
+**Status: PLANNED**
+
+## FASE 22 — Debt UX
+- [ ] Debt overview
+- [ ] Debt creation
+- [ ] Debt detail
+- [ ] Balance visualization
+- [ ] Payment entry
+- [ ] Principal/interest/fees breakdown
+- [ ] Payment history
+- [ ] Active/paid status
+- [ ] Education context
+- [ ] API integration
+- [ ] Tests/build validation
+- [ ] Documentation update
+
+**Status: PLANNED**
+
+## FASE 23 — Net Worth UX
+- [ ] Net-worth overview
+- [ ] Assets presentation
+- [ ] Liabilities presentation
+- [ ] Debt integration
+- [ ] Account-position presentation
+- [ ] Net-worth explanation
+- [ ] Currency context
+- [ ] Historical snapshots/series design
+- [ ] API integration
+- [ ] Tests/build validation
+- [ ] Documentation update
+
+**Status: PLANNED**
+
+## FASE 24 — Education UX
+- [ ] Contextual education throughout financial modules
+- [ ] FACT presentation
+- [ ] CALCULATION presentation
+- [ ] INTERPRETATION presentation
+- [ ] ACTION presentation
+- [ ] Dashboard learning surfaces
+- [ ] Budget learning surfaces
+- [ ] Savings learning surfaces
+- [ ] Debt learning surfaces
+- [ ] Explainability for important metrics
+- [ ] Clear separation between facts and interpretation
+- [ ] Tests/build validation
+- [ ] Documentation update
+
+**Status: PLANNED**
+
+---
+
+# PRIVATE PRODUCTION — FASE 25+
+
+FASE 25+ is intentionally a continuing production track rather than one artificially bounded final phase.
+
+## FASE 25 — Private production deployment
+- [ ] Production Firebase project
+- [ ] Production Firestore
+- [ ] Firebase Auth configuration
+- [ ] Production secrets
+- [ ] Production CORS origins
+- [ ] HTTPS/domain
+- [ ] API deployment
+- [ ] Frontend deployment
+- [ ] PWA installation validation
+- [ ] Production smoke test
+- [ ] Rollback procedure
+
+**Status: PLANNED**
+
+## FASE 26 — Data protection and recovery
+- [ ] Automated backup strategy
+- [ ] Restore procedure
+- [ ] Data export
+- [ ] Recovery validation
+- [ ] Retention policy
+- [ ] Secret rotation procedure
+- [ ] Disaster-recovery checklist
+
+**Status: PLANNED**
+
+## FASE 27 — Observability and reliability
+- [ ] Structured production logs
+- [ ] Error monitoring
+- [ ] API latency visibility
+- [ ] Health monitoring
+- [ ] Alerting
+- [ ] Failure-path review
+- [ ] Production incident runbook
+- [ ] Reliability tests
+
+**Status: PLANNED**
+
+## FASE 28 — Financial data quality
+- [ ] Duplicate-entry protections
+- [ ] Stronger transaction consistency
+- [ ] Balance reconciliation
+- [ ] Currency consistency review
+- [ ] Net-worth reconciliation
+- [ ] Data-integrity diagnostics
+- [ ] Import/export validation
+
+**Status: PLANNED**
+
+## FASE 29 — Historical financial intelligence
+- [ ] Historical dashboard
+- [ ] Net-worth history
+- [ ] Spending trends
+- [ ] Budget trends
+- [ ] Savings trends
+- [ ] Debt trends
+- [ ] Period comparisons
+- [ ] Explainable trend insights
+
+**Status: PLANNED**
+
+## FASE 30+ — Continuous product evolution
+Potential future tracks:
+- [ ] Better data import workflows
+- [ ] Additional financial education
+- [ ] More advanced reporting
+- [ ] Personal financial planning tools
+- [ ] UX/accessibility refinement
+- [ ] Performance optimization
+- [ ] Security hardening
+- [ ] Architecture improvements
+- [ ] New specialized domains only when justified
+
+**Status: CONTINUOUS / PLANNED**
+
+---
+
+# Master execution rule
+
+For every phase:
+
+1. [ ] Define scope
+2. [ ] Implement
+3. [ ] Test
+4. [ ] Build
+5. [ ] Validate runtime when applicable
+6. [ ] Review UX/security boundaries
+7. [ ] Update documentation
+8. [ ] Mark the phase **APPROVED / BUILT**
+9. [ ] Only then start the next phase
+
+## Current checkpoint
 
 **FASES 1–17: APPROVED / BUILT**
 
-**FASES RESTANTES: 0**
+**NEXT: FASE 18 — Transactions UX**
 
-The backend learning path now covers:
+The platform is complete enough to stop expanding infrastructure and start completing the actual personal-finance product experience.
 
-`Account → Transaction → Balance → Budget → Planned vs Actual → Savings Goal → Contributions → Progress → Financial Education → Debt → Assets/Liabilities → Net Worth → Reports → Auth/Audit`
+---
 
-### Remaining path
-
-| Fase | Focus | Status |
-| --- | --- | --- |
-| **13** | Frontend product | APPROVED / BUILT |
-| **14** | Testing hardening | APPROVED / BUILT |
-| **15** | Payroll | APPROVED / BUILT |
-| **16** | Private deployment & operations | APPROVED / BUILT |
-| **17** | Production readiness & product UX | APPROVED / BUILT |
-
-### Rule
-
-No future phase is considered complete because an older implementation exists. Every phase must be rebuilt, validated and approved against the current personal-finance vision.
+Financial-D3v · PALMI-D3V · October 5, 2026

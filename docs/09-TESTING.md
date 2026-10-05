@@ -1,22 +1,30 @@
-# Testing — New Baseline
+# Testing — Financial-D3v
 
-**Status: FASE 14 PENDING**
+**Current status: FASE 2/3 DOMAIN AND PERSISTENCE DESIGN VALIDATED**
 
-Testing will be rebuilt around the new personal-finance product.
+## FASE 2
 
-Expected levels:
+Domain tests cover:
+1. currency mismatch;
+2. positive transaction amounts;
+3. financial-period boundaries;
+4. duplicate budget categories;
+5. savings progress cap;
+6. reproducible account balance;
+7. transfer conservation.
+
+## FASE 3
+
+Persistence mapping tests cover:
+1. owner and money preservation for account documents;
+2. period and budget-item preservation.
+
+## Later levels
+
 1. Domain tests.
 2. Application-service tests.
 3. Firestore repository tests.
 4. HTTP/API tests.
-5. End-to-end tests for critical user flows.
+5. End-to-end critical flows.
 
-Critical product behaviors include:
-- reproducible balances;
-- transaction effects;
-- budget calculations;
-- savings progress;
-- educational consistency;
-- later debt and net-worth calculations.
-
-A feature is complete only after behavior, persistence, API and product flow are validated.
+Concrete Firestore integration tests require the adapter and Firebase configuration from FASE 4.

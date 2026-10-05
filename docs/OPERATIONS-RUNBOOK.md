@@ -1,69 +1,108 @@
 # Financial-D3v Operations Runbook
 
-## Local development
+**Last updated:** 2026-10-05  
+**Timezone:** America/Bogota (COT, UTC-05:00)
 
-From repository root:
+## Source of truth
 
-```powershell
+GitHub `main⟧ is authoritative.
+
+`powershell
+git pull origin main
+`
+
+## Automated validation
+
+`powershell
 .\scripts\validate.ps1
-.\scripts\security-audit.ps1
-```
+powershell -ExecutionPolicy Bypass -File .\scripts\security-audit.ps1
+`
 
-Manual runtime:
+Expected checks:
+- frontend dependencies;
+- frontend tests;
+- frontend build;
+- WASM build;
+- Vault security audit;
+- Go tests;
+- Go build.
 
-```powershell
+## Runtime validation
+
+`powershell
 cd frontend
 npm run preview
-```
+`
 
-## Release validation
+Validate:
+1. Create Vault.
+2. Save/export Vault.
+3. Correct-password unlock.
+4. Incorrect-password rejection.
+5. Lock.
+6. Unlock again.
+7. Representative data.
+8. Recovery/import.
+9. PWA behavior.
+10. No intentional plaintext browser persistence.
 
-1. Pull the current main.
-2. Run scripts/validate.ps1.
-3. Run scripts/security-audit.ps1.
-4. Run the FASE 31 runtime security checklist.
-5. Verify Vault create/open/save/lock/auto-lock.
-6. Verify export/import recovery.
-7. Verify no intentional financial plaintext browser persistence.
-8. Verify no financial network dependency in Vault mode.
-9. Verify PWA/service-worker behavior.
-10. Validate the Vercel deployment.
-11. Record the evidence before marking FASE 31 APPROVED.
+## Security lifecycle
+
+While unlocked:
+- decrypted financial data is active in memory;
+- password is held only for the active session;
+- Go/WASM receives in-memory calculation input.
+
+When locked:
+- active vault state is cleared;
+- password reference is cleared;
+- application returns to the locked boundary.
+
+Auto-lock: **15 minutes of inactivity**.
 
 ## Recovery
 
 ### Normal
-
-1. Preserve the encrypted .fdv file.
+1. Preserve encrypted .fdv.
 2. Open Financial-D3v.
-3. Select Open vault.
-4. Select the .fdv file.
-5. Enter the vault password.
-6. Verify representative financial totals and records.
+3. Choose Open Vault.
+4. Select the .fdv.
+5. Enter password.
+6. Verify representative totals and records.
 7. Continue working.
-8. Save a new encrypted .fdv after meaningful changes.
+8. Save a new encrypted file after meaningful changes.
+
+### Incorrect password
+
+Expected:
+
+`text
+Vault unavailable.
+Unable to open the Financial Vault.
+Check the password or file integrity.
+`
 
 ### Lost password
 
-There is no password recovery service. A lost password cannot be recovered by the application. Recovery requires a valid backup and its password.
+There is no password recovery service. A valid encrypted file without its correct password cannot be recovered by the application.
 
 ### Damaged vault
 
-1. Preserve the original file.
+1. Preserve the original.
 2. Do not overwrite it.
-3. Try a known-good backup.
-4. Verify it opens with the expected password.
-5. Check representative accounts, transactions, budgets, savings, debts and net worth.
+3. Try a known-good encrypted backup.
+4. Verify representative financial data.
+5. Keep the damaged file isolated.
 
 ## Backup principle
 
-The encrypted .fdv file and its password are separate recovery dependencies. Store backups under user-controlled protection and do not commit them to Git.
+The .fdv file and password are separate recovery dependencies.
 
-## Production
+Do not commit .fdv files, decrypted financial JSON or passwords to Git.
 
-Target:
+## Deployment
 
-```text
+`text
 GitHub main
    ↓
 Vercel Hobby
@@ -71,18 +110,20 @@ Vercel Hobby
 React/Vite PWA
    ↓
 local encrypted Financial Vault
-```
+`
 
-The root vercel.json defines the Vercel build and output configuration.
+Root `vercel.json⟧ defines install, build and output for the frontend.
 
-Production deployment is not considered validated until the deployed URL passes the runtime smoke test and PWA/service-worker checks.
+A real Vercel deployment remains a separate production smoke-test activity.
 
 ## Rollback
 
-For the frontend, redeploy the previous known-good Vercel deployment.
+Frontend: redeploy a previous known-good Vercel deployment.
 
-For financial data, restore the last known-good encrypted .fdv file. There is no server-side financial database to roll back in Vault mode.
+Financial data: restore the last known-good encrypted .fdv file.
+
+There is no active remote financial database to roll back in Vault mode.
 
 ## Historical cloud path
 
-Older Cloud Run, Firestore and scheduler procedures remain in repository history for traceability. They are not part of the active $0 Financial Vault release path.
+Cloud Run, Firebase/Firestore and Scheduler procedures remain historical only.

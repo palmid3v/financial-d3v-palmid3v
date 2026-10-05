@@ -18,15 +18,14 @@ Rebuilt Money, Account, Transaction, Category, Budget, Savings Goal, Financial P
 Defined owner-scoped collections, repository contracts, persistence DTOs, serialization rules, query patterns, composite indexes and persistence mapping tests.
 
 ## FASE 4 — Go application foundation
-**PENDING**
+**APPROVED / BUILT**
 
-Configuration, HTTP application, Firebase initialization, concrete repositories, errors, validation, logging, readiness and integration tests.
+Configuration, Firebase/Firestore initialization, repository adapters, HTTP foundation, health/readiness, errors, request IDs, logging and application-service boundaries.
 
 ## FASE 5 — Accounts and transactions
-**PENDING**
+**APPROVED / BUILT**
 
-First usable financial workflow:
-Account → Transaction → Balance → Summary.
+First usable financial workflow: Account → Transaction → Balance, with owner scoping and currency validation.
 
 ## FASE 6 — Budgeting
 **PENDING**

@@ -1,26 +1,10 @@
 package main
 
-import (
+import(
+	"context"
 	"log"
-	"net/http"
-	"os"
+	"github.com/palmid3v/financial-d3v-palmid3v/internal/app"
+	"github.com/palmid3v/financial-d3v-palmid3v/internal/config"
 )
 
-func main() {
-	addr := os.Getenv("HTTP_ADDR")
-	if addr == "" {
-		addr = ":8080"
-	}
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("{\"status\":\"ok\",\"service\":\"financial-d3v-api\"}"))
-	})
-
-	log.Printf("financial-d3v-api listening on %s", addr)
-	if err := http.ListenAndServe(addr, mux); err != nil {
-		log.Fatal(err)
-	}
-}
+func main(){cfg,err:=config.Load();if err!=nil{log.Fatal(err)};server,err:=app.NewServer(context.Background(),cfg);if err!=nil{log.Fatal(err)};defer func(){if err:=server.Close();err!=nil{log.Printf("close error: %v",err)}}();log.Printf("financial-d3v-api listening on %s env=%s firebase=%t",cfg.HTTPAddr,cfg.AppEnv,cfg.FirebaseEnabled);if err:=server.ListenAndServe();err!=nil{log.Fatal(err)}}

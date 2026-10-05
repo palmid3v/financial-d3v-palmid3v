@@ -1,36 +1,32 @@
 # Financial-D3v
 
-Financial-D3v is a private, personal financial application and learning workspace built to help its owner understand, organize and improve the way money is managed.
+Financial-D3v is a **private personal-finance application and financial learning workspace**.
 
-It is also a real engineering project for learning Go, backend architecture, databases, software design and disciplined AI-assisted development.
+It helps its owner understand, organize and improve personal finances while also serving as a practical project for learning software engineering.
 
-## Product direction
+## Product vision
 
-Financial-D3v is not only a payroll application. Payroll is one specialized domain inside a broader personal financial platform.
+The application is built around one real user workflow.
 
-The application has two complementary goals:
+Its purpose is to help answer:
 
-1. Financial control: understand income, expenses, accounts, budgets, savings, debts, assets, liabilities and net worth.
-2. Financial education: explain financial concepts, surface useful insights, encourage intentional saving, and turn the user's own financial activity into practical learning.
+- What money do I have?
+- What came in?
+- What went out?
+- What am I planning?
+- What am I saving?
+- How am I progressing?
+- What changed?
+- Why did it change?
+- What can I learn from it?
 
-The educational layer explains and supports decisions; it does not replace qualified financial, legal or tax professionals.
+The product is not currently a payroll application. Payroll is a later specialized domain.
 
-## Private-by-design operating model
+## Product loop
 
-Financial-D3v is a private application that runs when the owner chooses to run it. It is not designed as a public SaaS product.
+**Record → Categorize → Understand → Plan → Save → Review → Learn → Adjust**
 
-The initial model is:
-- local application runtime;
-- private Firebase project;
-- Firebase Firestore as persistence;
-- Firebase Authentication later;
-- no public financial data;
-- no unnecessary always-on application process;
-- explicit ownership and access boundaries.
-
-Firebase is the approved database direction. PostgreSQL is no longer the active persistence target.
-
-## Approved technology stack
+## Approved stack
 
 | Layer | Technology |
 | --- | --- |
@@ -45,68 +41,41 @@ Firebase is the approved database direction. PostgreSQL is no longer the active 
 | CI | GitHub Actions |
 | Docs | Markdown |
 
-## Product modules
+## Private operation
 
-### Personal finance
-- Dashboard
-- Accounts
-- Transactions
-- Income
-- Expenses
-- Categories
-- Budgets
-- Savings goals
-- Debts
-- Assets
-- Liabilities
-- Net worth
+The owner runs the application when needed.
 
-### Financial education
-- Financial concepts explained in context
-- Spending and saving insights
-- Budget education
-- Savings habit guidance
-- Debt education
-- Net-worth education
-- Personal financial goals
-- Progress reflections
-- Glossary and learning notes
+It is not initially a public SaaS and does not automatically execute external financial operations.
 
-### Specialized finance
-- Payroll
-- Employees
-- Contracts
-- Earnings
-- Deductions
-- Payroll rules and reports
+## Current phase
 
-## UI direction
+### FASE 1 — Product definition
+**APPROVED / BUILT**
 
-Dark Mode is the primary experience on desktop and mobile, with dashboard-first navigation, responsive navigation, quick transaction actions, financial KPI cards, charts and contextual educational explanations.
+See:
 
-See docs/14-UI-UX-DESIGN.md.
+`docs/PHASE-1-PRODUCT-SPEC.md`
+
+The previous implementation phases are not considered completed under this new vision.
+
+### Next
+
+**FASE 2 — Financial Domain Model v2**
+
+The domain will be rebuilt from the Phase 1 product specification rather than copied from the previous implementation.
 
 ## Documentation
 
-The repository is the source of truth.
-
 Start with:
-1. CONTEXT.md
-2. README.md
-3. STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md
-4. docs/README.md
-5. Current implementation and tests
 
-Key documents include product vision, requirements, architecture, domain model, Firebase database design, API design, financial rules, security, testing, deployment, AI workflow, Go learning, roadmap, UI/UX, financial education and private/personal use.
+1. `CONTEXT.md`
+2. `README.md`
+3. `STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md`
+4. `docs/PHASE-1-PRODUCT-SPEC.md`
+5. `docs/13-ROADMAP.md`
 
-## Development philosophy
-
-Build the platform in small, validated phases.
-
-Financial calculations must be deterministic. Business rules must be explicit. Educational explanations must be understandable and traceable to the underlying financial state. Generated code must always be reviewed and tested.
-
-The product should help its owner learn by using it, not merely store numbers.
+The repository is the source of truth.
 
 ---
 
-Financial-D3v · PALMI-D3V · Personal Finance + Financial Education
+**Financial-D3v · PALMI-D3V · Personal Finance + Financial Education**

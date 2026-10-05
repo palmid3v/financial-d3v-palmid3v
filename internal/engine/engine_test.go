@@ -15,7 +15,7 @@ func TestAnalyzeFinancialRules(t *testing.T) {
 		},
 		SavingsGoals: []SavingsGoal{{ID: "emergency", TargetMinorUnits: 1000000, Currency: "COP"}},
 		SavingsContributions: []SavingsContribution{{GoalID: "emergency", AmountMinorUnits: 250000}},
-		Debts: []Debt{{ID: "card", OriginalMinorUnits: 1000000, Currency: "COP"}},
+		Debts: []Debt{{ID: "card", OriginalMinorUnits: 600000, Currency: "COP"}},
 		DebtPayments: []DebtPayment{{DebtID: "card", PrincipalMinorUnits: 120000}},
 		Assets: []Asset{{MinorUnits: 2000000, Currency: "COP"}},
 		Liabilities: []Liability{{MinorUnits: 100000, Currency: "COP"}},
@@ -32,10 +32,10 @@ func TestAnalyzeFinancialRules(t *testing.T) {
 	if result.Savings[0].Percent != 25 {
 		t.Fatalf("unexpected savings: %+v", result.Savings[0])
 	}
-	if result.Debts[0].Balance != 880000 {
+	if result.Debts[0].Balance != 480000 {
 		t.Fatalf("unexpected debt: %+v", result.Debts[0])
 	}
-	if result.NetWorth.Net != 1300000 {
+	if result.NetWorth.Net != 1420000 {
 		t.Fatalf("unexpected net worth: %+v", result.NetWorth)
 	}
 }

@@ -133,6 +133,10 @@ export function accountBalance(account, transactions) {
     if (item.accountId !== account.id) return balance;
     if (item.type === "income") return balance + item.minorUnits;
     if (item.type === "expense") return balance - item.minorUnits;
+    if (item.type === "transfer") {
+      if (item.accountId === account.id) return balance - item.minorUnits;
+      if (item.toAccountId === account.id) return balance + item.minorUnits;
+    }
     return balance;
   }, opening);
 }

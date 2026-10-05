@@ -98,7 +98,7 @@ The frontend now provides functional Transactions, Accounts, Budget, Savings, De
 - [ ] FASE 29 — Historical financial intelligence
 - [ ] FASE 30+ — Continuous product evolution
 
-See `docs/13-ROADMAP.md` for the detailed checklist and `STEP-BY-STEP-FINANCIAL-D3V-2026-10-05.md` for the operational execution guide.
+See `docs/13-ROADMAP.md` for the detailed checklist and `STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md` for the operational execution guide.
 
 ## Validation checkpoint
 

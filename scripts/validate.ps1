@@ -84,6 +84,18 @@ else {
     Write-Host "[SKIP] Frontend - frontend/package.json not found." -ForegroundColor Yellow
 }
 
+# Security source validation
+$securityAudit = Join-Path $RepoRoot "scripts\security-audit.ps1"
+if (Test-Path $securityAudit) {
+    Run-Check "Vault security source audit" {
+        powershell -ExecutionPolicy Bypass -File $securityAudit
+        if ($LASTEXITCODE -ne 0) { throw "Vault security source audit failed with exit code $LASTEXITCODE." }
+    }
+}
+else {
+    Write-Host "[SKIP] Vault security source audit - scripts/security-audit.ps1 not found." -ForegroundColor Yellow
+}
+
 # Go validation
 $goMod = Join-Path $RepoRoot "go.mod"
 if (Test-Path $goMod) {

@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test:vault": "node --test src/vault/crypto.test.js",
     "test:finance": "node --test src/vault/finance.test.js",
-    "test": "node --test src/vault/*.test.js"
+    "test": "node --test src/vault/*.test.js",
+    "build:wasm": "powershell -ExecutionPolicy Bypass -File ../scripts/build-financial-engine-wasm.ps1"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",

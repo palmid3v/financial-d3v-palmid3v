@@ -169,3 +169,12 @@ FASE 32+ is post-finalization evolution, not required for the first finalized re
 7. Update documentation.
 8. Mark APPROVED / BUILT only after evidence exists.
 9. Move to the next phase.
+
+
+## FASE 28 — Vault Data Migration
+
+**Status: BUILT / VALIDATION PENDING**
+
+The financial workspace is now mounted directly on the encrypted in-memory Financial Vault. Accounts, transactions, budgets, savings, debts, net worth, education, dashboard calculations, and the approved dark/minimal product UI are implemented. Validation remains pending before FASE 28 can be approved.
+
+See docs/PHASE-28-VAULT-DATA-MIGRATION.md for the acceptance checklist.

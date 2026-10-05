@@ -26,14 +26,14 @@ export default defineConfig({
         icons: [
           {
             src: "/favicon.svg",
-            sizes: "192x192",
-            type: "image/png",
+            sizes: "any",
+            type: "image/svg+xml",
             purpose: "any maskable",
           },
           {
             src: "/favicon.svg",
-            sizes: "512x512",
-            type: "image/png",
+            sizes: "any",
+            type: "image/svg+xml",
             purpose: "any maskable",
           },
         ],

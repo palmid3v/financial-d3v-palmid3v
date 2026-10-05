@@ -31,7 +31,6 @@ func(s *Server)Handler()http.Handler{
 func(s *Server)health(w http.ResponseWriter,_ *http.Request){writeJSON(w,http.StatusOK,map[string]any{"status":"ok","service":"financial-d3v-api"})}
 func(s *Server)ready(w http.ResponseWriter,_ *http.Request){code,status:=http.StatusOK,"ready";if !s.firebaseReady{code,status=http.StatusServiceUnavailable,"degraded"};writeJSON(w,code,map[string]any{"status":status,"service":"financial-d3v-api","dependencies":map[string]bool{"firebase":s.firebaseReady}})}
 func(s *Server)servicesReady(w http.ResponseWriter)bool{if s.accounts==nil||s.transactions==nil||s.categories==nil||s.budgets==nil||s.savings==nil{writeError(w,http.StatusServiceUnavailable,"financial services are unavailable; enable Firebase first");return false};return true}
-func requireOwner(w http.ResponseWriter,r *http.Request)(string,bool){id:=strings.TrimSpace(r.Header.Get(ownerHeader));if id==""{writeError(w,http.StatusBadRequest,fmt.Sprintf("%s header is required until Firebase Auth is implemented",ownerHeader));return "",false};return id,true}
 func decodeJSON(w http.ResponseWriter,r *http.Request,v any)bool{defer r.Body.Close();d:=json.NewDecoder(r.Body);d.DisallowUnknownFields();if err:=d.Decode(v);err!=nil{writeError(w,http.StatusBadRequest,"invalid JSON payload");return false};return true}
 
 type accountRequest struct{Name string `json:"name"`;Type string `json:"type"`;Currency string `json:"currency"`;OpeningMinor int64 `json:"openingMinorUnits"`}

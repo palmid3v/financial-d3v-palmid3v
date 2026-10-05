@@ -8,7 +8,7 @@ const monthStart = new Date(today.getFullYear(),today.getMonth(),1).toISOString(
 const monthEnd = new Date(today.getFullYear(),today.getMonth()+1,1).toISOString();
 const id = () => crypto.randomUUID();
 
-const nav = [["dashboard","Overview","⌂"],["transactions","Transactions","↕"],["accounts","Accounts","▣"],["budget","Budget","◫"],["savings","Savings","◎"],["debts","Debts","◇"],["net-worth","Net worth","◆"]];
+const nav = [["dashboard","Overview","⌂"],["transactions","Transactions","↕"],["accounts","Accounts","▣"],["budget","Budget","◫"],["savings","Savings","◎"],["debts","Debts","◇"],["net-worth","Net worth","◆"],["education","Education","?"]];
 const accountTypes = [["cash","Cash"],["bank","Bank"],["credit","Credit"],["investment","Investment"],["other","Other"]];
 const transactionTypes = [["expense","Expense"],["income","Income"],["transfer","Transfer"]];
 

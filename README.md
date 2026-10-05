@@ -1,147 +1,50 @@
 # Financial-D3v
 
-Financial-D3v is a **private personal-finance application and financial learning workspace**.
-
-It helps its owner understand, organize and improve personal finances while also serving as a practical project for learning software engineering.
-
-## Product vision
-
-The application helps answer:
-
-- What money do I have?
-- What came in?
-- What went out?
-- What am I planning?
-- What am I saving?
-- How am I progressing?
-- What changed?
-- Why did it change?
-- What can I learn from it?
-
-The product is not payroll-first. Payroll is a specialized domain inside the broader personal-finance product.
+Financial-D3v is a private personal-finance application and financial learning workspace.
 
 ## Product loop
-
-**Record → Categorize → Understand → Plan → Save → Review → Learn → Adjust**
+Record → Categorize → Understand → Plan → Save → Review → Learn → Adjust
 
 ## Approved stack
+React + Vite · Tailwind · Dark Mode · PWA · Go 1.27 · REST/HTTP · Firebase Firestore · Firebase Auth · Firebase Hosting · Cloud Run · GitHub Actions.
 
-| Layer | Technology |
-| --- | --- |
-| Frontend | React + Vite |
-| UI | Tailwind CSS |
-| Visual | Dark Mode |
-| PWA | Vite PWA |
-| Backend | Go 1.27 |
-| API | REST/HTTP |
-| Database | Firebase Firestore |
-| Auth | Firebase Auth |
-| CI | GitHub Actions |
-| Docs | Markdown |
-
-## Private operation
-
-The owner runs the application when needed.
-
-It is not initially a public SaaS and does not automatically execute external financial operations.
-
-## 🧭 Current checkpoint
-
-### 🧱 FASES 1–17 — APPROVED / BUILT
-
-### 🧩 FASES 18–24 — IMPLEMENTED / VALIDATION PENDING
-
-### 💰 FASE 25 — SAVINGS + DEBT UX RESTORED / VALIDATED
-
-### 🔐 FASE 26 — AUTHENTICATION / SECURITY HARDENING — IMPLEMENTED / VALIDATION PENDING
-
-The product workflow through Savings and Debt is implemented and locally validated; FASE 26 is now the active production-security hardening milestone.
-
-The backend covers:
-
-`Account → Transaction → Balance → Budget → Planned vs Actual → Savings Goal → Contributions → Progress → Financial Education → Debt → Assets/Liabilities → Net Worth → Reports → Auth/Audit`
-
-The frontend now provides functional Transactions, Accounts, Budget, Savings, Debts, Net Worth and Education surfaces. Savings and Debt were restored on the repaired `main` without reintroducing the previous `App.jsx` corruption.
-
-## 🗺️ Full roadmap
-
-### PLATFORM
-
-- [x] FASE 1 — Product definition
-- [x] FASE 2 — Financial Domain Model v2
-- [x] FASE 3 — Firestore persistence design
-- [x] FASE 4 — Go application foundation
-- [x] FASE 5 — Accounts and transactions
-- [x] FASE 6 — Budgeting
-- [x] FASE 7 — Savings and financial habits
-- [x] FASE 8 — Financial education
-- [x] FASE 9 — Debts
-- [x] FASE 10 — Assets, liabilities and net worth
-- [x] FASE 11 — Reports and financial dashboard
-- [x] FASE 12 — Authentication, privacy and audit
-- [x] FASE 13 — Frontend product
-- [x] FASE 14 — Testing hardening
-- [x] FASE 15 — Payroll
-- [x] FASE 16 — Private deployment and operations
-- [x] FASE 17 — Production readiness & product UX
-
-### PRODUCT
-
-- [x] FASE 18 — Transactions UX (implementation complete; validation pending)
-- [x] FASE 19 — Accounts UX (implementation complete; validation pending)
-- [x] FASE 20 — Budget UX (implementation complete; validation pending)
-- [x] FASE 21 — Savings UX (implementation complete; validation pending)
-- [x] FASE 22 — Debt UX (implementation complete; validation pending)
-- [x] FASE 23 — Net Worth UX (implementation complete; validation pending)
-- [x] FASE 24 — Education UX (implementation complete; validation pending)
-
-### PRIVATE PRODUCTION
-
-- [x] FASE 25 — Complete Savings + Debt UX
-- [ ] FASE 26 — Authentication / production security hardening
-- [ ] FASE 27 — Private production deployment
-- [ ] FASE 28 — Backup / recovery
-- [ ] FASE 29 — Financial data integrity
-- [ ] FASE 30 — Observability
-- [ ] FASE 31 — Historical financial intelligence
-- [ ] FASE 32+ — Continuous product evolution
-
-See `docs/13-ROADMAP.md` for the detailed checklist and `STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md` for the operational execution guide.
-
-## 🧪 Validation checkpoint
-
-Previously validated baseline (FASE 17):
-
+## Private production architecture
 ```text
-go test ./...   → PASS
-go build ./...  → PASS
-npm ci          → PASS
-npm run build   → PASS
-PWA generation  → PASS
-/health         → PASS
-/ready          → PASS
-runtime         → PASS
+Browser
+  ↓ HTTPS
+Firebase Hosting
+  ├── React/Vite PWA
+  └── /api/** rewrite
+          ↓
+      Cloud Run
+          ↓
+      Go API
+          ↓
+ Firebase Auth + Firestore
 ```
 
-## Next execution target
+## Current checkpoint
+- FASES 1–17: APPROVED / BUILT
+- FASES 18–24: IMPLEMENTED / VALIDATION PENDING
+- FASE 25: APPROVED / BUILT
+- FASE 26: APPROVED / BUILT
+- FASE 27: BUILT / VALIDATION PENDING
+- FASE 28: BUILT / VALIDATION PENDING
 
-**FASE 26 — Authentication / production security hardening**
+FASE 27 and FASE 28 are implemented in the repository. Real production deployment and real restore execution remain validation gates.
 
-The next work is production security hardening: connect the existing Firebase authentication boundary to the frontend, enforce private API access, harden API responses, and preserve owner isolation.
+## Next execution
+1. Configure Google Cloud and GitHub WIF.
+2. Run the Production deployment workflow.
+3. Configure the daily Firestore backup schedule.
+4. Execute a real backup.
+5. Restore into an isolated recovery project.
+6. Validate and explicitly approve FASES 27–28.
 
-## 📚 Documentation
-
-Start with:
-
-1. `CONTEXT.md`
-2. `README.md`
-3. `STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md`
-4. `docs/13-ROADMAP.md`
-5. `docs/PHASE-17-PRODUCTION-READINESS-UX.md`
-6. `docs/OPERATIONS-RUNBOOK.md`
-
-The repository is the source of truth.
-
----
-
-**Financial-D3v · PALMI-D3V · Personal Finance + Financial Education**
+## Documentation
+- `docs/PHASE-27-PRIVATE-PRODUCTION-DEPLOYMENT.md`
+- `docs/PHASE-28-BACKUP-RECOVERY.md`
+- `docs/10-DEPLOYMENT.md`
+- `docs/OPERATIONS-RUNBOOK.md`
+- `docs/13-ROADMAP.md`
+- `STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md`

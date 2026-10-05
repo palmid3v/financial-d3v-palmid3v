@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { createEmptyVault, downloadVault, openVault, sealVault } from "./crypto";
+import { normalizeVault } from "./finance";
 
 const VaultContext = createContext(null);
 export const VAULT_AUTO_LOCK_MS = 15 * 60 * 1000;
@@ -12,6 +13,7 @@ function readFile(file) {
 export function VaultProvider({ children }) {
   const [vault, setVault] = useState(null);
   const [fileName, setFileName] = useState("");
+  const [dirty, setDirty] = useState(false);
   const passwordRef = useRef(null);
   const autoLockTimerRef = useRef(null);
 
@@ -23,6 +25,7 @@ export function VaultProvider({ children }) {
 
     setVault(null);
     setFileName("");
+    setDirty(false);
     passwordRef.current = null;
   }, []);
 
@@ -69,8 +72,9 @@ export function VaultProvider({ children }) {
     downloadVault(serialized, "financial-d3v.fdv");
 
     passwordRef.current = password;
-    setVault(data);
+    setVault(normalizeVault(data));
     setFileName("financial-d3v.fdv");
+    setDirty(false);
     return data;
   }, []);
 
@@ -78,9 +82,19 @@ export function VaultProvider({ children }) {
     const serialized = await readFile(file);
     const data = await openVault(serialized, password);
     passwordRef.current = password;
-    setVault(data);
+    setVault(normalizeVault(data));
     setFileName(file.name || "financial-d3v.fdv");
+    setDirty(false);
     return data;
+  }, []);
+
+  const updateVault = useCallback((updater) => {
+    setVault((current) => {
+      if (!current) return current;
+      const next = typeof updater === "function" ? updater(current) : updater;
+      return normalizeVault({ ...next, updatedAt: new Date().toISOString() });
+    });
+    setDirty(true);
   }, []);
 
   const saveVault = useCallback(async (nextVault = vault) => {
@@ -92,6 +106,7 @@ export function VaultProvider({ children }) {
       passwordRef.current,
     );
     downloadVault(serialized, fileName || "financial-d3v.fdv");
+    setDirty(false);
     resetAutoLockTimer();
     return serialized;
   }, [fileName, resetAutoLockTimer, vault]);
@@ -103,9 +118,11 @@ export function VaultProvider({ children }) {
     createVault,
     unlockFile,
     saveVault,
+    updateVault,
+    dirty,
     lock,
     autoLockMs: VAULT_AUTO_LOCK_MS,
-  }), [createVault, fileName, lock, saveVault, unlockFile, vault]);
+  }), [createVault, dirty, fileName, lock, saveVault, unlockFile, updateVault, vault]);
 
   return <VaultContext.Provider value={value}>{children}</VaultContext.Provider>;
 }

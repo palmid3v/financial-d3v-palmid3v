@@ -1,79 +1,83 @@
-# Validation Runner
+# Validación del Proyecto — Validation Runner
+
+**Last updated:** 2026-10-05  
+**Timezone:** America/Bogota (COT, UTC-05:00)
 
 ## Purpose
 
-Financial-D3v uses a repository-local PowerShell validation runner so the Palmi → Nexsy workflow does not depend on manually remembering every command required by the current phase.
+Financial-D3v uses a repository-local PowerShell validation runner for the Palmi → Nexsy workflow.
 
-Run from the repository root:
+**Process:** Automated → Runtime → Security → Functional → PASS / FIX / APPROVED
 
-```powershell
+## Automated runner
+
+`powershell
 .\scripts\validate.ps1
-```
+`
 
-## Design rule
+The runner detects frontend package/lock files, npm scripts, `go.mod⟧ and Go availability.
 
-The runner is **capability-driven**, not a permanently hard-coded checklist.
+Current checks:
+1. `npm ci⟧.
+2. `npm run test⟧.
+3. `npm run build⟧.
+4. `npm run build:wasm⟧.
+5. Vault security source audit.
+6. `go test ./...⟧.
+7. `go build ./...⟧.
 
-It detects:
+## Security audit
 
-- `frontend/package.json`
-- `package-lock.json`
-- available npm scripts
-- `go.mod`
-- the Go executable
+`powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\security-audit.ps1
+`
 
-The runner currently executes every supported validation that exists in the checkout:
+The audit checks the Vault boundary for localStorage, sessionStorage, IndexedDB, navigator.sendBeacon, XMLHttpRequest and unexpected fetch() usage.
 
-1. `npm ci` when `frontend/package-lock.json` exists.
-2. `npm run test` when the script exists.
-3. `npm run build` when the script exists.
-4. `npm run build:wasm` when the script exists.
-5. `go test ./...` when `go.mod` and Go are available.
-6. `go build ./...` when `go.mod` and Go are available.
+The legitimate fetch() in `frontend/src/vault/goEngine.js⟧ is allowed because it loads the local `/wasm/financial-engine.wasm⟧ resource.
 
-If a future phase adds, removes, or changes validation commands, update `scripts/validate.ps1` and this document together.
+## Manual runtime
 
-## Manual runtime validation
-
-`npm run preview` is intentionally **not** started automatically because it is a long-running server process.
-
-After automated validation completes:
-
-```powershell
+`powershell
 cd frontend
 npm run preview
-```
+`
 
-Then perform the runtime checks required by the current phase and report the exact output to Nexsy.
+FASE 31 runtime evidence included Vault creation/save/open, incorrect-password rejection, lock/unlock, recovery/import and security-boundary review.
 
 ## Failure behavior
 
-The runner stops on the first failed automated check. A failure is not converted into a false success.
+The runner stops on the first failed automated check.
 
-The final project state must distinguish:
+Never convert failure into success.
 
-- automated validation passed;
-- runtime/manual validation passed;
-- validation pending.
+Statuses remain distinct:
+- AUTOMATED VALIDATION COMPLETED;
+- RUNTIME VALIDATION COMPLETED;
+- VALIDATION PENDING.
+
+## Evidence rule
+
+Never claim CI, deployment, runtime or security success without observed evidence.
 
 ## Workflow
 
-```text
+`text
 Nexsy implements
       ↓
 GitHub main updated
       ↓
 Palmi git pull
       ↓
-.\scripts\validate.ps1
+scripts/validate.ps1
       ↓
 Automated validation
       ↓
-Manual runtime validation
+Runtime validation
       ↓
-Palmi reports exact result
+Palmi reports exact output
       ↓
 Nexsy diagnoses/fixes
-```
-
-This runner is part of the project's validation infrastructure and should evolve with the architecture.
+      ↓
+Documentation update
+`

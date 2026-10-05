@@ -91,12 +91,14 @@ The frontend now provides functional Transactions, Accounts, Budget, Savings, De
 
 ### PRIVATE PRODUCTION
 
-- [ ] FASE 25 — Private production deployment
-- [ ] FASE 26 — Data protection and recovery
-- [ ] FASE 27 — Observability and reliability
-- [ ] FASE 28 — Financial data quality
-- [ ] FASE 29 — Historical financial intelligence
-- [ ] FASE 30+ — Continuous product evolution
+- [x] FASE 25 — Complete Savings + Debt UX
+- [ ] FASE 26 — Authentication / production security hardening
+- [ ] FASE 27 — Private production deployment
+- [ ] FASE 28 — Backup / recovery
+- [ ] FASE 29 — Financial data integrity
+- [ ] FASE 30 — Observability
+- [ ] FASE 31 — Historical financial intelligence
+- [ ] FASE 32+ — Continuous product evolution
 
 See `docs/13-ROADMAP.md` for the detailed checklist and `STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md` for the operational execution guide.
 
@@ -117,9 +119,9 @@ runtime         → PASS
 
 ## Next execution target
 
-**FASE 18 — Transactions UX**
+**FASE 26 — Authentication / production security hardening**
 
-The next work is product completion, not arbitrary infrastructure expansion. The objective is to connect the existing financial backend capabilities to a fast, understandable, mobile-first daily workflow.
+The next work is production security hardening: connect the existing Firebase authentication boundary to the frontend, enforce private API access, harden API responses, and preserve owner isolation.
 
 ## 📚 Documentation
 

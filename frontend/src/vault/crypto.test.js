@@ -1,5 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { webcrypto } from "node:crypto";
+
+if (!globalThis.crypto) globalThis.crypto = webcrypto;
 import { createEmptyVault, openVault, sealVault } from "./crypto.js";
 
 const password = "correct-horse-battery-staple";

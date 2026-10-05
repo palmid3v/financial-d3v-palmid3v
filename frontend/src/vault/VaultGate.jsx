@@ -5,7 +5,7 @@ function Field({ label, ...props }) {
   return <label className="field"><span>{label}</span><input {...props}/></label>;
 }
 
-function VaultWorkspace({ fileName, vault, saveVault, lock }) {
+function VaultWorkspace({ fileName, vault, saveVault, lock, autoLockMs }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -99,7 +99,7 @@ export default function VaultGate() {
   const fileRef = useRef(null);
 
   if (!locked) {
-    return <VaultWorkspace fileName={fileName} vault={vault} saveVault={saveVault} lock={lock} />;
+    return <VaultWorkspace fileName={fileName} vault={vault} saveVault={saveVault} lock={lock} autoLockMs={autoLockMs} />;
   }
 
   const submit = async (event) => {

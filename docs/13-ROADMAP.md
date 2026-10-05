@@ -1,53 +1,76 @@
-# Roadmap
+# Roadmap — New Product Baseline
 
-## Approved baseline
+The previous roadmap is superseded. The new roadmap starts at FASE 1.
 
-- Phase 0 — Repository foundation.
-- Phase 1 — Product definition.
-- Phase 2 — Domain model.
-- Phase 3 — Initial database foundation.
+## FASE 1 — Product definition
+**APPROVED / BUILT**
 
-Phase 3 was originally designed around PostgreSQL and is now superseded by the approved Firebase Firestore decision of October 4, 2026.
+Artifact: docs/PHASE-1-PRODUCT-SPEC.md
 
-## Revised roadmap
+Defines the personal-finance purpose, primary user, financial jobs, education goals, MVP, savings objective, metrics, privacy boundaries and product exclusions.
 
-### Phase 4 — Go backend + Firebase foundation
-Configuration, Firestore connection, repository interfaces, Firestore repositories, HTTP errors, validation, middleware, logging, health/readiness and local development configuration.
+## FASE 2 — Financial Domain Model v2
+**PENDING**
 
-### Phase 5 — Accounts and transactions
-First usable financial vertical slice.
+Rebuild financial vocabulary, Money model, accounts, transactions, categories, budgets, savings, periods, education context, invariants and domain tests.
 
-### Phase 6 — Budgeting
+## FASE 3 — Firestore persistence design
+**PENDING**
 
-### Phase 7 — Savings and financial habits
+Define collections/documents, ownership paths, indexes, repository contracts, serialization and persistence tests.
 
-### Phase 8 — Debts and liabilities
+## FASE 4 — Go application foundation
+**PENDING**
 
-### Phase 9 — Assets and net worth
+Configuration, HTTP application, errors, validation, logging, persistence adapter, repository wiring and integration tests.
 
-### Phase 10 — Reports and financial dashboard
+## FASE 5 — Accounts and transactions
+**PENDING**
 
-### Phase 11 — Financial education layer
-Contextual explanations, glossary, personal insights, learning prompts and progress reflections.
+First usable financial workflow.
 
-### Phase 12 — Authentication, privacy and audit
+## FASE 6 — Budgeting
+**PENDING**
 
-### Phase 13 — Testing hardening
+## FASE 7 — Savings and financial habits
+**PENDING**
 
-### Phase 14 — Frontend implementation
+## FASE 8 — Financial education
+**PENDING**
 
-### Phase 15 — Payroll domain
+Build contextual education on top of real financial data.
 
-### Phase 16 — AI-assisted product workflow
+## FASE 9 — Debts
+**PENDING**
 
-### Phase 17 — Private deployment and operations
+## FASE 10 — Assets, liabilities and net worth
+**PENDING**
 
-### Phase 18 — Production readiness
+## FASE 11 — Reports and financial dashboard
+**PENDING**
 
-## Product sequencing principle
+## FASE 12 — Authentication, privacy and audit
+**PENDING**
 
-The personal-finance core comes before payroll.
+## FASE 13 — Frontend product
+**PENDING**
 
-The user should be able to record money, understand money, plan money and save money before the system expands into specialized payroll functionality.
+React + Vite + Tailwind + PWA + Dark Mode.
 
-Completed phases remain visible in the operational STEP-BY-STEP document.
+## FASE 14 — Testing hardening
+**PENDING**
+
+## FASE 15 — Payroll
+**PENDING**
+
+Payroll remains intentionally late.
+
+## FASE 16 — Private deployment and operations
+**PENDING**
+
+## FASE 17 — Production readiness
+**PENDING**
+
+### Rule
+
+No future phase is considered complete because an older implementation exists. Every phase must be rebuilt, validated and approved against the new vision.

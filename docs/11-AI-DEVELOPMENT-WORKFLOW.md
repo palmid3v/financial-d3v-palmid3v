@@ -13,11 +13,11 @@ AI is an engineering accelerator, not the authority.
 ## Rules
 
 1. Define the phase and acceptance criteria.
-2. Inspect the current GitHub ⟦main⟧ state.
+2. Inspect the current GitHub `main` state.
 3. Design the change.
 4. Implement the change.
 5. Commit implementation to GitHub.
-6. Palmi pulls the current ⟦main⟧.
+6. Palmi pulls the current `main`.
 7. Palmi runs **Validación del Proyecto**.
 8. Palmi reports exact output.
 9. Runtime/security/functional validation is performed when required.
@@ -36,4 +36,4 @@ Never claim:
 
 ## Documentation
 
-The repository is the source of truth. ⟦CONTEXT.md⟧, the Step-by-Step document and the roadmap must reflect the current architecture after completed phases.
+The repository is the source of truth. `CONTEXT.md`, the Step-by-Step document and the roadmap must reflect the current architecture after completed phases.

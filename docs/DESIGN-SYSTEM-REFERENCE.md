@@ -31,7 +31,7 @@ Motion communicates state changes:
 
 ## Tokens
 
-`frontend/src/styles/design-system.css⟧ centralizes:
+`frontend/src/styles/design-system.css` centralizes:
 - surfaces;
 - borders;
 - semantic colors;

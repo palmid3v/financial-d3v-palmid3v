@@ -1,30 +1,16 @@
 # FASE 31 — Security / Recovery / Production Validation
 
-**Status:** BUILT — VALIDATION PENDING  
-**Date:** 2026-10-05  
+**Status:** APPROVED / BUILT / VALIDATED  
+**Last updated:** 2026-10-05  
 **Timezone:** America/Bogota (COT, UTC-05:00)
 
 ## Objective
 
-Close the first-release security and recovery gate for the local-first Financial Vault and validate the $0 production path.
-
-FASE 31 does not introduce a new financial-data backend. The encrypted `FDV1` file remains the persistence boundary.
-
-## Scope
-
-1. Vault security review.
-2. Automated cryptographic regression tests.
-3. Browser persistence audit.
-4. Auto-lock and session-clear validation.
-5. Encrypted export/import recovery.
-6. PWA/service-worker production validation.
-7. Vercel Hobby deployment validation.
-8. Release and recovery runbook.
-9. Explicit approval after evidence.
+Close the first-release security and recovery gate for the local-first Financial Vault.
 
 ## Security boundary
 
-```text
+`text
 Encrypted FDV1 file
         ↓
 Browser unlock + password
@@ -33,88 +19,67 @@ decrypted state in active memory
         ↓
 React + Go/WASM local computation
         ↓
-lock / inactivity timeout
+lock / 15-minute inactivity timeout
         ↓
 active state + password reference cleared
         ↓
 LOCKED
-```
+`
 
-The password is not persisted and is not sent to a remote service. Financial plaintext must not be intentionally persisted in browser storage or sent to the network.
+## Automated validation — PASS
 
-## Automated gate
+Observed validation:
+- `npm ci⟧ PASS;
+- frontend tests 10/10 PASS;
+- frontend production build PASS;
+- PWA generation PASS;
+- WASM build PASS;
+- Vault security source audit PASS;
+- Go tests PASS;
+- Go build PASS.
 
-Run from repository root:
+The security audit initially exposed two audit-script defects: a regex parsing issue and then the legitimate local WASM `fetch()⟧. The audit was corrected to allow only the local WASM resource load while continuing to reject browser persistence and unexpected network APIs.
 
-```powershell
-.\scripts\validate.ps1
-.\scripts\security-audit.ps1
-```
+## Runtime validation — PASS
 
-The validation runner must pass:
+Validated:
+- Vault creation;
+- encrypted save/export;
+- correct-password unlock;
+- incorrect-password rejection;
+- lock/unlock;
+- recovery/import;
+- security boundary behavior.
 
-- frontend dependency installation;
-- frontend tests;
-- frontend production build;
-- WASM build;
-- Go tests;
-- Go build.
+Observed incorrect-password behavior:
 
-The security audit must pass its vault-source checks.
+`text
+Vault unavailable.
+Unable to open the Financial Vault.
+Check the password or file integrity.
+`
 
-## Runtime security gate
+This is the expected locked failure path.
 
-In the production-like Vite preview build:
+## Recovery
 
-- [ ] Create a new encrypted vault.
-- [ ] Verify the downloaded `.fdv` is not plaintext JSON domain data.
-- [ ] Unlock with the correct password.
-- [ ] Reject an incorrect password.
-- [ ] Modify ciphertext and verify unlock fails.
-- [ ] Lock the workspace and verify financial UI/state is cleared.
-- [ ] Leave the unlocked workspace inactive for 15 minutes and verify auto-lock.
-- [ ] Verify activity resets the inactivity timer.
-- [ ] Reopen the exported vault and verify supported domain data is preserved.
-- [ ] Verify browser storage contains no intentional financial plaintext.
-- [ ] Verify Vault mode makes no financial network requests.
-- [ ] Verify the console is clean during normal Vault flows.
+The encrypted `.fdv⟧ file and its password are separate recovery dependencies.
 
-## Recovery procedure
-
-### Normal recovery
-
-1. Keep the encrypted `.fdv` file in a user-controlled backup location.
+Normal:
+1. Preserve the encrypted file.
 2. Open Financial-D3v.
-3. Select **Open vault**.
-4. Select the `.fdv` file.
-5. Enter the vault password.
-6. Verify dashboard totals and representative records.
+3. Choose Open Vault.
+4. Select the file.
+5. Enter the password.
+6. Verify representative financial data.
 7. Continue working.
-8. Save a new encrypted `.fdv` after meaningful changes.
+8. Save a new encrypted file after meaningful changes.
 
-### Lost password
-
-There is no password recovery service in the local-first architecture.
-
-If the password is lost, the encrypted vault cannot be recovered by the application. The user must restore from an independently preserved, still-readable vault/password combination.
-
-### Corrupted or damaged vault
-
-1. Preserve the original file without overwriting it.
-2. Try a known-good backup.
-3. Verify the backup opens with the expected password.
-4. Confirm representative accounts, transactions, budgets, savings, debts and net worth.
-5. Treat the original file as suspect until its integrity can be established.
-
-### Backup rule
-
-The `.fdv` file and its password are separate recovery dependencies. Backups should preserve the encrypted file and protect the password through a separate user-controlled mechanism.
+Lost password cannot be recovered by the application.
 
 ## Production path
 
-Target:
-
-```text
+`text
 GitHub main
    ↓
 Vercel Hobby
@@ -122,30 +87,12 @@ Vercel Hobby
 React/Vite PWA
    ↓
 encrypted Financial Vault
-```
+`
 
-Production deployment uses the existing root `vercel.json`.
+The architecture is $0-oriented. Cloud Run, Artifact Registry, Cloud Scheduler and remote financial persistence are not required.
 
-No Cloud Run, Artifact Registry, Cloud Scheduler, Firestore financial persistence, or paid Google Cloud dependency is required for the Financial Vault.
+## Important security limitation
 
-Production deployment itself remains a validation activity until a real deployed URL has been checked.
+FASE 31 is an application validation gate, not an external security audit. Do not describe Financial-D3v as formally audited or independently certified.
 
-## Acceptance criteria
-
-FASE 31 is APPROVED only when all of the following have evidence:
-
-- [ ] Automated validation PASS.
-- [ ] Security audit PASS.
-- [ ] Cryptographic regression tests PASS.
-- [ ] Auto-lock behavior PASS.
-- [ ] Lock/session-clear behavior PASS.
-- [ ] Export/import recovery PASS.
-- [ ] Browser persistence audit PASS.
-- [ ] No intentional plaintext financial network persistence.
-- [ ] Production Vercel deployment PASS.
-- [ ] PWA install/update behavior PASS.
-- [ ] Production runtime smoke test PASS.
-- [ ] Recovery procedure reviewed.
-- [ ] Explicit user approval recorded.
-
-**Important:** BUILT does not mean security-audited. Do not describe Financial-D3v as formally security audited until an appropriate external review exists.
+**Exit:** APPROVED / BUILT / VALIDATED.

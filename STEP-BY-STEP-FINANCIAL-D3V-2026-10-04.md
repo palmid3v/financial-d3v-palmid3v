@@ -1,113 +1,102 @@
-# STEP-BY-STEP-FINANCIAL-D3V-2026-10-04
+# STEP-BY-STEP-FINANCIAL-D3V
 
-**Last updated:** 2026-10-04  
+**Last updated:** 2026-10-05  
 **Timezone:** America/Bogota (COT, UTC-05:00)  
 **Repository:** `palmid3v/financial-d3v-palmid3v`  
 **Source of truth:** GitHub `main`
 
 ## Current checkpoint
+
 **FASE 26 — APPROVED / BUILT**
 
-Observed local evidence:
+Google Cloud FASES 27–28 are no longer the active execution path. The project is being re-scoped to preserve the user's $0 constraint and implement a user-controlled encrypted Financial Vault.
+
+## FASE 27 — Financial Vault
+
+### Goal
+
+Persist the complete financial workspace in an encrypted user-controlled file.
+
+### Current implementation
+
+- `frontend/src/vault/crypto.js`
+- `docs/PHASE-27-FINANCIAL-VAULT.md`
+
+### Security model
+
 ```text
-go test ./...  → PASS
-go build ./... → PASS
-npm ci → PASS / 0 vulnerabilities
-npm run build → PASS
-PWA generation → PASS
-Firestore rules/index deploy → PASS
-authenticated frontend runtime → PASS
+LOCKED
+  ↓
+vault file + password
+  ↓
+decrypt in memory
+  ↓
+financial workspace
+  ↓
+LOCK / TIMEOUT
+  ↓
+clear active state
+  ↓
+LOCKED
 ```
 
-# 🚀 FASE 27 — Private production deployment
+### Current validation gate
 
-Architecture:
+Not approved yet.
+
+Required:
+- [ ] create vault
+- [ ] open vault
+- [ ] wrong password rejection
+- [ ] tamper rejection
+- [ ] lock/session clear
+- [ ] auto-lock
+- [ ] import/export round trip
+- [ ] browser persistence audit
+- [ ] security review
+
+## FASE 28 — Vault data migration
+
+Migrate the existing modules from remote API persistence to the in-memory vault.
+
+Order:
+1. Accounts/categories.
+2. Transactions.
+3. Budgets.
+4. Savings.
+5. Debts.
+6. Assets/liabilities/net worth.
+7. Education.
+8. Dashboard.
+9. Migration tooling from existing Firebase data.
+10. Remove plaintext financial persistence.
+
+## FASE 29 — Go financial engine
+
+Move authoritative financial calculations to a Go/WASM boundary so Go remains part of the product without receiving private financial data remotely.
+
+## FASE 30 — $0 deployment
+
 ```text
-Browser → HTTPS → Firebase Hosting → /api/** → Cloud Run Go API
-                                      ↓
-                               Firebase Auth
-                                      ↓
-                                   Firestore
+GitHub → Vercel Hobby → React/Vite PWA
+                         ↓
+                 encrypted vault file
 ```
 
-One-time bootstrap:
-```bash
-export GCP_PROJECT_ID=financial-d3v-palmid3v
-export GCP_REGION=us-central1
-export ARTIFACT_REGISTRY_REPOSITORY=financial-d3v
-export API_RUNTIME_SERVICE_ACCOUNT=financial-d3v-api@$GCP_PROJECT_ID.iam.gserviceaccount.com
-export BACKUP_SERVICE_ACCOUNT=financial-d3v-backup@$GCP_PROJECT_ID.iam.gserviceaccount.com
-export BACKUP_BUCKET=financial-d3v-palmid3v-backups
-export DEPLOYER_SERVICE_ACCOUNT=financial-d3v-deployer@$GCP_PROJECT_ID.iam.gserviceaccount.com
-bash deploy/bootstrap-production.sh
-```
+Firebase Spark remains optional for authentication only.
 
-Configure GitHub `production` environment variables:
-```text
-GCP_WORKLOAD_IDENTITY_PROVIDER
-GCP_DEPLOYER_SERVICE_ACCOUNT
-GCP_REGION
-ARTIFACT_REGISTRY_REPOSITORY
-API_SERVICE_NAME
-API_RUNTIME_SERVICE_ACCOUNT
-BACKUP_SERVICE_ACCOUNT
-BACKUP_BUCKET
-BACKUP_JOB_NAME
-PRODUCTION_ORIGIN
-FIREBASE_PROJECT_ID
-FIREBASE_WEB_API_KEY
-```
+## FASE 31 — Final security/recovery/production validation
 
-Run: **GitHub → Actions → Production deployment → Run workflow**
+Complete the security gate, production deployment, PWA validation and recovery tests.
 
-Validation:
-- [ ] production deployment passes
-- [ ] Hosting and Cloud Run healthy
-- [ ] `/health` 200
-- [ ] `/ready` 200
-- [ ] protected unauthenticated API 401
-- [ ] authenticated production login
-- [ ] Transactions/Savings/Debts/Net Worth smoke test
-- [ ] PWA install over HTTPS
-- [ ] rollback artifact confirmed
+## Cloud path status
 
-# 💾 FASE 28 — Backup / recovery
+The previously implemented Cloud Run / Artifact Registry / Scheduler / Storage artifacts are historical and must not be used as the new deployment path. They can remain in the repository for traceability until a dedicated cleanup/archive task removes or archives them.
 
-Schedule: `03:00 America/Bogota` daily.
+## Finalization estimate
 
-Configure:
-```bash
-export GCP_PROJECT_ID=financial-d3v-palmid3v
-export GCP_REGION=us-central1
-export BACKUP_JOB_NAME=financial-d3v-firestore-backup
-export BACKUP_SERVICE_ACCOUNT=financial-d3v-backup@$GCP_PROJECT_ID.iam.gserviceaccount.com
-export SCHEDULER_LOCATION=us-central1
-export BACKUP_SCHEDULE='0 3 * * *'
-export BACKUP_TIMEZONE='America/Bogota'
-bash deploy/schedule-backup.sh
-```
+Five active phases remain before the current product can reach its first finalized release:
 
-Validate export at:
-```text
-gs://financial-d3v-palmid3v-backups/firestore/<timestamp>/
-```
+**27 → 28 → 29 → 30 → 31**
 
-Restore only into an isolated recovery project:
-```bash
-export RECOVERY_PROJECT_ID=<isolated-recovery-project>
-export BACKUP_BUCKET=financial-d3v-palmid3v-backups
-export EXPORT_PATH=firestore/<timestamp>
-bash deploy/restore-firestore.sh
-```
-
-Acceptance:
-- [ ] export exists
-- [ ] import succeeds
-- [ ] owner-scoped data preserved
-- [ ] balances reconcile
-- [ ] debt/savings/net-worth reconcile
-- [ ] authenticated restored app reads data
-- [ ] restore result recorded
-
-## Important
-**FASES 27–28 are BUILT / VALIDATION PENDING.** Real production and recovery execution are still required before approval.
+FASE 32+ is subsequent evolution.

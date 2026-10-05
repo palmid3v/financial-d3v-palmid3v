@@ -1,38 +1,87 @@
-# Financial-D3v deployment
+# Financial-D3v — Vercel Deployment
 
-The application is designed for a $0 personal deployment:
+**Status:** ACTIVE DEPLOYMENT GUIDE  
+**Last updated:** 2026-10-05  
+**Timezone:** America/Bogota (COT, UTC-05:00)
 
-`GitHub main → Vercel Hobby → frontend/dist`
+## Target
 
-## Vercel setup
+`text
+GitHub main → Vercel Hobby → frontend/dist
+                         ↓
+                 encrypted Financial Vault
+`
 
-Connect `palmid3v/financial-d3v-palmid3v` to Vercel.
+The Financial Vault is local-first. No hosted database is required for financial data.
 
-The repository root `vercel.json` already defines:
+## Repository configuration
 
-- install: `cd frontend && npm ci`
-- build: `cd frontend && npm run build`
-- output: `frontend/dist`
+Root `vercel.json⟧ defines:
 
-No secret is required for the Financial Vault itself. The vault file and password remain user-controlled.
+- install: `cd frontend && npm ci⟧
+- build: `cd frontend && npm run build⟧
+- output: `frontend/dist⟧
 
-## Important privacy boundary
+## Local pre-deployment validation
+
+From repository root:
+
+`powershell
+git pull origin main
+.\scripts\validate.ps1
+`
+
+Runtime:
+
+`powershell
+cd frontend
+npm run preview
+`
+
+Verify:
+- Vault create/open/save;
+- incorrect-password rejection;
+- lock/unlock;
+- recovery/import;
+- PWA metadata;
+- responsive UI;
+- Go/WASM calculation path.
+
+## Privacy requirements
 
 Do not configure a hosted database as the Financial Vault persistence layer.
 
-Firebase, if retained later, is optional infrastructure for non-sensitive account/authentication concerns only.
+Do not upload:
+- .fdv files;
+- vault passwords;
+- decrypted financial JSON;
+- financial backups containing plaintext.
 
-## Local verification
+Firebase remains historical/optional infrastructure and is not the active financial-data store.
 
-```powershell
-cd D:\PALMI-D3V\projects\financial-d3v-palmid3v\frontend
-npm ci
-npm test
-npm run build
-npm run build:wasm
-npm run preview
-```
+## Vercel deployment
 
-Open the local preview and verify the vault gate, responsive navigation, PWA metadata and Go engine status.
+Connect `palmid3v/financial-d3v-palmid3v⟧ to Vercel and deploy the `main⟧ branch.
 
-Production deployment and PWA installation remain FASE 31 validation work.
+After deployment, run a production smoke test against the real URL.
+
+## Production smoke test
+
+1. Open the deployed URL.
+2. Verify the app loads over HTTPS.
+3. Create a test Vault.
+4. Save/export the encrypted .fdv.
+5. Lock.
+6. Reopen with the correct password.
+7. Confirm incorrect password is rejected.
+8. Confirm representative financial data is preserved.
+9. Check PWA install/update metadata.
+10. Record the exact result.
+
+A production URL is not claimed as validated until this smoke test has actually been observed.
+
+## Cost target
+
+The active personal deployment target is $0 using Vercel Hobby.
+
+No Cloud Run, Artifact Registry, Cloud Scheduler or paid Google Cloud dependency is required.

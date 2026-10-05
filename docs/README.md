@@ -1,6 +1,6 @@
 # Financial-D3v Documentation
 
-The documentation mirrors the product and engineering phases.
+The documentation mirrors the product, financial and engineering phases.
 
 1. Product vision
 2. Requirements
@@ -16,5 +16,13 @@ The documentation mirrors the product and engineering phases.
 12. Go learning
 13. Roadmap
 14. UI/UX design
+15. Financial education
+16. Private/personal use
 
 The repository is the source of truth. Documentation and implementation must evolve together.
+
+## Documentation rule
+
+A meaningful change to product scope, architecture, persistence, financial behavior, security, privacy, UI, or educational behavior must update the relevant documentation and the operational STEP-BY-STEP record.
+
+Historical decisions should be preserved rather than silently erased.

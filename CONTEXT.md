@@ -1,34 +1,41 @@
 # CONTEXT — Financial-D3v
 
-**Vision reset:** October 4, 2026
+**Current baseline:** October 5, 2026  
+**Product reset:** October 4, 2026
 
 ## Project identity
 
 Financial-D3v is a **private personal-finance application and financial learning workspace**.
 
-The owner is the first and only target user. The product is intentionally designed around a real personal workflow.
+The primary user is the owner. The product is designed around a real personal workflow and is also a practical engineering project for learning Go, architecture, APIs, persistence, testing, security and AI-assisted development.
 
-It is also a practical engineering project for learning Go, architecture, APIs, persistence, testing, security and AI-assisted development.
+It is not payroll-first. Payroll exists as a later specialized domain.
 
 ## Product purpose
 
-The application should help the user:
+The application helps the owner:
 
 - understand available money;
-- record income and expenses;
+- record income, expenses and transfers;
 - understand cash flow;
-- plan spending;
-- build savings;
-- understand obligations;
-- eventually understand assets, liabilities and net worth;
+- plan spending with budgets;
+- build savings habits and track goals;
+- understand debts and obligations;
+- understand assets, liabilities and net worth;
 - learn financial concepts through real data;
-- build better financial habits.
+- review financial changes and decide what to do next.
 
-The product loop is:
+## Product loop
 
 **Record → Categorize → Understand → Plan → Save → Review → Learn → Adjust**
 
-Payroll is a later specialized domain.
+## Education model
+
+Financial education follows:
+
+**FACT → CALCULATION → INTERPRETATION → ACTION**
+
+Interpretation must not be presented as fact.
 
 ## Approved stack
 
@@ -36,121 +43,149 @@ Payroll is a later specialized domain.
 | --- | --- |
 | Frontend | React + Vite |
 | UI | Tailwind CSS |
-| Visual | Dark Mode |
+| Visual | Dark Mode, calm information-first design |
 | PWA | Vite PWA |
 | Backend | Go 1.27 |
 | API | REST/HTTP |
 | Database | Firebase Firestore |
-| Auth | Firebase Auth (later) |
+| Auth | Firebase Auth |
 | CI | GitHub Actions |
 | Docs | Markdown |
 
-## Private operating model
+## Product UX principles
 
-The owner starts the application when needed.
+1. Financial clarity is more important than screen count.
+2. The ledger and backend application services are authoritative.
+3. Derived metrics must be reproducible.
+4. The UI explains; the domain decides.
+5. Numbers should always have useful context.
+6. Color is never the only signal.
+7. Mobile is a first-class experience.
+8. Education should appear where it helps the user's decision.
+9. Privacy is part of product design.
+10. Avoid alarm-heavy financial UX and unnecessary anxiety.
+11. No invented legal, tax or regulatory rules.
+12. No frontend calculation may silently replace an authoritative backend value.
 
-It is not initially a public SaaS, financial institution or automatic external-money system.
+## Current frontend experience
 
-Personal data must remain private and minimal.
+FASE 17 establishes the product-wide UI/UX baseline:
 
-## Product principles
+- responsive desktop sidebar;
+- mobile bottom navigation;
+- sticky contextual header;
+- dashboard-first information hierarchy;
+- primary transaction CTA;
+- income, expenses, net cash flow and net worth cards;
+- monthly cash-flow visualization;
+- embedded financial education;
+- quick actions for the core product loop;
+- consistent module states for Transactions, Budget, Savings, Debts and Net Worth;
+- loading, error and retry states;
+- keyboard focus visibility;
+- private-workspace messaging.
 
-1. Personal finance comes before payroll.
-2. Financial clarity is more important than screen count.
-3. The ledger is authoritative.
-4. Derived metrics must be reproducible.
-5. Education distinguishes fact, calculation, interpretation and action.
-6. Saving is a first-class product outcome.
-7. The UI explains; the domain decides.
-8. Privacy is part of product design.
-9. No invented legal, tax or regulatory rules.
-10. Each phase must be rebuilt and validated against the current vision.
+The frontend is intentionally dark-first, compact and calm rather than visually noisy.
+
+## Backend capabilities
+
+The current backend foundation covers:
+
+`Account → Transaction → Balance → Budget → Planned vs Actual → Savings Goal → Contributions → Progress → Financial Education → Debt → Assets/Liabilities → Net Worth → Reports → Auth/Audit → Payroll`
+
+Payroll remains a specialized later domain and does not redefine the product identity.
+
+## Privacy and operating model
+
+The application is private and initially owner-scoped.
+
+It does not:
+
+- operate as a public SaaS by default;
+- automatically move external money;
+- connect to banks initially;
+- promise investment results;
+- provide legal or tax advice;
+- invent Colombian regulatory requirements.
+
+Production authentication uses Firebase Auth. Local development may use the explicit owner fallback when authentication is disabled.
 
 ## Phase status
 
-### FASE 1 — Product definition
-**APPROVED / BUILT**
+| Phase | Status |
+| --- | --- |
+| 1 — Product definition | APPROVED / BUILT |
+| 2 — Financial Domain Model v2 | APPROVED / BUILT |
+| 3 — Firestore persistence design | APPROVED / BUILT |
+| 4 — Go application foundation | APPROVED / BUILT |
+| 5 — Accounts and transactions | APPROVED / BUILT |
+| 6 — Budgeting | APPROVED / BUILT |
+| 7 — Savings and financial habits | APPROVED / BUILT |
+| 8 — Financial education | APPROVED / BUILT |
+| 9 — Debts | APPROVED / BUILT |
+| 10 — Assets, liabilities and net worth | APPROVED / BUILT |
+| 11 — Reports and financial dashboard | APPROVED / BUILT |
+| 12 — Authentication, privacy and audit | APPROVED / BUILT |
+| 13 — Frontend product | APPROVED / BUILT |
+| 14 — Testing hardening | APPROVED / BUILT |
+| 15 — Payroll | APPROVED / BUILT |
+| 16 — Private deployment and operations | APPROVED / BUILT |
+| 17 — Production readiness & product UX | APPROVED / BUILT |
 
-Canonical artifact:
-`docs/PHASE-1-PRODUCT-SPEC.md`
+**Roadmap remaining: 0 phases.**
 
-### FASE 2 — Financial Domain Model v2
-**PENDING**
+## Validation checkpoint
 
-The previous domain model is not authoritative.
+Local validation has been performed through:
 
-### FASE 3 — Firestore persistence design
-**PENDING**
+`go test ./...`  
+`go build ./...`  
+`cd frontend && npm ci`  
+`cd frontend && npm run build`
 
-### FASE 4 — Go application foundation
-**PENDING**
+The frontend build generated the PWA manifest and service worker.
 
-### FASE 5 — Accounts and transactions
-**PENDING**
+Runtime validation in development:
 
-### FASE 6 — Budgeting
-**PENDING**
+- `GET /health` → 200 OK
+- `GET /ready` → 200 OK
+- `financialServices` → true
+- `firebase` → false in local development, as expected
 
-### FASE 7 — Savings and financial habits
-**PENDING**
+This does not mean cloud production has been provisioned.
 
-### FASE 8 — Financial education
-**PENDING**
+## Production boundary
 
-### FASE 9 — Debts
-**PENDING**
+Before real private production use, configure:
 
-### FASE 10 — Assets, liabilities and net worth
-**PENDING**
+- Firebase project;
+- Firestore;
+- Firebase Authentication;
+- production credentials/secrets;
+- production CORS origins;
+- deployment infrastructure;
+- backup and recovery procedures.
 
-### FASE 11 — Reports and financial dashboard
-**PENDING**
+See:
 
-### FASE 12 — Authentication, privacy and audit
-**PENDING**
-
-### FASE 13 — Frontend product
-**PENDING**
-
-### FASE 14 — Testing hardening
-**PENDING**
-
-### FASE 15 — Payroll
-**PENDING**
-
-### FASE 16 — Private deployment and operations
-**PENDING**
-
-### FASE 17 — Production readiness
-**PENDING**
-
-## Important reset rule
-
-Older implementation work does not count as completion of the new phases.
-
-The previous domain implementation has been neutralized so FASE 2 can rebuild the domain from the new product definition.
+- `docs/PHASE-16-PRIVATE-DEPLOYMENT-OPERATIONS.md`
+- `docs/OPERATIONS-RUNBOOK.md`
 
 ## Development workflow
 
-PALMI
-→ problem / financial goal
-→ Nexsy
-→ analysis / architecture / plan
-→ implementation
-→ human review
-→ tests
-→ validation
-→ documentation
-→ commit
+PALMI  
+→ problem / financial goal  
+→ Nexsy  
+→ analysis / architecture / implementation  
+→ GitHub  
+→ human pull/test/review  
+→ validation feedback  
+→ fixes  
+→ documentation  
+→ approval
 
 The repository is the source of truth.
 
-## Next execution point
-
-**FASE 2 — Financial Domain Model v2**
-
-Before implementing persistence or broad UI, define the new domain from the Phase 1 product specification.
-
 ---
 
-Financial-D3v · PALMI-D3V · Context v3 · October 4, 2026
+**Financial-D3v · PALMI-D3V · Context v4 · October 5, 2026**

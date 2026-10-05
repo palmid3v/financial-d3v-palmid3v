@@ -10,3 +10,5 @@ func TestEducationInsightsRequireContext(t *testing.T){s:=NewServer(nil,nil,nil,
 
 
 func TestCORSPreflight(t *testing.T){s:=NewServer(nil,nil,nil,nil,nil,application.NewEducationService(nil,nil),false);req:=httptest.NewRequest(http.MethodOptions,"/api/v1/dashboard",nil);req.Header.Set("Origin","http://localhost:5173");req.Header.Set("Access-Control-Request-Method","GET");rec:=httptest.NewRecorder();s.Handler().ServeHTTP(rec,req);if rec.Code!=http.StatusNoContent{t.Fatalf("got %d",rec.Code)};if got:=rec.Header().Get("Access-Control-Allow-Origin");got!="http://localhost:5173"{t.Fatalf("origin=%q",got)}}
+
+func TestCORSRejectsUnknownPreflightOrigin(t *testing.T){s:=NewServer(nil,nil,nil,nil,nil,application.NewEducationService(nil,nil),false);req:=httptest.NewRequest(http.MethodOptions,"/api/v1/dashboard",nil);req.Header.Set("Origin","https://unknown.example");rec:=httptest.NewRecorder();s.Handler().ServeHTTP(rec,req);if rec.Code!=http.StatusForbidden{t.Fatalf("got %d",rec.Code)}}

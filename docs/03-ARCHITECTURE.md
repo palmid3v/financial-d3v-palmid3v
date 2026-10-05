@@ -6,7 +6,7 @@
 
 ## Active product architecture
 
-`text
+```text
 GitHub
    ↓
 Vercel Hobby
@@ -22,7 +22,7 @@ decrypted in-memory financial state
 Go 1.27 / WebAssembly
    ↓
 React presentation
-`
+```
 
 The encrypted Financial Vault file is the persistent source of truth for financial data.
 
@@ -41,7 +41,7 @@ The browser holds decrypted state only while the vault is unlocked.
 
 ## Vault lifecycle
 
-`text
+```text
 LOCKED
   ↓
 vault file + password
@@ -57,7 +57,7 @@ lock / 15-minute inactivity
 clear active state
   ↓
 LOCKED
-`
+```
 
 ## Go/WASM boundary
 
@@ -65,7 +65,7 @@ Go remains part of the product as a local computation engine.
 
 It receives in-memory calculation input and returns calculation results. It does not receive financial data through a remote HTTP service.
 
-The browser-facing loader may fetch the local WASM binary from `/wasm/financial-engine.wasm⟧. This is resource loading, not financial-data transport.
+The browser-facing loader may fetch the local WASM binary from `/wasm/financial-engine.wasm`. This is resource loading, not financial-data transport.
 
 ## Domain rules
 

@@ -15,3 +15,5 @@ type DebtRepository interface { Create(context.Context,domain.Debt) error; Get(c
 type DebtPaymentRepository interface { Create(context.Context,domain.DebtPayment) error; ListByDebt(context.Context,string,string)([]domain.DebtPayment,error) }
 type AssetRepository interface { Create(context.Context,domain.Asset) error; Get(context.Context,string,string)(domain.Asset,error); List(context.Context,string)([]domain.Asset,error) }
 type LiabilityRepository interface { Create(context.Context,domain.Liability) error; Get(context.Context,string,string)(domain.Liability,error); List(context.Context,string)([]domain.Liability,error) }
+
+type AuditRepository interface { Create(context.Context, domain.AuditEvent) error; List(context.Context,string)([]domain.AuditEvent,error) }

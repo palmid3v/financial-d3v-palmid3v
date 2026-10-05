@@ -1,59 +1,88 @@
 # Financial-D3v Operations Runbook
 
 ## Local development
+
+From repository root:
+
 ```powershell
-go test ./...
-go build ./...
-go run ./cmd/api
+.\scripts\validate.ps1
+.\scripts\security-audit.ps1
 ```
+
+Manual runtime:
 
 ```powershell
 cd frontend
-npm ci
-npm run build
-npm run dev
+npm run preview
 ```
 
-## Production checklist
-- [ ] APP_ENV=production
-- [ ] Firebase enabled
-- [ ] Firebase project ID configured
-- [ ] Dedicated Cloud Run runtime identity
-- [ ] AUTH_REQUIRED=true
-- [ ] Exact HTTPS origin in CORS_ALLOWED_ORIGINS
-- [ ] `/health` = 200
-- [ ] `/ready` = 200
-- [ ] Protected API without authentication = 401
-- [ ] Authenticated API request succeeds
-- [ ] Hosting deployment live
+## Release validation
 
-## Release
-1. Confirm CI is green.
-2. Run the manual Production deployment workflow.
-3. Verify Cloud Run revision, `/health`, `/ready` and protected `401`.
-4. Verify Hosting login and a read-only financial request.
-5. Verify the PWA/service-worker update.
+1. Pull the current main.
+2. Run scripts/validate.ps1.
+3. Run scripts/security-audit.ps1.
+4. Run the FASE 31 runtime security checklist.
+5. Verify Vault create/open/save/lock/auto-lock.
+6. Verify export/import recovery.
+7. Verify no intentional financial plaintext browser persistence.
+8. Verify no financial network dependency in Vault mode.
+9. Verify PWA/service-worker behavior.
+10. Validate the Vercel deployment.
+11. Record the evidence before marking FASE 31 APPROVED.
+
+## Recovery
+
+### Normal
+
+1. Preserve the encrypted .fdv file.
+2. Open Financial-D3v.
+3. Select Open vault.
+4. Select the .fdv file.
+5. Enter the vault password.
+6. Verify representative financial totals and records.
+7. Continue working.
+8. Save a new encrypted .fdv after meaningful changes.
+
+### Lost password
+
+There is no password recovery service. A lost password cannot be recovered by the application. Recovery requires a valid backup and its password.
+
+### Damaged vault
+
+1. Preserve the original file.
+2. Do not overwrite it.
+3. Try a known-good backup.
+4. Verify it opens with the expected password.
+5. Check representative accounts, transactions, budgets, savings, debts and net worth.
+
+## Backup principle
+
+The encrypted .fdv file and its password are separate recovery dependencies. Store backups under user-controlled protection and do not commit them to Git.
+
+## Production
+
+Target:
+
+```text
+GitHub main
+   ↓
+Vercel Hobby
+   ↓
+React/Vite PWA
+   ↓
+local encrypted Financial Vault
+```
+
+The root vercel.json defines the Vercel build and output configuration.
+
+Production deployment is not considered validated until the deployed URL passes the runtime smoke test and PWA/service-worker checks.
 
 ## Rollback
-Rollback the API to the previous known-good Cloud Run revision/image and the frontend to the previous Hosting release.
 
-## Backup
-Path: `Cloud Scheduler → Cloud Run Job → Firestore export → Cloud Storage`.
-Default schedule: `03:00 America/Bogota` daily.
+For the frontend, redeploy the previous known-good Vercel deployment.
 
-Configure:
-```bash
-bash deploy/schedule-backup.sh
-```
+For financial data, restore the last known-good encrypted .fdv file. There is no server-side financial database to roll back in Vault mode.
 
-A backup is not verified until a restore test succeeds.
+## Historical cloud path
 
-## Restore
-1. Select a known-good export.
-2. Prepare an isolated recovery project.
-3. Run `deploy/restore-firestore.sh`.
-4. Verify owner scoping, balances, debts, savings and net worth.
-5. Record the result.
-
-## Retention
-Default lifecycle is 180 days in `deploy/firestore-backup-lifecycle.json`.
+Older Cloud Run, Firestore and scheduler procedures remain in repository history for traceability. They are not part of the active $0 Financial Vault release path.

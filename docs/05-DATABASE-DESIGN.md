@@ -1,21 +1,70 @@
-# Database Design
+# Database Design — Firebase Firestore
 
-PostgreSQL is the persistence target.
+Firebase Firestore is the approved persistence layer for Financial-D3v.
 
-Migration 001 creates the foundation for identity, accounts, transactions, planning, obligations, wealth, payroll and audit.
+PostgreSQL is no longer the active database target. The previous PostgreSQL migration is retained only as historical reference.
 
-## Ownership
+## Why Firestore
 
-User-owned records carry an owner reference directly or through an owned parent entity.
+For the current private/personal application, Firestore provides:
+- managed document persistence;
+- straightforward personal-data storage;
+- Firebase ecosystem integration;
+- flexible document structures;
+- security rules;
+- low operational burden for a private project;
+- a natural path to Firebase Authentication.
 
-## Monetary persistence
+The Go API remains the authoritative application layer.
 
-Financial amounts use BIGINT minor units with a three-character currency code.
+## Persistence principle
 
-## Integrity
+Preferred flow:
 
-Foreign keys, checks, uniqueness constraints and indexes enforce basic domain invariants at the database boundary.
+React/PWA → Go API → Repository → Firestore
 
-## Migration policy
+Financial mutations should remain governed by the backend/domain layer.
 
-Every schema change receives a forward migration. Destructive changes require an explicit migration strategy and documented recovery considerations.
+## Proposed collection model
+
+users/{userId}
+  profile
+
+users/{userId}/accounts/{accountId}
+users/{userId}/transactions/{transactionId}
+users/{userId}/categories/{categoryId}
+users/{userId}/budgets/{budgetId}
+users/{userId}/savingsGoals/{goalId}
+users/{userId}/debts/{debtId}
+users/{userId}/debtPayments/{paymentId}
+users/{userId}/assets/{assetId}
+users/{userId}/liabilities/{liabilityId}
+
+users/{userId}/payrollEmployees/{employeeId}
+users/{userId}/contracts/{contractId}
+users/{userId}/payrollPeriods/{periodId}
+users/{userId}/payrollRuns/{runId}
+
+users/{userId}/auditEvents/{eventId}
+
+The exact structure can change after query patterns and repository interfaces are designed.
+
+## Document rules
+
+- Every financial document has a stable identifier.
+- Ownership is explicit.
+- Monetary values use deterministic integer minor units plus currency.
+- Timestamps are explicit and consistent.
+- Historical financial records are append-oriented whenever possible.
+- Derived values are reproducible from authoritative records.
+- Denormalization is acceptable when documented and kept consistent.
+
+## Security
+
+Firestore access must be private and restricted.
+
+Security rules are an additional boundary, not a replacement for server-side authorization.
+
+## Historical PostgreSQL migration
+
+The previous PostgreSQL migration represented an earlier architecture. It must not be used as the active persistence implementation. The historical artifact is preserved to maintain architectural traceability.

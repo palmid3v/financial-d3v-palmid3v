@@ -2,60 +2,99 @@
 
 > Context handoff for continuing the project from another chat.
 >
-> Canonical repository: `palmid3v/financial-d3v-palmid3v`
+> Canonical repository: palmid3v/financial-d3v-palmid3v
 >
-> Product name: **Financial-D3v**
+> Product name: Financial-D3v
 >
-> Date established: **October 4, 2026**
+> Product reset approved: October 4, 2026
 
 ---
 
 ## 1. Project identity
 
-**Financial-D3v** is a Go-first financial platform.
+Financial-D3v is a **private personal-finance application and financial learning workspace**.
 
-The original idea started as a Colombian payroll application, but the product direction has intentionally changed.
+The original idea started as a Colombian payroll application. The product direction intentionally changed.
 
 It is **not only a payroll application**.
 
-Payroll is now one specialized domain inside a broader financial platform.
+Payroll is a specialized domain inside a broader personal financial platform.
 
-The application should eventually cover personal financial management, planning, obligations, assets, reporting, and payroll in one coherent system.
+The application has two primary purposes:
+
+1. Help the owner understand and manage personal finances.
+2. Use the application as an educational tool for financial literacy, saving habits and practical decision-making.
+
+The project is also a real engineering vehicle for learning Go, backend architecture, databases, testing and disciplined AI-assisted development.
 
 ---
 
 ## 2. Product vision
 
-Financial-D3v should become a single financial workspace where a user can understand and manage:
+Financial-D3v should help the user understand:
 
-- money coming in;
-- money going out;
-- financial accounts;
-- transactions;
+- where money is;
+- where money goes;
+- income and expenses;
 - budgets;
-- savings;
-- debts;
-- assets;
-- liabilities;
+- savings goals;
+- debts and obligations;
+- assets and liabilities;
 - net worth;
 - financial reports;
-- payroll;
-- employees;
-- contracts;
-- earnings;
-- deductions;
-- audit history.
+- financial concepts;
+- personal financial progress.
 
-The system should prioritize **clarity, traceability, deterministic calculations and a coherent financial model**.
+The application should not become a collection of unrelated CRUD screens.
 
-The product should not become a collection of unrelated CRUD screens.
+The financial ledger is authoritative. The educational layer explains the state of the ledger.
 
 ---
 
-## 3. Main product domains
+## 3. Private operating model
 
-### Core finance
+Financial-D3v is private and personal.
 
+The owner starts the application when they want to use it.
+
+It is not initially designed as:
+
+- public SaaS;
+- multi-customer platform;
+- financial institution;
+- automatic payment system;
+- public financial-advice service.
+
+The approved persistence layer is **Firebase Firestore**.
+
+The application runtime remains local/controlled by the owner while Firestore provides persistence in the private Firebase project.
+
+Firebase Authentication is approved as a later authentication capability.
+
+---
+
+## 4. Approved technology stack
+
+| Layer | Technology |
+| --- | --- |
+| Frontend | React + Vite |
+| UI | Tailwind CSS |
+| Visual | Dark Mode |
+| PWA | Vite PWA |
+| Backend | Go 1.27 |
+| API | REST/HTTP |
+| Database | Firebase Firestore |
+| Auth | Firebase Auth (later) |
+| CI | GitHub Actions |
+| Docs | Markdown |
+
+**Important:** PostgreSQL is no longer the active database direction. The previous PostgreSQL migration is historical only.
+
+---
+
+## 5. Product domains
+
+### Personal finance
 - Accounts
 - Transactions
 - Categories
@@ -64,14 +103,13 @@ The product should not become a collection of unrelated CRUD screens.
 - Transfers
 
 ### Planning
-
 - Budgets
 - Budget items
 - Savings goals
 - Contributions
+- Financial habits
 
 ### Obligations
-
 - Debts
 - Debt payments
 - Liabilities
@@ -79,607 +117,406 @@ The product should not become a collection of unrelated CRUD screens.
 - Outstanding balances
 
 ### Wealth
-
 - Assets
 - Asset valuations
 - Net worth
 - Financial position history
 
-### Payroll
+### Financial education
+- Lessons
+- Learning topics
+- Contextual explanations
+- Financial insights
+- Glossary
+- Progress reflections
 
+### Payroll
 - Employees
 - Contracts
 - Payroll periods
 - Payroll runs
-- Payroll results
 - Earnings
 - Deductions
-- Payroll rule sets
+- Versioned rule sets
 
-### Reporting
-
-- Cash flow
-- Income vs expenses
-- Spending by category
-- Budget performance
-- Debt summary
-- Savings progress
-- Net worth
-- Payroll reports
-
-### Platform
-
-- Authentication
-- Authorization
-- Audit
-- Configuration
-- Observability
-- Deployment
-- Backup/recovery
+Payroll comes after the personal-finance core.
 
 ---
 
-## 4. Core architectural direction
+## 6. Architecture
 
-Target architecture:
+Target:
 
-```
-Web / Mobile UI
-      ↓
-   Go HTTP API
-      ↓
+React + Vite + Tailwind
+        ↓
+Go REST API
+        ↓
 Application Services
-      ↓
-     Domain
-    ↙      ↘
-Repositories  Domain Services
-      ↓
-  PostgreSQL
-```
-
-Request flow:
-
-```
-Client
-  ↓
-HTTP
-  ↓
-Router
-  ↓
-Handler
-  ↓
-Application Service
-  ↓
+        ↓
 Domain
-  ↓
-Repository
-  ↓
-PostgreSQL
-  ↓
-Response
-```
+   ↙         ↘
+Repositories  Domain Services
+        ↓
+Firebase Firestore
 
-### Architectural principle
+Supporting concerns:
 
-Business rules must not be hidden inside UI components or HTTP handlers.
+- Firebase Authentication later;
+- configuration;
+- logging;
+- validation;
+- audit;
+- observability.
 
-The frontend consumes the API.
+Rules:
 
-The API coordinates use cases.
-
-The domain owns financial behavior and invariants.
-
-The repository owns persistence.
-
----
-
-## 5. Initial Go package direction
-
-Expected structure:
-
-```
-financial-d3v-palmid3v/
-├── README.md
-├── CONTEXT.md
-├── STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md
-├── go.mod
-├── go.sum
-│
-├── docs/
-│   ├── README.md
-│   ├── 01-PRODUCT-VISION.md
-│   ├── 02-REQUIREMENTS.md
-│   ├── 03-ARCHITECTURE.md
-│   ├── 04-DOMAIN-MODEL.md
-│   ├── 05-DATABASE-DESIGN.md
-│   ├── 06-API-DESIGN.md
-│   ├── 07-FINANCIAL-RULES.md
-│   ├── 08-SECURITY.md
-│   ├── 09-TESTING.md
-│   ├── 10-DEPLOYMENT.md
-│   ├── 11-AI-DEVELOPMENT-WORKFLOW.md
-│   ├── 12-LEARNING-GO.md
-│   └── 13-ROADMAP.md
-│
-├── cmd/
-│   └── api/
-│       └── main.go
-│
-├── internal/
-│   ├── auth/
-│   ├── account/
-│   ├── transaction/
-│   ├── budget/
-│   ├── savings/
-│   ├── debt/
-│   ├── asset/
-│   ├── payroll/
-│   ├── repository/
-│   ├── database/
-│   ├── http/
-│   ├── config/
-│   └── audit/
-│
-├── migrations/
-├── tests/
-├── scripts/
-└── .github/
-    └── workflows/
-```
-
-This structure is a starting point, not a reason to create unnecessary abstractions.
+- handlers coordinate;
+- application services coordinate use cases;
+- domain owns financial invariants;
+- repositories own persistence;
+- UI consumes API contracts;
+- frontend is never the source of truth for financial rules.
 
 ---
 
-## 6. Financial model principles
+## 7. Firestore direction
 
-### Money
+Proposed top-level model:
 
-Do not use binary floating-point values for persisted monetary amounts.
+users/{userId}
 
-Before production persistence is finalized, explicitly choose and document the representation, such as:
+Subcollections:
 
-- integer minor units; or
-- an appropriate decimal representation.
+- accounts
+- transactions
+- categories
+- budgets
+- savingsGoals
+- debts
+- debtPayments
+- assets
+- liabilities
+- payrollEmployees
+- contracts
+- payrollPeriods
+- payrollRuns
+- auditEvents
 
-### Transactions
+The exact structure may change after query patterns and repository interfaces are designed.
 
-The transaction ledger should be authoritative for financial movement.
+Persistence rules:
 
-Balances should be reproducible from authoritative transaction data and explicitly defined opening state.
-
-### Transfers
-
-A transfer between owned accounts should preserve total money across the involved accounts.
-
-### Net worth
-
-```
-Net Worth = Assets - Liabilities
-```
-
-### Budgets
-
-Budget usage must come from documented transaction inclusion rules and explicit date boundaries.
-
-### Savings
-
-Savings-goal progress should derive from recorded contributions, not UI-only state.
-
-### Payroll
-
-Payroll calculations must reference the exact rule-set version used to produce the result.
+- explicit ownership;
+- stable identifiers;
+- deterministic monetary representation;
+- explicit timestamps;
+- append-oriented financial history where appropriate;
+- documented denormalization;
+- reproducible derived values.
 
 ---
 
-## 7. Payroll is now a domain, not the whole app
+## 8. Financial model principles
 
-Payroll flow:
+Money uses deterministic integer minor units plus an explicit ISO currency code.
 
-```
-Employee
-   ↓
-Contract
-   ↓
-Payroll Period
-   ↓
-Earnings + Adjustments
-   ↓
-Deductions
-   ↓
-Payroll Result
-   ↓
-Financial / Payroll Ledger
-```
+Do not use binary floating point for persisted financial amounts.
 
-Important:
+Core invariants:
 
-Colombian payroll, tax and labor rules can change.
+- balance is reproducible from opening state and authoritative transactions;
+- transfers conserve total value;
+- savings progress comes from recorded contributions/allocations;
+- net worth equals assets minus liabilities;
+- budget utilization follows explicit transaction/date rules;
+- debt balances are reproducible;
+- payroll results identify the exact rule-set version.
 
-Never invent legal rules.
+Educational information must distinguish:
 
-Before production use, relevant rules must be:
+1. Fact.
+2. Calculation.
+3. Interpretation.
+4. Suggestion.
 
-1. researched;
-2. tied to authoritative sources;
-3. documented;
-4. versioned;
-5. covered by tests;
-6. kept traceable to the calculation.
+The educational layer must never silently mutate financial records.
 
 ---
 
-## 8. Current development phases
+## 9. Financial education objective
 
-The main operational source is:
+The application should help the owner learn by using it.
 
-`STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md`
+Examples:
 
-Current planned sequence:
+- explain what a budget measures;
+- explain why a transaction changes a budget;
+- explain savings progress;
+- explain debt balances;
+- explain cash flow;
+- explain net worth;
+- surface spending/saving patterns;
+- encourage deliberate saving;
+- support financial goals and reflection.
 
-### FASE 0 — Repository foundation
-Define the repository, Go module, documentation and initial runtime.
+The product must not fabricate financial, tax, legal or investment facts.
 
-### FASE 1 — Product definition
-Define the product and domain responsibilities.
-
-### FASE 2 — Domain model
-Create the core financial language and entities.
-
-### FASE 3 — Database foundation
-Introduce PostgreSQL, migrations, indexes and ownership boundaries.
-
-### FASE 4 — Go backend foundation
-HTTP server, routing, JSON, validation, errors, middleware, logging and health checks.
-
-### FASE 5 — Accounts and transactions
-First usable financial capability.
-
-### FASE 6 — Budgeting
-
-### FASE 7 — Savings and goals
-
-### FASE 8 — Debts and liabilities
-
-### FASE 9 — Assets and net worth
-
-### FASE 10 — Reporting and dashboards
-
-### FASE 11 — Payroll
-
-### FASE 12 — Security and audit
-
-### FASE 13 — Testing strategy
-
-### FASE 14 — Frontend
-
-### FASE 15 — AI development workflow
-
-### FASE 16 — Deployment and operations
-
-### FASE 17 — Production readiness
+When external authoritative information is required, it must be sourced, dated and documented.
 
 ---
 
-## 9. Documentation strategy
+## 10. Savings objective
 
-Documentation is part of the development process.
+Savings is a first-class outcome.
+
+The application should help the user:
+
+- define a savings goal;
+- define a target amount;
+- define a target date when useful;
+- record contributions;
+- measure progress;
+- understand required pace;
+- compare plan versus actual;
+- reflect on obstacles.
+
+The system should teach the mechanics behind the numbers.
+
+---
+
+## 11. UI/UX direction
+
+Dark Mode is the primary visual experience.
+
+Desktop:
+
+- persistent sidebar;
+- dashboard-first navigation;
+- KPI cards;
+- charts;
+- account and transaction summaries.
+
+Mobile:
+
+- compact top bar;
+- stacked cards;
+- bottom navigation;
+- central quick-action control.
+
+Education appears in context beside relevant financial metrics.
+
+Accessibility:
+
+- sufficient contrast;
+- visible focus states;
+- semantic controls;
+- readable financial values;
+- color is not the only positive/negative indicator.
+
+---
+
+## 12. Development phases
+
+The operational source is STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md.
+
+Current roadmap:
+
+### Phase 0
+Repository foundation.
+
+### Phase 1
+Product definition.
+
+### Phase 2
+Domain model.
+
+### Phase 3
+Initial database foundation. Originally PostgreSQL; now superseded by Firebase Firestore.
+
+### Phase 4
+Go backend + Firebase foundation.
+
+### Phase 5
+Accounts and transactions.
+
+### Phase 6
+Budgeting.
+
+### Phase 7
+Savings and financial habits.
+
+### Phase 8
+Debts and liabilities.
+
+### Phase 9
+Assets and net worth.
+
+### Phase 10
+Reports and financial dashboard.
+
+### Phase 11
+Financial education layer.
+
+### Phase 12
+Authentication, privacy and audit.
+
+### Phase 13
+Testing hardening.
+
+### Phase 14
+Frontend implementation.
+
+### Phase 15
+Payroll domain.
+
+### Phase 16
+AI-assisted product workflow.
+
+### Phase 17
+Private deployment and operations.
+
+### Phase 18
+Production readiness.
+
+---
+
+## 13. Current implementation baseline
+
+Already established:
+
+- Go 1.27 module;
+- HTTP health endpoint;
+- deterministic Money value object;
+- core domain entities;
+- domain tests;
+- GitHub Actions CI;
+- documentation foundation;
+- Dark Mode UX direction.
+
+The current API can run locally with Go and expose GET /health.
+
+The database integration has not yet been implemented in the Go runtime.
+
+The next implementation phase is the Firebase-backed Go foundation.
+
+---
+
+## 14. Documentation strategy
+
+Documentation is part of development.
 
 Any meaningful change to:
 
 - architecture;
+- product scope;
 - domain ownership;
-- database model;
+- persistence;
 - financial behavior;
 - security;
+- privacy;
 - API contracts;
+- UI/UX;
+- educational behavior;
 - deployment;
-- operational behavior;
 
-should update the relevant documentation.
+must update the relevant documentation and STEP-BY-STEP record.
 
-The project should preserve historical decisions instead of silently replacing them.
+Historical decisions should remain traceable.
 
 ---
 
-## 10. Step-by-step methodology
+## 15. Step-by-step methodology
 
-Use the same structured workflow already established in the Cupboard project.
+For every meaningful phase:
 
-For each meaningful phase:
-
-```
 PHASE
-  ↓
-Problem
-  ↓
-Goal
-  ↓
-Current state
-  ↓
-Planned changes
-  ↓
-Implementation
-  ↓
-Validation
-  ↓
-Acceptance criteria
-  ↓
-Remaining work
-  ↓
-Checkpoint / commit
-```
+→ Problem
+→ Goal
+→ Current state
+→ Planned changes
+→ Implementation
+→ Validation
+→ Acceptance criteria
+→ Remaining work
+→ Checkpoint / commit
 
-Completed work should stay visible in the STEP-BY-STEP file.
-
-Do not erase historical context merely because architecture evolves.
+Completed work remains visible.
 
 ---
 
-## 11. Validation philosophy
+## 16. AI-assisted engineering workflow
 
-Do not consider code complete because it compiles.
-
-Validation should happen at multiple levels:
-
-### Code
-
-- formatting;
-- build;
-- static checks;
-- tests.
-
-### Domain
-
-- financial invariants;
-- deterministic calculations;
-- edge cases.
-
-### Database
-
-- migration correctness;
-- constraints;
-- transactions;
-- ownership boundaries.
-
-### API
-
-- validation;
-- authorization;
-- error behavior.
-
-### Product
-
-- actual user flow;
-- understandable UI;
-- realistic scenarios.
-
----
-
-## 12. Testing strategy
-
-Target test levels:
-
-1. Unit tests.
-2. Domain tests.
-3. Application-service tests.
-4. Repository integration tests.
-5. HTTP/API tests.
-6. End-to-end tests for critical flows.
-
-Important financial regression cases include:
-
-- transfer conservation;
-- balance reproducibility;
-- budget date boundaries;
-- savings progress;
-- debt balances;
-- net worth;
-- payroll reproducibility;
-- same inputs + same rule version = same expected result.
-
----
-
-## 13. Security principles
-
-- Authentication must protect private resources.
-- Authorization must be enforced server-side.
-- UI restrictions are not security boundaries.
-- Financial records must be correctly scoped to their owner or organization.
-- Secrets must never be committed.
-- Inputs must be validated.
-- Sensitive mutations should be auditable.
-- Logs must not expose secrets unnecessarily.
-
----
-
-## 14. AI-assisted engineering workflow
-
-The established working model is:
-
-```
 PALMI
-  ↓
-Define problem
-  ↓
-Nexsy
-  ↓
-Analysis / Architecture / Plan
-  ↓
-AI-assisted implementation
-  ↓
-Human review
-  ↓
-Tests
-  ↓
-Validation
-  ↓
-Commit
-  ↓
-Documentation update
-```
+→ Problem / financial goal
+→ Nexsy
+→ Analysis + architecture + plan
+→ AI-assisted implementation
+→ Human review
+→ Tests
+→ Financial validation
+→ Product validation
+→ Commit
+→ Documentation
 
-AI may be used for:
+AI accelerates implementation, exploration, testing and documentation.
 
-- implementation;
-- refactoring;
-- exploration;
-- tests;
-- debugging;
-- documentation;
-- code understanding.
+AI output is never automatically correct.
 
-AI output must never be considered automatically correct.
-
-Financial calculations and architectural decisions require explicit review.
+Financial calculations, educational claims, security decisions and architecture require explicit review.
 
 ---
 
-## 15. Relationship with the separate Go learning project
+## 17. Go learning relationship
 
-There are two different projects:
+Separate learning project:
 
-### Go learning lab
+D:\PALMI-D3V\experiments\GOLang-learning
 
-`D:\PALMI-D3V\experiments\GOLang-learning`
+Financial-D3v is the real application.
 
-Purpose:
+Learning loop:
 
-- learn Go concepts;
-- experiment;
-- practice syntax;
-- test small ideas.
+Learn → experiment → design → implement → test → document → review.
 
-### Financial-D3v
-
-`palmid3v/financial-d3v-palmid3v`
-
-Purpose:
-
-- build a real application;
-- apply Go concepts;
-- learn through real architecture;
-- produce portfolio-quality engineering work.
-
-Flow:
-
-```
-GOLang-learning
-      ↓
-Learn concept
-      ↓
-Apply concept
-      ↓
-Financial-D3v
-      ↓
-Document
-      ↓
-Test
-      ↓
-Commit
-```
-
-Do not merge the learning lab into the production project.
+Do not merge experimental learning code without a deliberate design decision.
 
 ---
 
-## 16. Current repository state at context creation
+## 18. Important project rules
 
-The repository was initially almost empty.
-
-Current work established:
-
-- product name: **Financial-D3v**;
-- broader financial-platform direction;
-- payroll retained as a domain;
-- step-by-step project roadmap;
-- initial documentation direction.
-
-Known repository commit already created for the step-by-step roadmap:
-
-`313dd48372e6c1254906d2b3215177abb6d9dfa7`
-
-The repository should be treated as the source of truth for future implementation.
-
----
-
-## 17. Important project rules
-
-### Rule 1
-
-Do not prematurely build every domain.
-
-Build the foundation first.
-
-### Rule 2
-
-Do not create architecture only for the sake of architecture.
-
-Every package and abstraction needs a responsibility.
-
-### Rule 3
-
-Financial calculations must be deterministic.
-
-### Rule 4
-
-Do not invent Colombian legal/tax/payroll rules.
-
-### Rule 5
-
-Keep documentation synchronized with the implementation.
-
-### Rule 6
-
-Use the STEP-BY-STEP file as the operational development history.
-
-### Rule 7
-
-Each major phase should finish with validation.
-
-### Rule 8
-
-Prefer incremental, understandable changes over large opaque changes.
-
-### Rule 9
-
-The frontend must not become the source of truth for business rules.
-
-### Rule 10
-
-The repository is intended to demonstrate real engineering practices, not just produce a working demo.
+1. Build the personal-finance core before payroll.
+2. Keep the application private.
+3. Do not invent Colombian legal/tax/payroll rules.
+4. Keep financial calculations deterministic.
+5. Keep the ledger authoritative.
+6. Do not make the frontend the source of truth.
+7. Use Firebase Firestore as the active database direction.
+8. Keep Firebase credentials out of source control.
+9. Validate each phase before moving on.
+10. Update documentation with meaningful changes.
+11. Do not create architecture only for the sake of architecture.
+12. Educational explanations must be traceable to financial facts.
+13. The app should educate without pretending to replace professional financial advice.
+14. Do not automatically move money or execute payments.
 
 ---
 
-## 18. What the next chat should do
+## 19. Source of truth
 
-When continuing this project from another chat:
+When continuing from another chat:
 
-1. Read this `CONTEXT.md`.
-2. Read `README.md`.
-3. Read `STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md`.
-4. Read `docs/README.md`.
-5. Inspect the current repository tree.
+1. Read CONTEXT.md.
+2. Read README.md.
+3. Read STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md.
+4. Read docs/README.md.
+5. Inspect current repository implementation and tests.
 6. Identify the latest completed phase.
-7. Validate the repository state before implementing new work.
+7. Validate repository state.
 8. Continue from the next incomplete phase.
 9. Update code, tests and documentation together.
-10. Update the STEP-BY-STEP file after significant work.
-
-Never assume an old chat is the source of truth.
 
 The repository is the source of truth.
 
 ---
 
-## 19. Current objective
-
-Build **Financial-D3v** as a real, maintainable financial platform while using the project itself as the practical vehicle for learning Go, backend engineering, architecture, databases, testing and production practices.
-
-The goal is not merely to finish an app.
-
-The goal is to build it with traceable engineering decisions and a professional development process.
-
----
-
-**Financial-D3v · PALMI-D3V · Context v1 · October 4, 2026**
+Financial-D3v · PALMI-D3V · Context v2 · October 4, 2026

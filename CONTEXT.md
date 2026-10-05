@@ -4,8 +4,8 @@
 
 **Last updated:** 2026-10-05  
 **Timezone:** America/Bogota (COT, UTC-05:00)  
-**Repository:** `palmid3v/financial-d3v-palmid3v⟧  
-**Source of truth:** GitHub `main⟧
+**Repository:** `palmid3v/financial-d3v-palmid3v`  
+**Source of truth:** GitHub `main`
 
 > This file reflects the current GitHub state after completion of FASE 31.
 
@@ -23,7 +23,7 @@ Education:
 
 ## Current architecture
 
-`text
+```text
 GitHub
   ↓
 Vercel Hobby
@@ -39,7 +39,7 @@ Financial Vault
       Go 1.27 / WASM
             ↓
       local financial calculations
-`
+```
 
 The encrypted .fdv file is the financial source of truth.
 
@@ -102,7 +102,7 @@ This is an application-level encryption design, not a formal external security a
 
 ## Go/WASM boundary
 
-`text
+```text
 Encrypted FDV1
      ↓
 browser decrypt
@@ -114,9 +114,9 @@ Go Financial Engine / WASM
 calculated result
      ↓
 React UI
-`
+```
 
-`frontend/src/vault/goEngine.js⟧ loads the local WASM runtime and `financial-engine.wasm⟧. Its `fetch()⟧ loads the local WASM resource; it is not the financial-data transport boundary.
+`frontend/src/vault/goEngine.js` loads the local WASM runtime and `financial-engine.wasm`. Its `fetch()` loads the local WASM resource; it is not the financial-data transport boundary.
 
 Implemented local calculations:
 - cash flow;
@@ -129,7 +129,7 @@ Implemented local calculations:
 
 ## Validación del Proyecto
 
-`text
+```text
 Automated
    ↓
 Runtime
@@ -139,26 +139,26 @@ Security
 Functional
    ↓
 PASS / FIX / APPROVED
-`
+```
 
 Runner:
 
-`powershell
+```powershell
 .\scripts\validate.ps1
-`
+```
 
 Security audit:
 
-`powershell
+```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\security-audit.ps1
-`
+```
 
 Runtime:
 
-`powershell
+```powershell
 cd frontend
 npm run preview
-`
+```
 
 Latest observed automated validation:
 - frontend dependencies: PASS;
@@ -206,7 +206,7 @@ Active deployment:
 **Palmi → Nexsy → GitHub → Palmi pulls → Palmi runs validation → Palmi reports exact output → Nexsy fixes**
 
 Rules:
-- GitHub `main⟧ is source of truth.
+- GitHub `main` is source of truth.
 - Never claim test, CI or deployment success without observed evidence.
 - “Built” means implementation exists in GitHub.
 - “Validated” means evidence exists.
@@ -243,8 +243,8 @@ Do not change the privacy boundary to implement FASE 32.
 
 Canonical Step-by-Step file:
 
-`STEP-BY-STEP-FINANCIAL-D3V-2026-10-05.md⟧
+`STEP-BY-STEP-FINANCIAL-D3V-2026-10-05.md`
 
-The filename and `Last updated⟧ date use the actual Colombia documentation date.
+The filename and `Last updated` date use the actual Colombia documentation date.
 
 **Financial-D3v · PALMI-D3V · 2026-10-05 · America/Bogota**

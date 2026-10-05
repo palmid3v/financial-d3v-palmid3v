@@ -59,11 +59,21 @@ See:
 - `docs/PHASE-9-DEBTS.md`
 - `docs/PHASE-10-ASSETS-LIABILITIES-NET-WORTH.md`
 
+### Current checkpoint
+
+**FASES 1–12 — APPROVED / BUILT**
+
+FASE 11 provides explainable reports and dashboard data. FASE 12 provides Firebase Auth integration, owner authorization and auditability.
+
+See:
+- `docs/PHASE-11-REPORTS-DASHBOARD.md`
+- `docs/PHASE-12-AUTH-PRIVACY-AUDIT.md`
+
 ### Next
 
-**FASE 11 — Reports and financial dashboard**
+**FASE 13 — Frontend product**
 
-The next phase will turn the accumulated financial data into explainable reports and a dashboard.
+React + Vite + Tailwind + PWA + Dark Mode, mobile-first product experience.
 
 ## Documentation
 

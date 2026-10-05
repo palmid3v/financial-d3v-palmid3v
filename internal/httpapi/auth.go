@@ -16,6 +16,7 @@ type Authenticator interface{VerifyIDToken(context.Context,string)(AuthIdentity,
 func WithAuthentication(next http.Handler,a Authenticator,required bool)http.Handler{
  if !required{return next}
  return http.HandlerFunc(func(w http.ResponseWriter,r *http.Request){
+  if a==nil{writeError(w,http.StatusServiceUnavailable,"authentication service is unavailable");return}
   h:=strings.TrimSpace(r.Header.Get("Authorization"))
   if !strings.HasPrefix(h,"Bearer "){writeError(w,http.StatusUnauthorized,"Authorization Bearer token is required");return}
   token:=strings.TrimSpace(strings.TrimPrefix(h,"Bearer "))
@@ -26,4 +27,4 @@ func WithAuthentication(next http.Handler,a Authenticator,required bool)http.Han
  })
 }
 func ownerFromContext(ctx context.Context)string{v,_:=ctx.Value(ownerContextKey).(string);return strings.TrimSpace(v)}
-func requireOwner(w http.ResponseWriter,r *http.Request)(string,bool){id:=ownerFromContext(r.Context());if id!=""{return id,true};id=strings.TrimSpace(r.Header.Get(ownerHeader));if id==""{writeError(w,http.StatusBadRequest,fmt.Sprintf("%s header is required until Firebase Auth is implemented",ownerHeader));return "",false};return id,true}
+func requireOwner(w http.ResponseWriter,r *http.Request)(string,bool){id:=ownerFromContext(r.Context());if id!=""{return id,true};id=strings.TrimSpace(r.Header.Get(ownerHeader));if id==""{writeError(w,http.StatusBadRequest,fmt.Sprintf("%s header is required when authentication is disabled",ownerHeader));return "",false};return id,true}

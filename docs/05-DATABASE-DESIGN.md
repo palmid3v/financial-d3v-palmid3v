@@ -1,62 +1,57 @@
-# Database Design — Firebase Firestore
+# Database Design — Financial-D3v
 
-**Status: FASE 3 APPROVED / BUILT**
+**Status:** HISTORICAL FIRESTORE DESIGN / ACTIVE VAULT BOUNDARY  
+**Last updated:** 2026-10-05  
+**Timezone:** America/Bogota (COT, UTC-05:00)
 
-Firebase Firestore is the approved persistence layer for Financial-D3v.
+## Current decision
 
-PostgreSQL is historical only and is not part of the active persistence design.
+Financial-D3v no longer uses Firestore as the active financial-data source of truth.
 
-## Architecture
+The active source of truth is the encrypted user-controlled Financial Vault file:
 
-React/PWA → Go REST/HTTP API → Application Services → Financial Domain → Repository Contracts → Firestore Adapter → Firebase Firestore
+`text
+FDV1 encrypted .fdv
+       ↓
+browser unlock
+       ↓
+decrypted in-memory state
+`
 
-FASE 3 defines the persistence boundary. Firebase SDK initialization and concrete repository implementations belong to FASE 4.
+No plaintext financial database is required for the active $0 architecture.
 
-## Ownership
+## Historical Firestore model
 
-Active financial records use owner-scoped subcollections:
+The original Firestore design is preserved in this document because it records the earlier persistence boundary.
 
-users/{ownerId}/accounts/{accountId}
-users/{ownerId}/transactions/{transactionId}
-users/{ownerId}/categories/{categoryId}
-users/{ownerId}/budgets/{budgetId}
-users/{ownerId}/savingsGoals/{goalId}
+Historical owner-scoped collections included:
 
-Later domains may add debts, assets, liabilities and payroll.
+- users/{ownerId}/accounts
+- users/{ownerId}/transactions
+- users/{ownerId}/categories
+- users/{ownerId}/budgets
+- users/{ownerId}/savingsGoals
 
-## Authoritative data
+Those structures are not required for Vault mode.
 
-Transactions are the authoritative ledger.
+## Authoritative financial data
 
-Balances and dashboard values must be reproducible from authoritative records or explicitly documented snapshots.
+Transactions remain the authoritative ledger concept.
 
-## Monetary serialization
+Balances, budget actuals, savings progress, debt balances and net worth must be reproducible from authoritative domain records according to `docs/07-FINANCIAL-RULES.md⟧.
 
-Money is stored as:
-- minorUnits: int64-compatible integer;
-- currency: ISO-style currency code string.
+## Monetary representation
 
-Floating-point money is not used for persistence.
+Money is represented as:
+- integer minor units;
+- currency code.
 
-## Repository contracts
+Floating-point values must not become the persisted financial source of truth.
 
-Defined under internal/persistence:
-- AccountRepository
-- TransactionRepository
-- CategoryRepository
-- BudgetRepository
-- SavingsGoalRepository
+## Legacy status
 
-Contracts require owner scope for reads and writes.
+Firestore repository contracts and adapters remain available for historical/API continuity. They must not be treated as the active financial persistence layer unless a future phase explicitly changes the architecture.
 
-## Query/index strategy
+## Security rule
 
-Initial composite indexes are defined in firebase/firestore.indexes.json.
-
-The main query patterns are account history, transaction period history, transaction category history and budgets by period.
-
-## Security
-
-Ownership paths are designed now, but authentication, authorization middleware, Firestore rules, audit and secret management remain later phases.
-
-**FASE 3 EXIT: APPROVED**
+Do not introduce a Firestore write path for plaintext Financial Vault data as part of normal Vault-mode development.

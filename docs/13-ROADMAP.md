@@ -224,7 +224,7 @@ These phases turn the validated platform into the day-to-day personal-finance pr
 - [ ] Tests/build validation
 - [ ] Documentation update
 
-**Status: PLANNED**
+**Status: IMPLEMENTED / VALIDATION PENDING**
 
 ## FASE 19 — Accounts UX
 - [ ] Accounts screen
@@ -240,7 +240,7 @@ These phases turn the validated platform into the day-to-day personal-finance pr
 - [ ] Tests/build validation
 - [ ] Documentation update
 
-**Status: PLANNED**
+**Status: IMPLEMENTED / VALIDATION PENDING**
 
 ## FASE 20 — Budget UX
 - [ ] Budget overview
@@ -256,7 +256,7 @@ These phases turn the validated platform into the day-to-day personal-finance pr
 - [ ] Tests/build validation
 - [ ] Documentation update
 
-**Status: PLANNED**
+**Status: IMPLEMENTED / VALIDATION PENDING**
 
 ## FASE 21 — Savings UX
 - [ ] Savings goals screen
@@ -424,7 +424,11 @@ For every phase:
 
 **FASES 1–17: APPROVED / BUILT**
 
-**NEXT: FASE 18 — Transactions UX**
+**FASES 18–20: IMPLEMENTED / VALIDATION PENDING**
+
+User approval covers the scope of FASES 18–20. Completion still requires local build/runtime validation and explicit phase approval.
+
+**NEXT CHECKPOINT: Validate FASES 18–20, then continue to FASE 21 — Savings UX**
 
 The platform is complete enough to stop expanding infrastructure and start completing the actual personal-finance product experience.
 

@@ -1,70 +1,56 @@
-# Financial-D3v Visual Direction
+# FASE 30 — Design System, Motion, $0 Deployment & PWA
 
-## Reference
+**Status:** APPROVED / BUILT / VALIDATED  
+**Last updated:** 2026-10-05  
+**Timezone:** America/Bogota (COT, UTC-05:00)
 
-This document records the approved visual direction for the Vault-backed Financial-D3v workspace.
+## Visual direction
 
-The supplied reference mockups establish:
-
-- dark-first interface;
+- dark-first;
 - minimal, flat surfaces;
-- subtle borders instead of heavy shadows;
+- subtle borders;
 - strong numeric hierarchy;
-- green as income/savings/primary action;
-- red as expense/debt;
-- blue as informational;
-- amber as warning;
-- violet as payroll/secondary category;
+- semantic financial colors;
 - desktop sidebar;
 - mobile bottom navigation;
 - compact cards and progress bars;
-- charts as first-class financial explanations.
+- charts as financial explanations.
 
-## Motion principle
+## Motion
 
-Motion must explain a state change, not decorate the interface.
+Motion explains state changes rather than decorating the interface.
 
-Approved behaviors:
-
-- cards enter with a short, subtle reveal;
-- numeric/progress values can animate into their final state;
-- chart bars grow from their baseline;
-- charts and visual summaries reveal once;
-- button/surface transitions remain short;
-- dirty state can pulse subtly;
-- reduced-motion users receive the same information without continuous animation.
+Implemented:
+- card/metric entrance;
+- progress and chart reveal;
+- short button/surface transitions;
+- dirty-state feedback;
+- reduced-motion support.
 
 ## Design tokens
 
-FASE 30 introduces a shared token layer at `frontend/src/styles/design-system.css`.
+Shared tokens live in `frontend/src/styles/design-system.css⟧ and cover surfaces, borders, semantic colors, spacing, radii and motion.
 
-The token layer centralizes:
+## PWA
 
-- surfaces and borders;
-- semantic financial colors;
-- spacing;
-- radii;
-- motion durations/easing;
-- reduced-motion fallbacks.
-
-Existing feature styles continue to use the same semantic values so the visual language remains stable while the implementation becomes easier to extend.
-
-## PWA refinement
-
-FASE 30 standardizes the install/runtime metadata:
-
-- Spanish-Colombia document locale;
+Implemented:
+- Spanish-Colombia locale;
 - standalone display;
-- portrait-first mobile orientation;
-- a scalable Financial-D3v install icon;
-- Apple touch icon;
+- portrait-first orientation;
+- scalable install icon metadata;
+- Apple touch metadata;
 - theme/background colors;
 - generated Vite PWA manifest;
 - automatic service-worker update;
-- stale-cache cleanup.
+- stale-cache cleanup;
+- WASM precache size allowance.
 
-## Current implementation
+## Validation
 
-FASE 30 is **BUILT / VALIDATION PENDING**.
+Observed:
+- frontend production build: PASS;
+- PWA generation: PASS;
+- WASM build: PASS;
+- runtime UI/PWA behavior reviewed.
 
-Runtime validation still belongs to the phase gate: production Vercel deployment, PWA installation, offline/runtime behavior, responsive review, reduced-motion behavior and final $0 deployment verification.
+**Exit:** APPROVED / BUILT / VALIDATED.

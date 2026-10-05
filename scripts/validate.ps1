@@ -40,7 +40,7 @@ function Has-NpmScript([string]$ScriptName) {
     if (-not (Test-Path $packageJson)) { return $false }
 
     $package = Get-Content $packageJson -Raw | ConvertFrom-Json
-    return $null -ne $package.scripts -and $null -ne $package.scripts.$ScriptName
+    return $null -ne $package.scripts -and ($package.scripts.PSObject.Properties.Name -contains $ScriptName)
 }
 
 Write-Host "========================================" -ForegroundColor White

@@ -29,7 +29,10 @@ func NewServer(ctx context.Context,cfg config.Config)(*Server,error){
 	liabilities:=application.NewLiabilityService(repos.Liabilities())
 	position:=application.NewFinancialPositionService(accounts,assets,liabilities,debts)
 	education:=application.NewEducationService(budgets,savings)
-	handler:=httpapi.NewServerWithFinancialPosition(accounts,transactions,categories,budgets,savings,education,debts,assets,liabilities,position,true).Handler()
+	reports:=application.NewReportService(accounts,transactions,categories,budgets,savings,debts,position)
+	authClient,authErr:=fb.App.Auth(ctx);if authErr!=nil{return nil,fmt.Errorf("initialize firebase auth: %w",authErr)}
+	authenticator:=NewFirebaseAuthenticator(authClient)
+	handler:=httpapi.NewServerWithAuth(accounts,transactions,categories,budgets,savings,education,debts,assets,liabilities,position,reports,authenticator,cfg.AuthRequired,true).Handler()
 	h:=&http.Server{Addr:cfg.HTTPAddr,Handler:handler,ReadHeaderTimeout:5*time.Second,ReadTimeout:15*time.Second,WriteTimeout:15*time.Second,IdleTimeout:60*time.Second}
 	return &Server{HTTP:h,Close:db.Close},nil
 }

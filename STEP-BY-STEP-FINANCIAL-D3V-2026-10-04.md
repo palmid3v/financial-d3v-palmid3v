@@ -296,7 +296,57 @@ FASE 25 is validated and approved. The active milestone is now FASE 26:
 
 ---
 
-# 5. ⚠️ Known technical caveats
+# 5. 🔥 FIREBASE LOCAL INFRASTRUCTURE
+
+Financial-D3v keeps Firebase infrastructure in the repository so the Firebase environment is reproducible.
+
+Versioned files:
+
+- `.firebaserc` — pins the default Firebase project.
+- `firebase.json` — points the Firebase CLI to Firestore rules and indexes.
+- `firebase/firestore.rules` — owner-scoped Firestore Security Rules.
+- `firebase/firestore.indexes.json` — composite indexes required by the current Go Firestore repositories.
+
+Expected Firestore ownership path:
+
+`/users/{firebaseUid}/{collection}/{documentId}`
+
+The Go API uses Firebase Admin credentials. Firestore Security Rules therefore do not replace backend authorization; they protect direct client access. Firebase's server SDKs bypass Firestore Security Rules and authenticate through server credentials/IAM.
+
+### Local Firebase setup
+
+1. Create the Firebase project and Web App.
+2. Enable Firebase Authentication with Email/Password.
+3. Create the local test user.
+4. Create the Firestore database.
+5. Keep the service-account JSON under `secrets/` locally only.
+6. Keep `.env` and `frontend/.env.local` local only.
+7. Pull the repository Firebase configuration.
+8. Deploy rules and indexes from the repository with the Firebase CLI.
+9. Restart the Go API with Firebase enabled.
+10. Validate authenticated frontend → Go API → Firestore runtime.
+
+### Security rule baseline
+
+Firestore starts closed. The versioned rules allow authenticated access only when the Firebase UID matches the `/users/{userId}` owner namespace. Everything outside that namespace remains denied.
+
+### Index baseline
+
+The repository indexes cover the current composite queries for:
+
+- transactions by account and occurrence time;
+- transactions by financial period;
+- transactions by category and occurrence time;
+- budgets by period;
+- savings contributions by goal;
+- debt payments by debt;
+- payroll periods by employee.
+
+Do not create ad-hoc console-only indexes. If a new query requires an index, update `firebase/firestore.indexes.json` and deploy from the repository.
+
+---
+
+# 6. ⚠️ Known technical caveats
 
 1. Debt payment currently updates the debt before creating the payment record; a failure between those operations could cause inconsistency.
 2. Account balances plus explicit cash assets can potentially double-count in net worth.
@@ -311,7 +361,7 @@ FASE 25 is validated and approved. The active milestone is now FASE 26:
 
 ---
 
-# 6. 🕐 DOCUMENTATION DATE RULE
+# 7. 🕐 DOCUMENTATION DATE RULE
 
 The filename of this document **must contain the date of its latest update**.
 
@@ -337,7 +387,7 @@ Current update:
 
 ---
 
-# 7. 🧭 IMMEDIATE ACTION
+# 8. 🧭 IMMEDIATE ACTION
 
 **Palmi pulls → validates FASE 26 → reports exact terminal/runtime results → Nexsy fixes anything that fails.**
 

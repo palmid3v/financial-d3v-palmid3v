@@ -2,7 +2,7 @@
 
 **Baseline:** October 5, 2026  
 **Timezone:** America/Bogota (COT, UTC-05:00)  
-**Source of truth:** GitHub `main⟧
+**Source of truth:** GitHub `main`
 
 A phase is **APPROVED / BUILT / VALIDATED** only after implementation, validation evidence and explicit approval.
 
@@ -64,7 +64,7 @@ Validated calculations:
 
 Completed:
 - Vercel Hobby target;
-- root `vercel.json⟧;
+- root `vercel.json`;
 - production frontend build;
 - Vite PWA generation;
 - design tokens;
@@ -81,7 +81,7 @@ Completed:
 **Status: APPROVED / BUILT / VALIDATED**
 
 Automated evidence:
-- `npm ci⟧ PASS;
+- `npm ci` PASS;
 - frontend tests 10/10 PASS;
 - frontend production build PASS;
 - WASM build PASS;
@@ -97,11 +97,11 @@ Runtime evidence:
 
 Expected incorrect-password behavior:
 
-`text
+```text
 Vault unavailable.
 Unable to open the Financial Vault.
 Check the password or file integrity.
-`
+```
 
 ## FASE 32 — Historical Financial Intelligence
 

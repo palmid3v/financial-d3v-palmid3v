@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useVault } from "./vault/VaultContext";
 import {
   accountBalance,
@@ -137,6 +137,29 @@ function Topbar({ active, dirty, saveVault, lock }) {
 
 function Dashboard({ vault, setActive }) {
   const { start, end } = currentMonthRange();
+  const [goAnalysis, setGoAnalysis] = useState(null);
+  const [goEngineStatus, setGoEngineStatus] = useState("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+    setGoEngineStatus("loading");
+    calculateWithGoEngine({
+      vault,
+      currency: "COP",
+      period: { start: start.toISOString(), end: end.toISOString() },
+    }).then((result) => {
+      if (!cancelled) {
+        setGoAnalysis(result);
+        setGoEngineStatus("ready");
+      }
+    }).catch(() => {
+      if (!cancelled) {
+        setGoAnalysis(null);
+        setGoEngineStatus("fallback");
+      }
+    });
+    return () => { cancelled = true; };
+  }, [vault, start, end]);
   const totals = transactionTotals(vault.transactions, start, end);
   const nw = netWorth(vault);
   const accountsTotal = vault.accounts.reduce((sum, account) => sum + accountBalance(account, vault.transactions), 0);
@@ -158,6 +181,11 @@ function Dashboard({ vault, setActive }) {
       <div><small>Resumen financiero · {new Intl.DateTimeFormat("es-CO", { month: "long", year: "numeric" }).format(new Date())}</small><h2>Haz que tu dinero <em>tenga sentido.</em></h2><p>Registra el movimiento, entiende el estado y decide qué sigue.</p></div>
       <Button primary onClick={() => setActive("transactions")}>＋ Nueva transacción</Button>
     </section>
+
+    <Notice tone={goEngineStatus === "ready" ? "success" : ""}>
+      <b>Go Financial Engine</b>
+      <span>{goEngineStatus === "ready" ? "WASM activo · cálculos locales" : goEngineStatus === "loading" ? "Inicializando motor local…" : "WASM no disponible · cálculo JS local"}</span>
+    </Notice>
 
     <div className="metrics metrics-4">
       <Metric label="Patrimonio neto" value={money(nw.net)} detail="Activos − pasivos" tone="green" />

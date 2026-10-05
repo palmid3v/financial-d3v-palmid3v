@@ -65,12 +65,12 @@ Firebase ID-token verification, owner authorization, privacy boundaries and owne
 ## FASE 13 — Frontend product
 **PENDING**
 
-React + Vite + Tailwind + PWA + Dark Mode, mobile-first product experience.
+React + Vite + Tailwind + PWA + Dark Mode, mobile-first product experience. The frontend will consume the existing backend API and expose the core financial loop as a usable product.
 
 ## FASE 14 — Testing hardening
 **PENDING**
 
-Broader automated coverage, integration hardening and reliability validation.
+Broader automated coverage, integration hardening, financial invariant coverage, error-path validation and reliability checks across the backend and frontend.
 
 ## FASE 15 — Payroll
 **PENDING**
@@ -80,20 +80,32 @@ Payroll remains intentionally late and is a specialized domain rather than the i
 ## FASE 16 — Private deployment and operations
 **PENDING**
 
-Private deployment, runtime configuration, operational procedures and backups.
+Private deployment, runtime configuration, operational procedures, secrets handling, backups and recovery procedures.
 
 ## FASE 17 — Production readiness
 **PENDING**
 
-Final readiness review against the private personal-finance product vision.
+Final readiness review against the private personal-finance product vision, including security, privacy, UX, reliability, documentation and operational readiness.
 
 ### Current checkpoint
 
 **FASES 1–12: APPROVED / BUILT**
 
+**FASES RESTANTES: 5 — FASES 13–17**
+
 The backend learning path now covers:
 
-`Account → Transaction → Balance → Budget → Planned vs Actual → Savings Goal → Contributions → Progress → Financial Education → Debt → Assets/Liabilities → Net Worth`
+`Account → Transaction → Balance → Budget → Planned vs Actual → Savings Goal → Contributions → Progress → Financial Education → Debt → Assets/Liabilities → Net Worth → Reports → Auth/Audit`
+
+### Remaining path
+
+| Fase | Focus | Status |
+| --- | --- | --- |
+| **13** | Frontend product | PENDING |
+| **14** | Testing hardening | PENDING |
+| **15** | Payroll | PENDING |
+| **16** | Private deployment & operations | PENDING |
+| **17** | Production readiness | PENDING |
 
 ### Rule
 

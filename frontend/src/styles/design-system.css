@@ -1,0 +1,55 @@
+:root {
+  --fd-bg: #0b0d10;
+  --fd-sidebar: #0e1115;
+  --fd-surface: #12161b;
+  --fd-surface-raised: #151a20;
+  --fd-surface-hover: #1a2027;
+  --fd-border: #232a33;
+  --fd-border-strong: #303844;
+  --fd-text: #f2f4f7;
+  --fd-text-muted: #727c88;
+  --fd-text-subtle: #4e5864;
+
+  --fd-income: #22c55e;
+  --fd-expense: #f0525b;
+  --fd-info: #3b82f6;
+  --fd-warning: #f5b700;
+  --fd-payroll: #a78bfa;
+
+  --fd-radius-sm: 8px;
+  --fd-radius-md: 11px;
+  --fd-radius-lg: 13px;
+  --fd-radius-xl: 15px;
+
+  --fd-space-1: 4px;
+  --fd-space-2: 8px;
+  --fd-space-3: 12px;
+  --fd-space-4: 16px;
+  --fd-space-5: 20px;
+  --fd-space-6: 24px;
+  --fd-space-8: 32px;
+
+  --fd-motion-fast: 160ms;
+  --fd-motion-base: 240ms;
+  --fd-motion-reveal: 450ms;
+  --fd-motion-ease: cubic-bezier(.2,.8,.2,1);
+}
+
+.ds-surface {
+  background: var(--fd-surface);
+  border: 1px solid var(--fd-border);
+  border-radius: var(--fd-radius-lg);
+}
+
+.ds-focus {
+  outline: 2px solid var(--fd-income);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --fd-motion-fast: 1ms;
+    --fd-motion-base: 1ms;
+    --fd-motion-reveal: 1ms;
+  }
+}

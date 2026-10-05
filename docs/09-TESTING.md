@@ -34,26 +34,26 @@ The frontend runner executes:
 Latest observed result: **10/10 frontend tests PASS**.
 
 Go validation:
-- `go test ./...⟧ PASS;
-- `go build ./...⟧ PASS.
+- `go test ./...` PASS;
+- `go build ./...` PASS.
 
 Frontend:
-- `npm ci⟧ PASS;
-- `npm run build⟧ PASS;
-- `npm run build:wasm⟧ PASS.
+- `npm ci` PASS;
+- `npm run build` PASS;
+- `npm run build:wasm` PASS.
 
 ## Security validation
 
-`scripts/security-audit.ps1⟧ validates the Vault source boundary for forbidden browser persistence/network APIs and checks key Vault lifecycle/crypto markers.
+`scripts/security-audit.ps1` validates the Vault source boundary for forbidden browser persistence/network APIs and checks key Vault lifecycle/crypto markers.
 
 ## Runtime
 
 Long-running runtime checks are manual:
 
-`powershell
+```powershell
 cd frontend
 npm run preview
-`
+```
 
 FASE 31 runtime validation included Vault creation/save/open, incorrect-password rejection, lock/unlock and recovery/import.
 

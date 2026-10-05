@@ -8,7 +8,7 @@ Financial-D3v is private by design. The active financial-data security boundary 
 
 ## Active boundary
 
-`text
+```text
 Encrypted FDV1 file
       ↓
 Browser unlock + password
@@ -22,7 +22,7 @@ lock / 15-minute inactivity timeout
 active state + password reference cleared
       ↓
 LOCKED
-`
+```
 
 ## Vault controls
 
@@ -40,11 +40,11 @@ LOCKED
 - Encrypted .fdv export/import.
 - No intentional financial plaintext in localStorage, sessionStorage or IndexedDB.
 - No intentional financial plaintext sent to a remote financial API.
-- Local WASM loading is allowed; `goEngine.js⟧ uses `fetch()⟧ only to load `/wasm/financial-engine.wasm⟧.
+- Local WASM loading is allowed; `goEngine.js` uses `fetch()` only to load `/wasm/financial-engine.wasm`.
 
 ## Validation evidence
 
-`text
+```text
 Frontend dependencies          PASS
 Frontend tests                 10/10 PASS
 Frontend production build      PASS
@@ -55,18 +55,18 @@ Go build                       PASS
 Runtime Vault flow             PASS
 Wrong-password rejection       PASS
 Lock/unlock/recovery           PASS
-`
+```
 
-The source audit is scoped to `frontend/src/vault⟧ and distinguishes the legitimate local WASM resource load from financial network transport.
+The source audit is scoped to `frontend/src/vault` and distinguishes the legitimate local WASM resource load from financial network transport.
 
 ## Commands
 
-`powershell
+```powershell
 .\scripts\validate.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\security-audit.ps1
 cd frontend
 npm run preview
-`
+```
 
 ## Credential handling
 

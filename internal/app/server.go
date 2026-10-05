@@ -37,7 +37,7 @@ func NewServer(ctx context.Context,cfg config.Config)(*Server,error){
 	payroll:=application.NewPayrollService(repos.PayrollEmployees(),repos.PayrollPeriods())
 	authClient,authErr:=fb.App.Auth(ctx);if authErr!=nil{return nil,fmt.Errorf("initialize firebase auth: %w",authErr)}
 	authenticator:=NewFirebaseAuthenticator(authClient)
-	handler:=httpapi.NewServerWithAuthAndAudit(accounts,transactions,categories,budgets,savings,education,debts,assets,liabilities,position,reports,audit,payroll,authenticator,cfg.AuthRequired,true).Handler()
+	handler:=httpapi.NewServerWithAuthAndAudit(accounts,transactions,categories,budgets,savings,education,debts,assets,liabilities,position,reports,audit,payroll,authenticator,cfg.AuthRequired,true) .HandlerWithOrigins(cfg.AllowedOrigins)
 	h:=&http.Server{Addr:cfg.HTTPAddr,Handler:handler,ReadHeaderTimeout:5*time.Second,ReadTimeout:15*time.Second,WriteTimeout:15*time.Second,IdleTimeout:60*time.Second}
 	return &Server{HTTP:h,Close:db.Close},nil
 }

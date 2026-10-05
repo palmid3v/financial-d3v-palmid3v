@@ -1,378 +1,250 @@
 # CONTEXT — Financial-D3v
+
 ## Chat Continuation Context
 
-**Last updated:** 2026-10-04  
+**Last updated:** 2026-10-05  
 **Timezone:** America/Bogota (COT, UTC-05:00)  
-**Repository:** `palmid3v/financial-d3v-palmid3v`  
-**Source of truth:** GitHub `main`
+**Repository:** `palmid3v/financial-d3v-palmid3v⟧  
+**Source of truth:** GitHub `main⟧
 
-> This file captures the decisions and current state from the previous chat so work can continue without rebuilding context.
+> This file reflects the current GitHub state after completion of FASE 31.
 
----
+## Product identity
 
-## 1. Product identity
-
-Financial-D3v is a **private personal-finance application and financial learning workspace**.
-
-It is:
-- personal/private first;
-- designed to understand and manage the owner's finances;
-- an engineering learning project for Go, architecture, APIs, persistence, testing, security and AI-assisted development;
-- not payroll-first.
+Financial-D3v is a private personal-finance application and financial learning workspace.
 
 Core loop:
 
 **Record → Categorize → Understand → Plan → Save → Review → Learn → Adjust**
 
-Financial education model:
+Education:
 
 **FACT → CALCULATION → INTERPRETATION → ACTION**
 
-Interpretation must never be presented as fact.
+## Current architecture
 
----
+`text
+GitHub
+  ↓
+Vercel Hobby
+  ↓
+React + Vite + Tailwind PWA
+  ↓
+Financial Vault
+  ├── FDV1 encrypted file
+  ├── password-controlled unlock
+  ├── decrypted state only in memory
+  └── lock/auto-lock clears active state
+            ↓
+      Go 1.27 / WASM
+            ↓
+      local financial calculations
+`
 
-## 2. Approved stack
+The encrypted .fdv file is the financial source of truth.
+
+Financial plaintext must not intentionally persist in:
+- localStorage;
+- sessionStorage;
+- IndexedDB;
+- remote Firebase/Firestore;
+- Vercel storage;
+- GitHub;
+- a remote Go API.
+
+Firebase Auth may remain useful for non-financial identity, but it is not the encryption key and does not receive plaintext financial data in Vault mode.
+
+## Approved stack
 
 | Layer | Technology |
-| --- | --- |
+|---|---|
 | Frontend | React + Vite |
 | UI | Tailwind CSS |
-| Visual | Dark Mode, calm/information-first |
-| PWA | Vite PWA |
-| Backend | Go 1.27 |
-| API | REST/HTTP |
-| Database | Firebase Firestore |
-| Auth | Firebase Auth |
+| Visual | Dark-first, calm, information-first |
+| PWA | Vite PWA / Workbox |
+| Local computation | Go 1.27 + WebAssembly |
+| Legacy API | Go REST/HTTP |
+| Legacy persistence | Firebase Firestore |
+| Optional identity | Firebase Auth |
 | CI | GitHub Actions |
 | Docs | Markdown |
 
----
+## Financial invariants
 
-## 3. Product UX direction
-
-The user explicitly approved strong visual/UI/UX thinking.
-
-Design principles:
-- dark-first;
-- calm, compact and information-first;
-- mobile-first;
-- dashboard before administration;
-- fast financial entry;
-- clear hierarchy;
-- contextual education;
-- accessible focus states;
-- loading/error/retry states;
-- color is never the only signal;
-- avoid unnecessary financial anxiety;
-- backend/domain values are authoritative;
-- frontend explains rather than silently replacing financial calculations.
-
-The user particularly liked the FASE 17 visual result and likes emojis in conversational responses and Markdown project documentation. Use structured Markdown and a few appropriate emojis when communicating and updating docs.
-
----
-
-## 4. Backend status
-
-The backend already supports:
-
-**Accounts → Transactions → Budget → Savings → Education → Debts → Assets/Liabilities → Net Worth → Reports/Dashboard → Auth/Audit → Payroll**
-
-Important endpoints:
-
-- `GET /health`
-- `GET /ready`
-- `/api/v1/accounts`
-- `/api/v1/transactions`
-- `/api/v1/categories`
-- `/api/v1/budgets`
-- `/api/v1/savings-goals`
-- `/api/v1/debts`
-- `GET /api/v1/net-worth`
-- `GET /api/v1/education`
-- `GET /api/v1/education/insights`
-- `GET /api/v1/reports/summary`
-- `GET /api/v1/dashboard`
-- `GET /api/v1/audit`
-
-Domain rules that must be preserved:
-- Money uses `MinorUnits int64` + `Currency`.
+- Money uses integer minor units plus currency.
 - Transfers are not budget expenses.
-- Budget actuals come from authoritative transactions.
+- Budget actuals come from authoritative expense transactions.
 - Savings contributions are goal-progress records, not ordinary expenses.
 - Debt payments contain amount/principal/interest/fees.
-- Only debt principal reduces debt balance.
+- Only principal reduces debt balance.
 - Net worth = assets − all liabilities.
 - Debt balances are liabilities.
+- Domain/Go values are authoritative; UI explains them.
 
----
+## Vault security model
 
-## 5. FASE 16 — operations
+- FDV1 versioned envelope.
+- PBKDF2 SHA-256, 600,000 iterations.
+- AES-256-GCM, 128-bit authentication tag.
+- Fresh random salt and IV.
+- Wrong-password rejection.
+- Modified-ciphertext rejection.
+- Unsupported-version rejection.
+- Malformed-input rejection.
+- Password held only in an in-memory reference while unlocked.
+- Lock clears active vault state and password reference.
+- 15-minute inactivity auto-lock.
+- Encrypted export/import.
+- No intentional plaintext browser persistence.
+- No intentional financial plaintext remote transport.
 
-Production configuration includes:
-- `APP_ENV`
-- `HTTP_ADDR`
-- `FIREBASE_ENABLED`
-- `FIREBASE_PROJECT_ID`
-- `FIREBASE_CREDENTIALS_FILE`
-- `AUTH_REQUIRED`
-- `CORS_ALLOWED_ORIGINS`
+This is an application-level encryption design, not a formal external security audit.
 
-Production requires Firebase + authentication + configured project + CORS allowlist.
+## Go/WASM boundary
 
-Local development may use `X-Owner-ID` only when authentication is explicitly disabled.
+`text
+Encrypted FDV1
+     ↓
+browser decrypt
+     ↓
+in-memory financial state
+     ↓
+Go Financial Engine / WASM
+     ↓
+calculated result
+     ↓
+React UI
+`
 
-Deployment artifacts exist in `deploy/`.
+`frontend/src/vault/goEngine.js⟧ loads the local WASM runtime and `financial-engine.wasm⟧. Its `fetch()⟧ loads the local WASM resource; it is not the financial-data transport boundary.
 
-Production is **not yet provisioned**.
+Implemented local calculations:
+- cash flow;
+- account balances;
+- transfer effects;
+- budget actuals;
+- savings progress;
+- debt principal reduction;
+- net worth.
 
----
+## Validación del Proyecto
 
-## 6. FASE 17–24 history
+`text
+Automated
+   ↓
+Runtime
+   ↓
+Security
+   ↓
+Functional
+   ↓
+PASS / FIX / APPROVED
+`
 
-### FASE 17
-Established the product-wide visual baseline:
-- dashboard hero;
-- primary Record Movement CTA;
-- Income / Expenses / Net Cash Flow / Net Worth metrics;
-- monthly cash-flow visualization;
-- education panel;
-- responsive desktop/mobile navigation;
-- private-workspace messaging;
-- loading/error/retry.
+Runner:
 
-### FASE 18
-Transactions UX.
+`powershell
+.\scripts\validate.ps1
+`
 
-### FASE 19
-Accounts UX.
+Security audit:
 
-### FASE 20
-Budget UX.
+`powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\security-audit.ps1
+`
 
-### FASE 21
-Savings UX was implemented on the FASE 20–22 branch:
-- create goal;
-- target/date;
-- list/detail;
-- contribution;
-- progress/remaining;
-- history;
-- education.
+Runtime:
 
-### FASE 22
-Debt UX was implemented on the FASE 20–22 branch:
-- create debt;
-- original/current balance;
-- minimum payment;
-- annual rate;
-- detail;
-- payment;
-- principal/interest/fees;
-- validation;
-- history.
-
-### FASE 23
-Net Worth UX.
-
-### FASE 24
-Education UX.
-
----
-
-## 7. CRITICAL CURRENT FRONTEND STATE
-
-A frontend corruption/regression was discovered after FASE 23–24.
-
-The clean syntax repair was committed directly to `main`:
-
-**Commit:** `fd7c9bfc9175d95a88a99f968b85baee8629b2c7`  
-**Message:** `fix: restore frontend App component syntax`
-
-The user subsequently pulled the repaired frontend and confirmed:
-
-> “Bueno pude ingresar hasta la parte front, todo se ve bien”
-
-Current repaired `frontend/src/App.jsx` has real components for:
-- Dashboard;
-- Transactions;
-- Accounts;
-- Budget;
-- Net Worth;
-- Education.
-
-Navigation also contains:
-- Savings;
-- Debts.
-
-**BUT Savings and Debts currently resolve to placeholders in the repaired `main` App.jsx.**
-
-This is intentional context for the next implementation: backend support exists, previous branch work exists, but the current `main` frontend must have Savings and Debt UX restored/implemented cleanly.
-
-Do not blindly cherry-pick the old corrupted App.jsx.
-
----
-
-## 8. Recent branches / PRs
-
-Repository:
-
-`palmid3v/financial-d3v-palmid3v`
-
-### FASE 20–22
-Branch:
-`feat/phase-20-22-product-ux`
-
-PR #10:
-`FASE 20–22 — Budget, Savings and Debt UX`
-
-### FASE 23–24
-Branch:
-`feat/phase-23-24-networth-education`
-
-PR #11:
-`FASE 23–24 — Net Worth and Education UX`
-
-After the frontend corruption was found, the repaired `main` became the current source of truth.
-
----
-
-## 9. User development workflow
-
-Expected workflow:
-
-**Palmi → Nexsy → GitHub → Palmi pulls → Palmi tests → Palmi reports exact output → Nexsy fixes**
-
-When Nexsy says **built**, it means the implementation has actually been committed to GitHub.
-
-Never claim tests/CI/production succeeded unless that result was actually observed.
-
-Typical validation:
-
-```bash
-git pull
-
-go test ./...
-go build ./...
-
+`powershell
 cd frontend
-npm ci
-npm run build
-```
+npm run preview
+`
 
----
+Latest observed automated validation:
+- frontend dependencies: PASS;
+- frontend tests: 10/10 PASS;
+- frontend production build: PASS;
+- WASM build: PASS;
+- Vault security source audit: PASS;
+- Go tests: PASS;
+- Go build: PASS.
 
-## 10. Validation history
+Runtime validation observed:
+- Vault create/save/open: PASS;
+- incorrect password rejection: PASS;
+- lock/unlock/recovery: PASS;
+- security behavior reviewed: PASS.
 
-Previously validated successfully:
-- `go test ./...`
-- `go build ./...`
-- `npm ci`
-- `npm run build`
-- PWA manifest/service worker generation;
-- `GET /health` → 200;
-- `GET /ready` → 200.
+## Phase status
 
-Local Firebase-disabled mode is expected.
+| Phase | Status |
+|---|---|
+| FASES 1–17 | APPROVED / BUILT |
+| FASES 18–24 | APPROVED / BUILT |
+| FASE 25 | APPROVED / BUILT / VALIDATED |
+| FASE 26 | APPROVED / BUILT / VALIDATED |
+| FASE 27 | APPROVED / BUILT / VALIDATED |
+| FASE 28 | APPROVED / BUILT / VALIDATED |
+| FASE 29 | APPROVED / BUILT / VALIDATED |
+| FASE 30 | APPROVED / BUILT / VALIDATED |
+| FASE 31 | APPROVED / BUILT / VALIDATED |
+| FASE 32 | PLANNED |
+| FASE 33+ | CONTINUOUS EVOLUTION |
 
----
+FASES 27–31 are the first-release local-first foundation.
 
-## 11. Immediate next milestone
+## Historical architecture
 
-The previous chat concluded that deployment should **not** be the immediate next step because Savings and Debt are missing from the current visible frontend.
+Older Firebase/Firestore/Cloud Run/Artifact Registry/Scheduler implementation and documentation remain for traceability. They are retired from the active financial-data path.
 
-### FASE 25 — Complete Savings + Debt UX
+Active deployment:
 
-Goal:
+**GitHub → Vercel Hobby → React/Vite PWA → encrypted local Financial Vault**
 
-**Income → Expenses → Accounts → Budget → Savings → Debts → Assets → Liabilities → Net Worth → Education**
+## Development workflow
 
-Savings must provide:
-- create goal;
-- goal list/detail;
-- contribution;
-- progress/remaining;
-- contribution history;
-- FACT → CALCULATION → INTERPRETATION → ACTION.
+**Palmi → Nexsy → GitHub → Palmi pulls → Palmi runs validation → Palmi reports exact output → Nexsy fixes**
 
-Debt must provide:
-- create debt;
-- list/detail;
-- payment;
-- principal/interest/fees;
-- payment history;
-- backend-authoritative balance;
-- clear educational/contextual explanation.
+Rules:
+- GitHub `main⟧ is source of truth.
+- Never claim test, CI or deployment success without observed evidence.
+- “Built” means implementation exists in GitHub.
+- “Validated” means evidence exists.
+- Documentation is updated after phase completion.
 
-Implementation must start from the **current `main`**, preserve the FASE 17 visual system, and avoid reintroducing the previous App.jsx corruption.
+## Recovery
 
----
+The .fdv file and password are separate recovery dependencies.
 
-## 12. Current phase and proposed sequence
+Normal recovery:
+1. Preserve the encrypted file.
+2. Open the application.
+3. Choose Open Vault.
+4. Select the .fdv.
+5. Enter the password.
+6. Verify representative totals/records.
+7. Continue working.
+8. Save a new encrypted vault after meaningful changes.
 
-FASE 25 is implemented and validated locally. Current active milestone:
+Lost password:
+- no recovery service exists;
+- the application cannot decrypt the vault without the password;
+- recovery requires another valid encrypted vault/password combination.
 
-- **FASE 26:** Authentication / production security hardening — implemented, validation pending
-- **FASE 27:** Private production deployment
-- **FASE 28:** Backup / recovery
-- **FASE 29:** Financial data integrity
-- **FASE 30:** Observability
-- **FASE 31:** Historical financial intelligence
+## Next phase
 
-Do not jump into advanced intelligence before the core financial workflow is complete and trustworthy.
+FASE 31 is complete.
 
----
+**FASE 32 — Historical Financial Intelligence** is the next planned evolution.
 
-## 13. Known technical caveats
+Do not change the privacy boundary to implement FASE 32.
 
-1. Debt payment updates the debt before creating the payment record; a failure between those operations could cause inconsistency.
-2. Account balances plus explicit cash assets can potentially double-count in net worth.
-3. Debt interest/fees are recorded but are not automatically ordinary expense transactions.
-4. Net worth is currently a snapshot, not a historical series.
-5. Asset values are manually supplied.
-6. Generic liability update/delete coverage may need expansion.
-7. Some report aggregation paths may skip mismatched currencies.
-8. Frontend dependencies should eventually be hardened/pinned.
-9. Firebase client authentication UI is not yet wired; production API auth is token-ready.
-10. Production Firebase/cloud infrastructure is not provisioned.
+## Documentation rule
 
----
+Canonical Step-by-Step file:
 
-## 14. Documentation timezone rule
+`STEP-BY-STEP-FINANCIAL-D3V-2026-10-05.md⟧
 
-This was explicitly corrected in the previous chat.
+The filename and `Last updated⟧ date use the actual Colombia documentation date.
 
-The Step-by-Step document must use the **actual local Colombia date** for its last-update metadata.
-
-Canonical timezone:
-
-**America/Bogota — COT — UTC-05:00**
-
-Do not infer the update date from the filename.
-
-Example:
-
-```md
-**Last updated:** 2026-10-04
-**Timezone:** America/Bogota (COT, UTC-05:00)
-```
-
-The file name may reference a planned/documentation day, but `Last updated` must reflect the real modification date in Colombia.
-
----
-
-## 15. Immediate instruction for the next chat
-
-Start by reading this `CONTEXT.md` and inspecting the current `main` repository state.
-
-Then continue directly with:
-
-**FASE 25 — Complete Savings + Debt UX**
-
-Do not rebuild the project history from scratch.
-
-The backend is already available. The immediate job is to validate FASE 26 authentication/security behavior, preserve the established UI/UX and owner boundaries, and update documentation using `America/Bogota`.
-
----
-
-**Financial-D3v · PALMI-D3V · Chat Continuation Context · 2026-10-04 · America/Bogota**
+**Financial-D3v · PALMI-D3V · 2026-10-05 · America/Bogota**

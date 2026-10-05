@@ -1,67 +1,165 @@
 # Roadmap — Financial-D3v
 
-**Baseline:** October 4, 2026  
+**Baseline:** October 5, 2026  
 **Timezone:** America/Bogota (COT, UTC-05:00)
 
 A phase is only APPROVED / BUILT after implementation, validation and explicit approval.
 
 ## Lifecycle
+
 - [x] PLATFORM — FASES 1–17
 - [x] PRODUCT FOUNDATION — FASES 18–24
 - [x] PRODUCT COMPLETION — FASE 25
 - [x] AUTH / SECURITY — FASE 26
-- [ ] PRIVATE PRODUCTION VALIDATION — FASES 27–28
-- [ ] DATA INTEGRITY — FASE 29
-- [ ] OBSERVABILITY — FASE 30
-- [ ] HISTORICAL INTELLIGENCE — FASE 31
-- [ ] CONTINUOUS EVOLUTION — FASE 32+
+- [~] CLOUD PRODUCTION PATH — FASES 27–28 RETIRED / RE-SCOPED
+- [ ] FINANCIAL VAULT — FASE 27
+- [ ] VAULT DATA MIGRATION — FASE 28
+- [ ] GO FINANCIAL ENGINE — FASE 29
+- [ ] $0 DEPLOYMENT — FASE 30
+- [ ] SECURITY / RECOVERY VALIDATION — FASE 31
+- [ ] HISTORICAL INTELLIGENCE — FASE 32
+- [ ] CONTINUOUS EVOLUTION — FASE 33+
 
 ## FASE 26 — Authentication / security hardening
+
 **Status: APPROVED / BUILT**
 
-## FASE 27 — Private production deployment
-**Status: BUILT / VALIDATION PENDING**
-- [x] Firebase Hosting configuration
-- [x] `/api/**` rewrite
-- [x] Cloud Run deployment workflow
-- [x] Artifact Registry flow
-- [x] Dedicated API runtime identity
-- [x] Production auth/security configuration
-- [x] Health/readiness checks
-- [x] Protected `401` smoke test
-- [x] Rollback procedure
-- [ ] Real production deployment
-- [ ] Authenticated production smoke test
-- [ ] PWA installation validation
-- [ ] Explicit phase approval
+The existing Firebase authentication work remains available, but it is no longer the financial-data encryption boundary.
 
-## FASE 28 — Backup / recovery
-**Status: BUILT / VALIDATION PENDING**
-- [x] Firestore export strategy
-- [x] Cloud Run backup Job
-- [x] Cloud Storage retention baseline
-- [x] Cloud Scheduler setup script
-- [x] Isolated restore procedure
-- [x] Recovery checklist
-- [ ] Real scheduled backup
-- [ ] Real export verification
-- [ ] Real recovery-project restore
-- [ ] Restore validation
-- [ ] Explicit phase approval
+## FASE 27 — Financial Vault
 
-## FASE 29 — Financial data integrity
+**Status: BUILT / SECURITY VALIDATION PENDING**
+
+- [x] Define local-first encrypted vault architecture.
+- [x] Define versioned `FDV1` envelope.
+- [x] Implement PBKDF2 key derivation.
+- [x] Implement AES-256-GCM authenticated encryption.
+- [x] Implement random salt and IV generation.
+- [x] Implement vault payload validation.
+- [x] Implement encrypted file export.
+- [ ] Build Vault Gate UI.
+- [ ] Build vault create/open/lock lifecycle.
+- [ ] Build auto-lock.
+- [ ] Add browser persistence audit.
+- [ ] Add tamper/wrong-password tests.
+- [ ] Complete security review.
+
+## FASE 28 — Vault data migration
+
 **Status: PLANNED**
 
-## FASE 30 — Observability
+Migrate every financial module from remote API persistence to the decrypted in-memory vault:
+
+1. Accounts and categories.
+2. Transactions.
+3. Budgets.
+4. Savings goals/contributions.
+5. Debts/payments.
+6. Assets/liabilities/net worth.
+7. Education.
+8. Dashboard/report calculations.
+9. Import/export and migration from the current Firebase dataset.
+10. Remove plaintext financial persistence from the old API path.
+
+Acceptance:
+- no financial plaintext leaves the browser;
+- refresh while locked exposes no financial data;
+- lock removes the active dataset;
+- export/import is lossless for supported schema;
+- domain invariants remain unchanged.
+
+## FASE 29 — Go financial engine
+
 **Status: PLANNED**
 
-## FASE 31 — Historical financial intelligence
+Keep Go as a real part of the product without sending private financial data to a remote server.
+
+Target:
+
+```text
+Financial Vault
+      ↓
+in-memory state
+      ↓
+Go financial engine / WASM boundary
+      ↓
+authoritative calculations
+      ↓
+React presentation
+```
+
+Scope:
+- balance calculations;
+- budget actuals;
+- savings progress;
+- debt principal reduction;
+- net worth;
+- reconciliation;
+- financial education calculations.
+
+The browser remains the privacy boundary.
+
+## FASE 30 — $0 deployment
+
 **Status: PLANNED**
 
-## FASE 32+ — Continuous evolution
+Target:
+
+```text
+GitHub → Vercel Hobby → React/Vite PWA
+                         ↓
+                   local Financial Vault
+```
+
+Optional Firebase Spark:
+- authentication;
+- non-sensitive account metadata only if justified.
+
+No Cloud Run, Artifact Registry, Cloud Scheduler, or paid Google Cloud dependency.
+
+Vercel currently lists Hobby at $0/month; Firebase documents Spark as a no-cost plan with no payment information required for the no-cost path. citeturn2search0turn0search0
+
+## FASE 31 — Security / recovery / production validation
+
+**Status: PLANNED**
+
+- [ ] Security review of vault format.
+- [ ] Wrong-password tests.
+- [ ] Tamper detection tests.
+- [ ] Malformed file tests.
+- [ ] Browser compatibility.
+- [ ] Auto-lock validation.
+- [ ] Session-clear validation.
+- [ ] Export/import round trip.
+- [ ] Recovery procedure documented.
+- [ ] Production Vercel deployment.
+- [ ] PWA installation validation.
+- [ ] Explicit approval.
+
+## FASE 32 — Historical financial intelligence
+
+**Status: PLANNED**
+
+Historical trends, comparisons, patterns and deeper financial learning after the private data architecture is stable.
+
+## FASE 33+ — Continuous evolution
+
 **Status: CONTINUOUS / PLANNED**
 
+## Remaining work
+
+At the new architecture boundary, **5 phases remain before the current product can be considered finalized**:
+
+- FASE 27 — Vault foundation/security gate
+- FASE 28 — Full financial migration
+- FASE 29 — Go computation boundary
+- FASE 30 — $0 deployment
+- FASE 31 — Security/recovery/production validation
+
+FASE 32+ is post-finalization evolution, not required for the first finalized release.
+
 ## Master execution rule
+
 1. Define scope.
 2. Implement.
 3. Test.

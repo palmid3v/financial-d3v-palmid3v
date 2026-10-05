@@ -325,11 +325,39 @@ These phases turn the validated platform into the day-to-day personal-finance pr
 
 ---
 
-# PRIVATE PRODUCTION — FASE 25+
+# PRIVATE PRODUCTION — FASE 26+
 
 FASE 25+ is intentionally a continuing production track rather than one artificially bounded final phase.
 
-## FASE 25 — Private production deployment
+## FASE 25 — Complete Savings + Debt UX
+- [x] Savings goal creation and detail
+- [x] Contributions and history
+- [x] Required-pace context
+- [x] Debt creation and detail
+- [x] Payment composition validation
+- [x] Backend-authoritative debt balance
+- [x] Mobile-first UX
+- [x] Documentation
+
+**Status: IMPLEMENTED / VALIDATED LOCALLY**
+
+## FASE 26 — Authentication / production security hardening
+- [x] Firebase ID-token verification boundary
+- [x] Authenticated owner scoping
+- [x] Production Firebase/auth configuration gates
+- [x] Explicit CORS allowlist
+- [x] API security headers
+- [x] Frontend authentication gate
+- [x] Frontend ID-token propagation
+- [x] Token refresh
+- [x] Sign-out
+- [x] Security-header tests
+- [ ] Full local auth runtime validation
+- [ ] Documentation approval
+
+**Status: IMPLEMENTED / VALIDATION PENDING**
+
+## FASE 27 — Private production deployment
 - [ ] Production Firebase project
 - [ ] Production Firestore
 - [ ] Firebase Auth configuration
@@ -428,7 +456,7 @@ For every phase:
 
 User approval covers the scope of FASES 20–22. FASES 18–20 are included in the implementation branch as their prerequisite product foundation. Completion still requires local build/runtime validation and explicit phase approval.
 
-**NEXT CHECKPOINT: Validate FASE 25 — Complete Savings + Debt UX, then continue to FASE 26 — Authentication / production security hardening**
+**NEXT CHECKPOINT: Validate FASE 26 — Authentication / production security hardening, then continue to FASE 27 — Private production deployment**
 
 The platform is complete enough to stop expanding infrastructure and start completing the actual personal-finance product experience.
 

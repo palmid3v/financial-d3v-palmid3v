@@ -161,8 +161,10 @@ function Dashboard({ vault, setActive }) {
     });
     return () => { cancelled = true; };
   }, [vault, start, end]);
-  const totals = transactionTotals(vault.transactions, start, end);
-  const nw = netWorth(vault);
+  const jsTotals = transactionTotals(vault.transactions, start, end);
+  const jsNetWorth = netWorth(vault);
+  const totals = goAnalysis?.cashFlow ?? jsTotals;
+  const nw = goAnalysis?.netWorth ? { net: goAnalysis.netWorth.net, debtLiabilities: goAnalysis.netWorth.debtLiabilities, assets: goAnalysis.netWorth.assets, liabilities: goAnalysis.netWorth.liabilities } : jsNetWorth;
   const accountsTotal = vault.accounts.reduce((sum, account) => sum + accountBalance(account, vault.transactions), 0);
   const savingsRate = totals.income ? (totals.income > 0 ? (Math.max(0, totals.income - totals.expenses) / totals.income) * 100 : 0) : 0;
   const debt = nw.debtLiabilities;

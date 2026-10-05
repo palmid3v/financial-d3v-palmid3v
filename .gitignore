@@ -13,7 +13,7 @@ dist/
 
 # Firebase / credentials
 secrets/
-*.json
+secrets/*.json
 
 # Go
 *.exe

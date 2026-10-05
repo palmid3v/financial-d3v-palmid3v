@@ -14,6 +14,10 @@ Payroll is intentionally a later specialized domain.
 
 ## Current checkpoint
 
+### FASES 1–12 — APPROVED / BUILT
+
+All phases from the current product baseline through authentication, privacy and audit are now implemented.
+
 ### FASE 1 — Product definition
 **APPROVED / BUILT**
 
@@ -41,7 +45,7 @@ Implemented the first backend financial workflow:
 
 **Account → Transaction → Balance**
 
-The API supports owner-scoped accounts and transactions, balance calculation and temporary `X-Owner-ID` ownership until Firebase Auth in FASE 12.
+The API supports owner-scoped accounts and transactions, balance calculation and currency validation.
 
 ### FASE 6 — Budgeting
 **APPROVED / BUILT**
@@ -83,62 +87,136 @@ Core rule:
 
 **Savings contributions are goal-progress records, not ordinary expenses.**
 
+### FASE 8 — Financial education
+**APPROVED / BUILT**
+
+Implemented the financial-learning model:
+
+**FACT → CALCULATION → INTERPRETATION → ACTION**
+
+Initial education topics cover cash flow, budget utilization, savings progress, transaction categorization and debt basics.
+
+### FASE 9 — Debts
+**APPROVED / BUILT**
+
+Implemented:
+
+- debt obligations
+- principal balance
+- annual rate representation
+- minimum payment
+- principal/interest/fees payment components
+- debt payment history
+- active/paid status
+- debt-aware financial context
+
+Core rule:
+
+**Only principal reduces the debt balance. Interest and fees are recorded components and do not reduce principal.**
+
+### FASE 10 — Assets, liabilities and net worth
+**APPROVED / BUILT**
+
+Implemented:
+
+- assets
+- generic liabilities
+- debt liabilities
+- account-position integration
+- net-worth calculation
+- currency validation
+- explicit double-counting boundaries
+
+Core formula:
+
+**Net Worth = Assets − Liabilities**
+
+### FASE 11 — Reports and financial dashboard
+**APPROVED / BUILT**
+
+Implemented:
+
+- period financial reports
+- income
+- expenses
+- net cash flow
+- spending by category
+- budget summaries
+- savings summaries
+- debt balance context
+- net-worth context
+- dashboard response data
+
+Reports reuse authoritative application services instead of duplicating financial calculations.
+
+### FASE 12 — Authentication, privacy and audit
+**APPROVED / BUILT**
+
+Implemented:
+
+- Firebase ID-token verification
+- authenticated owner identity
+- owner-scoped authorization
+- configurable authentication requirement
+- audit events for mutating requests
+- owner-scoped audit history
+- request IDs for traceability
+- no persistence of authentication tokens
+- no persistence of request bodies in audit records
+
+The legacy `X-Owner-ID` mechanism remains only as a local/non-required-auth fallback.
+
 ## Current backend flow
 
-`Account → Transaction → Balance → Budget → Planned vs Actual → Savings Goal → Contributions → Progress`
+`Account → Transaction → Balance → Budget → Planned vs Actual → Savings Goal → Contributions → Progress → Financial Education → Debt → Assets/Liabilities → Net Worth → Reports → Auth/Audit`
 
-## Current persistence model
+## Validation checkpoint
 
-Owner-scoped Firestore paths:
+The latest local validation performed after FASE 11/12 fixes was:
 
-- `users/{ownerId}/accounts/{accountId}`
-- `users/{ownerId}/transactions/{transactionId}`
-- `users/{ownerId}/categories/{categoryId}`
-- `users/{ownerId}/budgets/{budgetId}`
-- `users/{ownerId}/savingsGoals/{goalId}`
-- `users/{ownerId}/savingsContributions/{contributionId}`
+```text
+go test ./...
+→ PASS
 
-## API checkpoint
+go build ./...
+→ PASS
+```
 
-### Accounts
-- `POST /api/v1/accounts`
-- `GET /api/v1/accounts`
-- `GET /api/v1/accounts/{accountID}`
-- `GET /api/v1/accounts/{accountID}/balance`
+The validation was performed against the current repository state after the FASE 11/12 implementation fixes.
 
-### Transactions
-- `POST /api/v1/transactions`
-- `GET /api/v1/transactions?accountId=...`
-- `GET /api/v1/transactions?start=...&end=...`
-- `GET /api/v1/transactions/{transactionID}`
+## Remaining phases
 
-### Categories
-- `POST /api/v1/categories`
-- `GET /api/v1/categories`
+There are **5 phases remaining**:
 
-### Budgets
-- `POST /api/v1/budgets`
-- `GET /api/v1/budgets?start=...&end=...`
-- `GET /api/v1/budgets/{budgetID}`
-- `GET /api/v1/budgets/{budgetID}/summary`
+### FASE 13 — Frontend product
+**PENDING**
 
-### Savings
-- `POST /api/v1/savings-goals`
-- `GET /api/v1/savings-goals`
-- `GET /api/v1/savings-goals/{goalID}`
-- `GET /api/v1/savings-goals/{goalID}/summary`
-- `POST /api/v1/savings-goals/{goalID}/contributions`
+React + Vite + Tailwind + PWA + Dark Mode, mobile-first product experience consuming the validated backend API.
 
-## Validation policy
+### FASE 14 — Testing hardening
+**PENDING**
 
-Per the development workflow requested for this project, this implementation was not followed by a GitHub CI/build/test cycle. Compilation and tests will be reviewed locally when the project is run and an actual local error appears.
+Broader automated coverage, integration tests, financial invariant coverage, failure-path validation and reliability hardening.
 
-The implementation keeps automated test files from previous phases intact; this checkpoint intentionally avoids spending additional GitHub requests on CI.
+### FASE 15 — Payroll
+**PENDING**
+
+A later specialized payroll domain. Payroll does not redefine the identity of Financial-D3v.
+
+### FASE 16 — Private deployment and operations
+**PENDING**
+
+Private deployment, runtime configuration, secrets handling, backups, recovery and operational procedures.
+
+### FASE 17 — Production readiness
+**PENDING**
+
+Final review of security, privacy, UX, reliability, documentation and operational readiness against the product vision.
 
 ## Next execution target
 
-**FASE 8 — Financial education**
+**FASE 13 — Frontend product**
 
-FASE 8 will connect the product's financial-learning model to the data already available from accounts, transactions, budgets and savings goals.
+The backend foundation is now validated locally. The next phase is the product-facing frontend.
 
 Financial-D3v · PALMI-D3V · October 4, 2026

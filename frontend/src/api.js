@@ -1,6 +1,6 @@
 import {getAuthToken,isAuthEnabled} from "./auth";
 
-const API_BASE=import.meta.env.VITE_API_BASE_URL||"http://localhost:8080";
+const API_BASE=import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
 
 export async function api(path,{token,ownerId,method="GET",body}={}) {
  const authToken=token||(isAuthEnabled()?await getAuthToken():null);

@@ -2,5 +2,17 @@
   "firestore": {
     "rules": "firebase/firestore.rules",
     "indexes": "firebase/firestore.indexes.json"
+  },
+  "hosting": {
+    "public": "frontend/dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {"source": "/api/**", "run": {"serviceId": "financial-d3v-api", "region": "us-central1", "pinTag": true}},
+      {"source": "**", "destination": "/index.html"}
+    ],
+    "headers": [
+      {"source": "/service-worker.js", "headers": [{"key": "Cache-Control", "value": "no-cache"}]},
+      {"source": "/sw.js", "headers": [{"key": "Cache-Control", "value": "no-cache"}]}
+    ]
   }
 }

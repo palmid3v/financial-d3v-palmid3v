@@ -6,37 +6,37 @@
 
 ## Target
 
-`text
+```text
 GitHub main → Vercel Hobby → frontend/dist
                          ↓
                  encrypted Financial Vault
-`
+```
 
 The Financial Vault is local-first. No hosted database is required for financial data.
 
 ## Repository configuration
 
-Root `vercel.json⟧ defines:
+Root `vercel.json` defines:
 
-- install: `cd frontend && npm ci⟧
-- build: `cd frontend && npm run build⟧
-- output: `frontend/dist⟧
+- install: `cd frontend && npm ci`
+- build: `cd frontend && npm run build`
+- output: `frontend/dist`
 
 ## Local pre-deployment validation
 
 From repository root:
 
-`powershell
+```powershell
 git pull origin main
 .\scripts\validate.ps1
-`
+```
 
 Runtime:
 
-`powershell
+```powershell
 cd frontend
 npm run preview
-`
+```
 
 Verify:
 - Vault create/open/save;
@@ -61,7 +61,7 @@ Firebase remains historical/optional infrastructure and is not the active financ
 
 ## Vercel deployment
 
-Connect `palmid3v/financial-d3v-palmid3v⟧ to Vercel and deploy the `main⟧ branch.
+Connect `palmid3v/financial-d3v-palmid3v` to Vercel and deploy the `main` branch.
 
 After deployment, run a production smoke test against the real URL.
 

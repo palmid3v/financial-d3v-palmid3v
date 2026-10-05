@@ -63,19 +63,19 @@ Period reports, cash flow, spending analysis, budget/savings/debt context and ex
 Firebase ID-token verification, owner authorization, privacy boundaries and owner-scoped audit events. See `docs/PHASE-12-AUTH-PRIVACY-AUDIT.md`.
 
 ## FASE 13 — Frontend product
-**PENDING**
+**APPROVED / BUILT**
 
-React + Vite + Tailwind + PWA + Dark Mode, mobile-first product experience. The frontend will consume the existing backend API and expose the core financial loop as a usable product.
+React + Vite + Tailwind + PWA + Dark Mode, mobile-first product shell connected to the dashboard API. See `docs/PHASE-13-FRONTEND.md`.
 
 ## FASE 14 — Testing hardening
-**PENDING**
+**APPROVED / BUILT**
 
-Broader automated coverage, integration hardening, financial invariant coverage, error-path validation and reliability checks across the backend and frontend.
+Payroll domain tests, explicit financial-domain coverage and frontend build validation were added to the CI path. See `docs/PHASE-14-TESTING-HARDENING.md`.
 
 ## FASE 15 — Payroll
-**PENDING**
+**APPROVED / BUILT**
 
-Payroll remains intentionally late and is a specialized domain rather than the identity of Financial-D3v.
+Payroll is implemented as a specialized owner-scoped domain without changing the product identity. It deliberately avoids unverified Colombian legal/tax compliance claims. See `docs/PHASE-15-PAYROLL.md`.
 
 ## FASE 16 — Private deployment and operations
 **PENDING**
@@ -101,9 +101,9 @@ The backend learning path now covers:
 
 | Fase | Focus | Status |
 | --- | --- | --- |
-| **13** | Frontend product | PENDING |
-| **14** | Testing hardening | PENDING |
-| **15** | Payroll | PENDING |
+| **13** | Frontend product | APPROVED / BUILT |
+| **14** | Testing hardening | APPROVED / BUILT |
+| **15** | Payroll | APPROVED / BUILT |
 | **16** | Private deployment & operations | PENDING |
 | **17** | Production readiness | PENDING |
 

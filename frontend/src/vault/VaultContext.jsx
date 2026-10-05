@@ -21,6 +21,11 @@ export function VaultProvider({ children }) {
 
   const createVault = useCallback(async (password) => {
     const data = createEmptyVault();
+    const serialized = await sealVault(data, password);
+
+    // Creating a vault establishes the encrypted file as the persistence boundary.
+    downloadVault(serialized, "financial-d3v.fdv");
+
     passwordRef.current = password;
     setVault(data);
     setFileName("financial-d3v.fdv");

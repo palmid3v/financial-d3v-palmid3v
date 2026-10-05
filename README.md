@@ -4,7 +4,7 @@
 
 **Last updated:** 2026-10-05  
 **Timezone:** America/Bogota (COT, UTC-05:00)  
-**Source of truth:** GitHub `main⟧
+**Source of truth:** GitHub `main`
 
 ## Product
 
@@ -16,7 +16,7 @@ Financial-D3v helps a private user record, understand, plan and learn from perso
 
 ## Current architecture — $0 local-first
 
-`text
+```text
 GitHub
    ↓
 Vercel Hobby
@@ -30,7 +30,7 @@ FDV1 encrypted vault file
 decrypted state in active memory only
    ↓
 React + Go/WASM local computation
-`
+```
 
 The encrypted .fdv file is the persistent financial source of truth. Financial plaintext is not intentionally persisted in browser storage or sent to a remote financial API.
 
@@ -80,29 +80,29 @@ The encrypted .fdv file is the persistent financial source of truth. Financial p
 
 ## Validación del Proyecto
 
-`text
+```text
 Automated → Runtime → Security → Functional → PASS / FIX / APPROVED
-`
+```
 
 Run from the repository root:
 
-`powershell
+```powershell
 git pull origin main
 .\scripts\validate.ps1
-`
+```
 
 Security audit:
 
-`powershell
+```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\security-audit.ps1
-`
+```
 
 Runtime preview:
 
-`powershell
+```powershell
 cd frontend
 npm run preview
-`
+```
 
 The runner does not start long-running preview processes automatically.
 
@@ -123,27 +123,27 @@ There is no password recovery service. Losing the password means the application
 
 ## Deployment
 
-`text
+```text
 GitHub main → Vercel Hobby → frontend/dist
-`
+```
 
-Root `vercel.json⟧ configures the Vite build from `frontend/⟧.
+Root `vercel.json` configures the Vite build from `frontend/`.
 
 No Cloud Run, Artifact Registry, Cloud Scheduler or paid Google Cloud dependency is required for the active Financial Vault architecture.
 
 ## Documentation map
 
-- `CONTEXT.md⟧ — continuation context and current state.
-- `STEP-BY-STEP-FINANCIAL-D3V-2026-10-05.md⟧ — step-by-step implementation and validation.
-- `docs/README.md⟧ — documentation index.
-- `docs/13-ROADMAP.md⟧ — roadmap.
-- `docs/03-ARCHITECTURE.md⟧ — current architecture.
-- `docs/07-FINANCIAL-RULES.md⟧ — financial invariants.
-- `docs/08-SECURITY.md⟧ — active security model.
-- `docs/09-TESTING.md⟧ — testing strategy.
-- `docs/10-DEPLOYMENT.md⟧ — active deployment model.
-- `docs/VALIDATION-RUNNER.md⟧ — validation process.
-- `docs/OPERATIONS-RUNBOOK.md⟧ — operations and recovery.
+- `CONTEXT.md` — continuation context and current state.
+- `STEP-BY-STEP-FINANCIAL-D3V-2026-10-05.md` — step-by-step implementation and validation.
+- `docs/README.md` — documentation index.
+- `docs/13-ROADMAP.md` — roadmap.
+- `docs/03-ARCHITECTURE.md` — current architecture.
+- `docs/07-FINANCIAL-RULES.md` — financial invariants.
+- `docs/08-SECURITY.md` — active security model.
+- `docs/09-TESTING.md` — testing strategy.
+- `docs/10-DEPLOYMENT.md` — active deployment model.
+- `docs/VALIDATION-RUNNER.md` — validation process.
+- `docs/OPERATIONS-RUNBOOK.md` — operations and recovery.
 - FASE 27–31 phase documents.
 
 Older Cloud Run/Firebase production documents are historical traceability, not active deployment instructions.

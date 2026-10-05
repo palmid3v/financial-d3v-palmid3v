@@ -13,8 +13,8 @@ import (
 
 const ownerHeader="X-Owner-ID"
 
-type Server struct{accounts *application.AccountService;transactions *application.TransactionService;categories *application.CategoryService;budgets *application.BudgetService;savings *application.SavingsService;firebaseReady bool}
-func NewServer(a *application.AccountService,t *application.TransactionService,c *application.CategoryService,b *application.BudgetService,s *application.SavingsService,ready bool)*Server{return &Server{accounts:a,transactions:t,categories:c,budgets:b,savings:s,firebaseReady:ready}}
+type Server struct{accounts *application.AccountService;transactions *application.TransactionService;categories *application.CategoryService;budgets *application.BudgetService;savings *application.SavingsService;education *application.EducationService;firebaseReady bool}
+func NewServer(a *application.AccountService,t *application.TransactionService,c *application.CategoryService,b *application.BudgetService,s *application.SavingsService,e *application.EducationService,ready bool)*Server{return &Server{accounts:a,transactions:t,categories:c,budgets:b,savings:s,education:e,firebaseReady:ready}}
 func(s *Server)Handler()http.Handler{
 	mux:=http.NewServeMux()
 	mux.HandleFunc("GET /health",s.health);mux.HandleFunc("GET /ready",s.ready)
@@ -22,7 +22,7 @@ func(s *Server)Handler()http.Handler{
 	mux.HandleFunc("POST /api/v1/transactions",s.createTransaction);mux.HandleFunc("GET /api/v1/transactions",s.listTransactions);mux.HandleFunc("GET /api/v1/transactions/{transactionID}",s.getTransaction)
 	mux.HandleFunc("POST /api/v1/categories",s.createCategory);mux.HandleFunc("GET /api/v1/categories",s.listCategories)
 	mux.HandleFunc("POST /api/v1/budgets",s.createBudget);mux.HandleFunc("GET /api/v1/budgets",s.listBudgets);mux.HandleFunc("GET /api/v1/budgets/{budgetID}",s.getBudget);mux.HandleFunc("GET /api/v1/budgets/{budgetID}/summary",s.getBudgetSummary)
-	mux.HandleFunc("POST /api/v1/savings-goals",s.createSavingsGoal);mux.HandleFunc("GET /api/v1/savings-goals",s.listSavingsGoals);mux.HandleFunc("GET /api/v1/savings-goals/{goalID}",s.getSavingsGoal);mux.HandleFunc("GET /api/v1/savings-goals/{goalID}/summary",s.getSavingsSummary);mux.HandleFunc("POST /api/v1/savings-goals/{goalID}/contributions",s.createSavingsContribution)
+	mux.HandleFunc("POST /api/v1/savings-goals",s.createSavingsGoal);mux.HandleFunc("GET /api/v1/savings-goals",s.listSavingsGoals);mux.HandleFunc("GET /api/v1/savings-goals/{goalID}",s.getSavingsGoal);mux.HandleFunc("GET /api/v1/savings-goals/{goalID}/summary",s.getSavingsSummary);mux.HandleFunc("POST /api/v1/savings-goals/{goalID}/contributions",s.createSavingsContribution);mux.HandleFunc("GET /api/v1/education",s.listEducation);mux.HandleFunc("GET /api/v1/education/insights",s.educationInsights)
 	return requestIDMiddleware(loggingMiddleware(mux))
 }
 func(s *Server)health(w http.ResponseWriter,_ *http.Request){writeJSON(w,http.StatusOK,map[string]any{"status":"ok","service":"financial-d3v-api"})}
@@ -61,3 +61,20 @@ func(s *Server)listSavingsGoals(w http.ResponseWriter,r *http.Request){if !s.ser
 func(s *Server)getSavingsGoal(w http.ResponseWriter,r *http.Request){if !s.servicesReady(w){return};owner,ok:=requireOwner(w,r);if !ok{return};v,err:=s.savings.GetGoal(r.Context(),owner,r.PathValue("goalID"));if err!=nil{writeError(w,statusForError(err),err.Error());return};writeJSON(w,http.StatusOK,v)}
 func(s *Server)getSavingsSummary(w http.ResponseWriter,r *http.Request){if !s.servicesReady(w){return};owner,ok:=requireOwner(w,r);if !ok{return};v,err:=s.savings.Summary(r.Context(),owner,r.PathValue("goalID"),time.Now().UTC());if err!=nil{writeError(w,statusForError(err),err.Error());return};writeJSON(w,http.StatusOK,v)}
 func(s *Server)createSavingsContribution(w http.ResponseWriter,r *http.Request){if !s.servicesReady(w){return};owner,ok:=requireOwner(w,r);if !ok{return};var req savingsContributionRequest;if !decodeJSON(w,r,&req){return};at,err:=time.Parse(time.RFC3339,req.ContributedAt);if err!=nil{writeError(w,http.StatusBadRequest,"contributedAt must be RFC3339");return};v,err:=domain.NewSavingsContribution(newID(),owner,r.PathValue("goalID"),domain.Money{MinorUnits:req.AmountMinor,Currency:strings.ToUpper(strings.TrimSpace(req.Currency))},strings.TrimSpace(req.SourceAccountID),strings.TrimSpace(req.TransactionID),at,time.Now().UTC());if err!=nil{writeError(w,statusForError(err),err.Error());return};v.Note=strings.TrimSpace(req.Note);if err=s.savings.AddContribution(r.Context(),v);err!=nil{writeError(w,statusForError(err),err.Error());return};writeJSON(w,http.StatusCreated,v)}
+
+
+func (s *Server) listEducation(w http.ResponseWriter, r *http.Request) {
+	if s.education == nil { writeError(w, http.StatusServiceUnavailable, "education service is unavailable"); return }
+	writeJSON(w, http.StatusOK, s.education.Cards(r.URL.Query().Get("topic")))
+}
+
+func (s *Server) educationInsights(w http.ResponseWriter, r *http.Request) {
+	if s.education == nil { writeError(w, http.StatusServiceUnavailable, "education service is unavailable"); return }
+	owner, ok := requireOwner(w, r); if !ok { return }
+	budgetID := strings.TrimSpace(r.URL.Query().Get("budgetId"))
+	goalID := strings.TrimSpace(r.URL.Query().Get("goalId"))
+	if budgetID == "" && goalID == "" { writeError(w, http.StatusBadRequest, "budgetId or goalId is required"); return }
+	v, err := s.education.Insights(r.Context(), owner, budgetID, goalID, time.Now().UTC())
+	if err != nil { writeError(w, statusForError(err), err.Error()); return }
+	writeJSON(w, http.StatusOK, v)
+}

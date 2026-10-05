@@ -58,11 +58,7 @@ See:
 
 The previous implementation phases are not considered completed under this new vision.
 
-### Next
 
-**FASE 2 — Financial Domain Model v2**
-
-The domain will be rebuilt from the Phase 1 product specification rather than copied from the previous implementation.
 
 ## Documentation
 

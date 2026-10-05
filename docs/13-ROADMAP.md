@@ -38,9 +38,9 @@ Budget periods, expense-category limits, planned-versus-actual calculations, uti
 Savings goals, contribution records, goal progress, remaining amount, completion percentage, required daily pace and contribution-history signals.
 
 ## FASE 8 — Financial education
-**PENDING**
+**APPROVED / BUILT**
 
-FACT → CALCULATION → INTERPRETATION → ACTION content integrated into the product.
+Financial education cards and contextual insights using the FACT → CALCULATION → INTERPRETATION → ACTION model. Initial topics cover cash flow, budget utilization, savings progress, transaction categorization and debt basics. Debt accounting remains FASE 9.
 
 ## FASE 9 — Debts
 **PENDING**
@@ -89,11 +89,11 @@ Final readiness review against the private personal-finance product vision.
 
 ### Current checkpoint
 
-**FASES 1–7: APPROVED / BUILT**
+**FASES 1–8: APPROVED / BUILT**
 
 The backend learning path now covers:
 
-`Account → Transaction → Balance → Budget → Planned vs Actual → Savings Goal → Contributions → Progress`
+`Account → Transaction → Balance → Budget → Planned vs Actual → Savings Goal → Contributions → Progress → Financial Education`
 
 ### Rule
 

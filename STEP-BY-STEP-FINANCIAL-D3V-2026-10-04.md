@@ -1,26 +1,18 @@
 # STEP-BY-STEP-FINANCIAL-D3V-2026-10-04
 
-Operational roadmap and chronological checklist for Financial-D3v.
+Operational development history for Financial-D3v.
 
-This document is the working source for development. Each phase records intent, decisions, implementation, validation and remaining work. Completed work remains visible for traceability.
+## IMPORTANT — Product reset
 
-# Product reset — October 4, 2026
+On October 4, 2026, the product vision was changed and approved again.
 
-Status: **APPROVED**
+The previous phases are retained historically, but **their completion status does not carry forward into the new product**.
 
-The product is now explicitly treated as a **private personal financial application and financial education tool**.
+The official execution starts again at **FASE 1**.
 
-The user will use the application personally to:
-- understand and control income and expenses;
-- manage accounts and transactions;
-- budget;
-- save;
-- understand debts;
-- track assets and liabilities;
-- monitor net worth;
-- learn practical financial concepts.
+The application is now:
 
-Payroll remains a specialized domain and will come after the personal-finance core.
+> A private personal-finance application and financial learning workspace that helps its owner understand, plan and improve personal finances while learning software engineering and financial concepts.
 
 ## Approved stack
 
@@ -37,410 +29,309 @@ Payroll remains a specialized domain and will come after the personal-finance co
 | CI | GitHub Actions |
 | Docs | Markdown |
 
-**Database decision:** PostgreSQL is replaced by Firebase Firestore. The previous PostgreSQL migration is historical only.
+## Product loop
 
-# Product principles
+Record → Categorize → Understand → Plan → Save → Review → Learn → Adjust
 
-1. Private by design.
-2. Financial ledger as source of truth.
-3. Deterministic financial calculations.
-4. Education in context.
-5. Savings as a first-class outcome.
-6. No automatic money movement.
-7. No invented legal/tax rules.
-8. Incremental, validated development.
-9. UI explains; domain decides.
-10. Documentation evolves with the product.
+## Reset principle
 
-# Architecture direction
+Previous code and documentation can be used as historical reference, but they cannot be used to mark a new phase as complete.
 
-React + Vite + Tailwind
-        ↓
-Go REST API
-        ↓
-Application Services
-        ↓
-Domain
-   ↙         ↘
-Repositories  Domain Services
-        ↓
-Firebase Firestore
+Each new phase must be rebuilt, validated and approved against this vision.
 
-Firebase Authentication is a later security capability.
+---
 
-The app is intentionally controlled by the owner and does not need to run continuously.
-
-# Phase 0 — Repository foundation
-
-## Goal
-Create the canonical project workspace.
+# FASE 1 — Product Definition
 
 ## Status
-Completed.
 
-Established:
-- repository identity;
-- Go module;
-- documentation;
-- application entry point;
-- package boundaries;
-- .gitignore;
-- CI foundation.
+**APPROVED / BUILT**
 
-# Phase 1 — Product definition
+## Objective
 
-## Goal
-Define Financial-D3v as a broader financial product.
+Define exactly what Financial-D3v is before rebuilding its technical domain.
 
-## Status
-Completed and now expanded by the October 4 product reset.
+## Product problem
 
-The current product includes:
-- personal finance;
-- budgeting;
-- savings;
-- debts;
-- assets/liabilities;
-- net worth;
-- reports;
-- financial education;
-- payroll as a specialized domain.
+Personal financial information is easy to accumulate but difficult to understand.
 
-# Phase 2 — Domain model
+The product must help the owner move from:
 
-## Goal
-Model the financial language in code and documentation.
+numbers → understanding → planning → action → learning.
 
-## Status
-Foundation completed.
+## Primary user
 
-Core entities:
-- User
-- Account
-- AccountType
-- Transaction
-- TransactionCategory
-- Budget
-- BudgetItem
-- SavingsGoal
-- Debt
-- DebtPayment
-- Asset
-- Liability
-- Employee
-- Contract
-- PayrollPeriod
-- PayrollRun
-- Earning
-- Deduction
-- AuditEvent
+The owner is the first and only target user.
 
-Money is represented deterministically with integer minor units and currency.
+This is intentionally a personal product before it becomes a general-purpose product.
 
-# Phase 3 — Persistence foundation
+## Core jobs
 
-## Original decision
-PostgreSQL schema and migrations were created.
+### Daily
 
-## New approved decision
-Firebase Firestore is now the active database direction.
+Record money movement and understand its effect.
 
-## Status
-**Product decision approved; implementation pending.**
+### Weekly
 
-The Firestore design will use user-owned collections/subcollections and explicit ownership.
+Review movement and identify anything requiring attention.
 
-The PostgreSQL migration is preserved only as historical reference.
+### Monthly
 
-## Acceptance criteria
-- Firestore project configuration documented.
-- Repository interfaces defined.
-- Firestore adapter implemented.
-- Ownership paths tested.
-- Required indexes/query patterns documented.
-- Local development can connect without committing secrets.
-- Financial documents use deterministic monetary representation.
+Review income, expenses, plans and savings progress.
 
-# Phase 4 — Go backend + Firebase foundation
+### Long term
 
-## Goal
-Create a reliable Go application layer connected to Firestore.
+Become better at managing money by understanding the numbers.
 
-## Planned work
-- configuration;
-- Firebase/Firestore client initialization;
-- repository interfaces;
-- Firestore repositories;
-- HTTP routing;
-- JSON encoding;
-- error model;
-- validation;
-- middleware;
-- structured logging;
-- health/readiness;
-- local development configuration;
-- test strategy for persistence.
+## MVP
 
-## Acceptance criteria
-- API starts locally.
-- Firestore connection can be verified safely.
-- Secrets are externalized.
-- Repository tests cover ownership and document mapping.
-- Health endpoint remains functional.
-- Build and tests pass.
+### Financial foundation
 
-# Phase 5 — Accounts and transactions
+- accounts;
+- transactions;
+- income;
+- expenses;
+- transfers;
+- categories;
+- balances;
+- history.
 
-## Goal
-Deliver the first useful financial vertical slice.
+### Planning
 
-Flow:
-Account → Transaction → Balance → Dashboard summary → Educational explanation
-
-## Features
-- create account;
-- list accounts;
-- update account;
-- record income;
-- record expense;
-- transfer between accounts;
-- categorize transaction;
-- query transaction history;
-- calculate account balance;
-- explain balance and transaction effects.
-
-## Acceptance criteria
-The user can reconstruct financial activity from authoritative transaction history and understand the basic effect of each transaction.
-
-# Phase 6 — Budgeting
-
-## Goal
-Add financial planning and control.
-
-Features:
 - monthly budgets;
 - category limits;
 - planned vs actual;
-- remaining budget;
-- budget utilization;
-- period comparison;
-- educational explanations.
-
-# Phase 7 — Savings and financial habits
-
-## Goal
-Turn saving into a measurable, understandable workflow.
-
-Features:
 - savings goals;
-- target amounts;
-- target dates;
 - contributions;
-- progress;
-- required pace;
-- plan vs actual;
-- reflection;
-- saving education.
+- goal progress.
 
-# Phase 8 — Debts and liabilities
+### Understanding
 
-## Goal
-Track obligations clearly.
-
-Features:
-- debt creation;
-- principal;
-- interest configuration;
-- due dates;
-- payments;
-- outstanding balance;
-- payment history;
-- liability reporting;
-- debt education.
-
-Legal and financial terms must be verified before production-authoritative use.
-
-# Phase 9 — Assets and net worth
-
-## Goal
-Provide a complete financial position view.
-
-Formula:
-
-Net Worth = Assets - Liabilities
-
-Features:
-- asset registry;
-- liability registry;
-- valuation snapshots;
-- net-worth history;
-- financial position dashboard;
-- educational explanation.
-
-# Phase 10 — Reporting and financial dashboard
-
-## Goal
-Turn financial records into useful understanding.
-
-Reports:
 - cash flow;
 - income vs expenses;
 - spending by category;
-- budget performance;
-- debt summary;
 - savings progress;
-- net worth.
+- contextual education.
 
-The dashboard should explain the state, not replace the ledger.
+## Financial education
 
-# Phase 11 — Financial education
+Education follows:
 
-## Goal
-Make the application actively educational.
+FACT → CALCULATION → INTERPRETATION → ACTION
 
-Features:
-- financial glossary;
-- contextual lessons;
-- insights;
-- explanations;
-- progress reflections;
-- learning prompts;
-- source/date metadata for external authoritative claims.
+The system must never present an interpretation as a fact.
 
-Education model:
-Fact → Calculation → Interpretation → Suggestion
+## Savings
 
-# Phase 12 — Authentication, privacy and audit
+Savings is a first-class product outcome.
 
-## Goal
-Protect private financial information.
+The system should explain:
+- target;
+- contributions;
+- progress;
+- remaining amount;
+- required pace;
+- plan versus actual.
 
-Planned:
-- Firebase Authentication;
-- server-side authorization;
-- ownership boundaries;
-- Firestore security rules;
-- audit events;
-- sensitive-operation logging;
-- secret management;
-- backup/recovery.
+## Initial metrics
 
-# Phase 13 — Testing hardening
+- available balance;
+- period income;
+- period expenses;
+- net cash flow;
+- budget utilization;
+- savings contributions;
+- savings goal progress;
+- later: debt, assets, liabilities and net worth.
 
-Levels:
-1. Unit/domain.
-2. Application service.
-3. Firestore repository integration.
-4. HTTP/API.
-5. End-to-end critical flows.
+Every derived metric must have a documented formula.
 
-Financial invariants:
-- transfer conservation;
-- balance reproducibility;
-- budget boundaries;
-- savings progress;
-- debt balances;
-- net worth;
-- payroll reproducibility.
+## Product boundaries
 
-# Phase 14 — Frontend implementation
+The initial product does not automatically execute external money operations, expose personal financial data publicly, invent legal/tax rules, or operate as a public SaaS.
 
-## Goal
-Build the approved visual product.
+## UX principles
 
-Stack:
-- React;
-- Vite;
-- Tailwind;
-- Vite PWA;
-- Dark Mode.
+1. Dark Mode first.
+2. Fast entry.
+3. Dashboard before administration.
+4. Numbers have context.
+5. Education appears where useful.
+6. Color is not the only state indicator.
+7. Mobile is first-class.
+8. Important numbers are explainable.
+9. Complexity is progressive.
 
-Sections:
-- Dashboard;
-- Accounts;
-- Transactions;
-- Budgets;
-- Savings;
-- Debts;
-- Assets;
-- Net worth;
-- Reports;
-- Education;
-- Settings;
-- Payroll later.
+## FASE 1 acceptance
 
-# Phase 15 — Payroll domain
+- [x] Product purpose defined.
+- [x] Primary user defined.
+- [x] Financial jobs defined.
+- [x] Education goals defined.
+- [x] MVP defined.
+- [x] Savings objective defined.
+- [x] Initial metrics defined.
+- [x] Privacy boundaries defined.
+- [x] Product exclusions defined.
+- [x] Approved stack defined.
+- [x] Previous domain baseline neutralized.
+- [x] Roadmap restarted from FASE 1.
 
-Payroll becomes a specialized financial domain after the personal-finance core is stable.
+**FASE 1 EXIT: APPROVED**
 
-Flow:
-Employee → Contract → Payroll period → Earnings/adjustments → Deductions → Payroll result
+---
 
-Colombian legal/tax/labor rules must be researched, sourced, dated, versioned and tested before authoritative production use.
+# FASE 2 — Financial Domain Model v2
 
-# Phase 16 — AI-assisted product workflow
+## Status
 
-Maintain:
-PALMI → Nexsy → analysis/architecture → implementation → human review → tests → validation → documentation.
+**PENDING**
 
-Every major feature is reviewed from both engineering and financial-product perspectives.
+Rebuild the domain from FASE 1.
 
-# Phase 17 — Private deployment and operations
+Must define:
+- financial vocabulary;
+- Money;
+- Account;
+- Transaction;
+- Category;
+- Budget;
+- Savings Goal;
+- Financial Period;
+- education context;
+- invariants;
+- domain tests.
 
-Initial model:
-- local Go API;
-- local React/Vite frontend;
-- private Firebase project;
-- controlled execution by owner.
+Do not copy the previous domain model.
 
-Document:
-- environment setup;
-- Firebase configuration;
-- backups;
-- recovery;
-- credential rotation;
-- operational runbook.
+---
 
-# Phase 18 — Production readiness
+# FASE 3 — Firestore Persistence Design
 
-Checklist:
-- [ ] Authentication verified
-- [ ] Authorization verified
-- [ ] Firestore security rules verified
-- [ ] Firestore backup/recovery tested
-- [ ] Financial invariants tested
-- [ ] Audit trail verified
-- [ ] Error handling reviewed
-- [ ] Secrets externalized
-- [ ] Observability available
-- [ ] Legal/regulatory assumptions documented
-- [ ] Educational claims traceable
-- [ ] Production runbook created
+**PENDING**
 
-# Current implementation checkpoint
+Define:
+- document model;
+- ownership paths;
+- indexes;
+- repository contracts;
+- serialization;
+- persistence tests.
 
-Status: **PRODUCT RESET APPROVED / DOCUMENTATION UPDATE IN PROGRESS**
+---
 
-Already implemented:
-- Go 1.27 module;
-- HTTP health endpoint;
-- deterministic Money value object;
-- core domain entities;
-- domain tests;
-- GitHub Actions CI;
-- initial documentation;
-- Dark Mode UX direction.
+# FASE 4 — Go Application Foundation
 
-Current limitation:
-- the Go API does not yet connect to Firestore;
-- the frontend is not yet implemented;
-- the current runtime is therefore still the technical foundation, not the complete financial application.
+**PENDING**
 
-## Next execution point
+Define and implement:
+- configuration;
+- HTTP application;
+- errors;
+- validation;
+- logging;
+- Firestore adapter;
+- repository wiring;
+- health/readiness;
+- integration tests.
 
-**Phase 4 — Go backend + Firebase foundation.**
+---
 
-Do not start broad feature work before the Firebase repository foundation and validation are complete.
+# FASE 5 — Accounts and Transactions
+
+**PENDING**
+
+First usable financial workflow:
+
+Account → Transaction → Balance → Summary
+
+---
+
+# FASE 6 — Budgeting
+
+**PENDING**
+
+---
+
+# FASE 7 — Savings and Financial Habits
+
+**PENDING**
+
+---
+
+# FASE 8 — Financial Education
+
+**PENDING**
+
+---
+
+# FASE 9 — Debts
+
+**PENDING**
+
+---
+
+# FASE 10 — Assets, Liabilities and Net Worth
+
+**PENDING**
+
+---
+
+# FASE 11 — Reports and Financial Dashboard
+
+**PENDING**
+
+---
+
+# FASE 12 — Authentication, Privacy and Audit
+
+**PENDING**
+
+---
+
+# FASE 13 — Frontend Product
+
+**PENDING**
+
+React + Vite + Tailwind + PWA + Dark Mode.
+
+---
+
+# FASE 14 — Testing Hardening
+
+**PENDING**
+
+---
+
+# FASE 15 — Payroll
+
+**PENDING**
+
+Payroll remains intentionally late.
+
+---
+
+# FASE 16 — Private Deployment and Operations
+
+**PENDING**
+
+---
+
+# FASE 17 — Production Readiness
+
+**PENDING**
+
+---
+
+# Current checkpoint
+
+**FASE 1 COMPLETE — NEW PRODUCT BASELINE APPROVED**
+
+The next implementation target is:
+
+**FASE 2 — Financial Domain Model v2**
+
+No Firestore schema, broad frontend or payroll implementation should be treated as complete until the new domain is defined from this product specification.
 
 ---
 

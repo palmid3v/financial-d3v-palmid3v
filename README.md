@@ -6,9 +6,7 @@ It helps its owner understand, organize and improve personal finances while also
 
 ## Product vision
 
-The application is built around one real user workflow.
-
-Its purpose is to help answer:
+The application helps answer:
 
 - What money do I have?
 - What came in?
@@ -20,7 +18,7 @@ Its purpose is to help answer:
 - Why did it change?
 - What can I learn from it?
 
-The product is not currently a payroll application. Payroll is a later specialized domain.
+The product is not payroll-first. Payroll is a specialized domain inside the broader personal-finance product.
 
 ## Product loop
 
@@ -51,41 +49,77 @@ It is not initially a public SaaS and does not automatically execute external fi
 
 ### FASES 1–17 — APPROVED / BUILT
 
-The backend foundation now covers:
+The platform foundation is complete through production-readiness UX.
+
+The backend covers:
 
 `Account → Transaction → Balance → Budget → Planned vs Actual → Savings Goal → Contributions → Progress → Financial Education → Debt → Assets/Liabilities → Net Worth → Reports → Auth/Audit`
 
-FASE 11 provides explainable reports and dashboard data.
+The frontend currently provides the production-oriented product shell and dashboard experience, with Transactions, Budget, Savings, Debts and Net Worth module surfaces ready for the next product phases.
 
-FASE 12 provides Firebase Auth integration, owner authorization and owner-scoped auditability. FASE 13 adds the first mobile-first React product shell, FASE 14 hardens validation and CI, and FASE 15 adds the specialized payroll foundation.
+## Full roadmap
 
-Local validation after FASE 13–15 and the local runtime hardening:
+### PLATFORM
+
+- [x] FASE 1 — Product definition
+- [x] FASE 2 — Financial Domain Model v2
+- [x] FASE 3 — Firestore persistence design
+- [x] FASE 4 — Go application foundation
+- [x] FASE 5 — Accounts and transactions
+- [x] FASE 6 — Budgeting
+- [x] FASE 7 — Savings and financial habits
+- [x] FASE 8 — Financial education
+- [x] FASE 9 — Debts
+- [x] FASE 10 — Assets, liabilities and net worth
+- [x] FASE 11 — Reports and financial dashboard
+- [x] FASE 12 — Authentication, privacy and audit
+- [x] FASE 13 — Frontend product
+- [x] FASE 14 — Testing hardening
+- [x] FASE 15 — Payroll
+- [x] FASE 16 — Private deployment and operations
+- [x] FASE 17 — Production readiness & product UX
+
+### PRODUCT
+
+- [ ] FASE 18 — Transactions UX
+- [ ] FASE 19 — Accounts UX
+- [ ] FASE 20 — Budget UX
+- [ ] FASE 21 — Savings UX
+- [ ] FASE 22 — Debt UX
+- [ ] FASE 23 — Net Worth UX
+- [ ] FASE 24 — Education UX
+
+### PRIVATE PRODUCTION
+
+- [ ] FASE 25 — Private production deployment
+- [ ] FASE 26 — Data protection and recovery
+- [ ] FASE 27 — Observability and reliability
+- [ ] FASE 28 — Financial data quality
+- [ ] FASE 29 — Historical financial intelligence
+- [ ] FASE 30+ — Continuous product evolution
+
+See `docs/13-ROADMAP.md` for the detailed checklist and `STEP-BY-STEP-FINANCIAL-D3V-2026-10-05.md` for the operational execution guide.
+
+## Validation checkpoint
+
+The current FASE 17 state has been locally validated:
 
 ```text
 go test ./...   → PASS
 go build ./...  → PASS
-npm ci             → PASS
-npm run build    → PASS
-PWA generation   → PASS
+npm ci          → PASS
+npm run build   → PASS
+PWA generation  → PASS
+/health         → PASS
+/ready          → PASS
+runtime         → PASS
 ```
 
-### Current product checkpoint
+## Next execution target
 
-**FASE 17 is implemented and built as the final roadmap phase.**
+**FASE 18 — Transactions UX**
 
-| Fase | Focus | Status |
-| --- | --- | --- |
-| **13** | Frontend product — React + Vite + Tailwind + PWA + Dark Mode | APPROVED / BUILT |
-| **14** | Testing hardening — broader coverage, integration and reliability | APPROVED / BUILT |
-| **15** | Payroll — specialized later domain | APPROVED / BUILT |
-| **16** | Private deployment & operations | APPROVED / BUILT |
-| **17** | Production readiness & product UX | APPROVED / BUILT |
-
-### Final phase
-
-**FASE 17 — Production readiness & product UX**
-
-The final phase adds the product-wide UI/UX system and final readiness boundary. Cloud production still requires explicit Firebase, secrets, infrastructure and backup configuration.
+The next work is product completion, not arbitrary infrastructure expansion. The objective is to connect the existing financial backend capabilities to a fast, understandable, mobile-first daily workflow.
 
 ## Documentation
 
@@ -93,14 +127,10 @@ Start with:
 
 1. `CONTEXT.md`
 2. `README.md`
-3. `STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md`
-4. `docs/PHASE-1-PRODUCT-SPEC.md`
-5. `docs/13-ROADMAP.md`
-6. `docs/PHASE-11-REPORTS-DASHBOARD.md`
-7. `docs/PHASE-12-AUTH-PRIVACY-AUDIT.md`
-8. `docs/PHASE-16-PRIVATE-DEPLOYMENT-OPERATIONS.md`
-9. `docs/PHASE-17-PRODUCTION-READINESS-UX.md`
-10. `docs/OPERATIONS-RUNBOOK.md`
+3. `STEP-BY-STEP-FINANCIAL-D3V-2026-10-05.md`
+4. `docs/13-ROADMAP.md`
+5. `docs/PHASE-17-PRODUCTION-READINESS-UX.md`
+6. `docs/OPERATIONS-RUNBOOK.md`
 
 The repository is the source of truth.
 

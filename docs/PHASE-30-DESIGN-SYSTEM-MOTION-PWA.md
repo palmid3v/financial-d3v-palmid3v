@@ -29,7 +29,7 @@ Implemented:
 
 ## Design tokens
 
-Shared tokens live in `frontend/src/styles/design-system.css⟧ and cover surfaces, borders, semantic colors, spacing, radii and motion.
+Shared tokens live in `frontend/src/styles/design-system.css` and cover surfaces, borders, semantic colors, spacing, radii and motion.
 
 ## PWA
 

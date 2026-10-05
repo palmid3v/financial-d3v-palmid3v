@@ -130,13 +130,19 @@ export function transactionTotals(transactions, start, end) {
 export function accountBalance(account, transactions) {
   const opening = Number(account.openingMinorUnits) || 0;
   return transactions.reduce((balance, item) => {
-    if (item.accountId !== account.id) return balance;
-    if (item.type === "income") return balance + item.minorUnits;
-    if (item.type === "expense") return balance - item.minorUnits;
+    if (item.type === "income" && item.accountId === account.id) {
+      return balance + item.minorUnits;
+    }
+
+    if (item.type === "expense" && item.accountId === account.id) {
+      return balance - item.minorUnits;
+    }
+
     if (item.type === "transfer") {
       if (item.accountId === account.id) return balance - item.minorUnits;
       if (item.toAccountId === account.id) return balance + item.minorUnits;
     }
+
     return balance;
   }, opening);
 }

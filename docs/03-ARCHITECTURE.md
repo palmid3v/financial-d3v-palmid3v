@@ -1,69 +1,115 @@
 # Architecture — Financial-D3v
 
-## Product architecture
+**Status:** CURRENT BASELINE  
+**Last updated:** 2026-10-05  
+**Timezone:** America/Bogota (COT, UTC-05:00)
 
-Financial-D3v is a private personal-finance application and financial learning workspace.
+## Active product architecture
 
-React + Vite + Tailwind + PWA
-↓
-Go REST/HTTP API
-↓
-Application Services
-↓
-Financial Domain
-↓
-Repository Contracts
-↓
-Firestore Adapter
-↓
-Firebase Firestore
+`text
+GitHub
+   ↓
+Vercel Hobby
+   ↓
+React + Vite + Tailwind PWA
+   ↓
+Financial Vault Gate
+   ↓
+FDV1 encrypted file
+   ↓
+decrypted in-memory financial state
+   ↓
+Go 1.27 / WebAssembly
+   ↓
+React presentation
+`
 
-## FASE 2 domain boundary
+The encrypted Financial Vault file is the persistent source of truth for financial data.
 
-The domain owns financial meaning and invariants.
+## Privacy boundary
 
-Core concepts:
-- Money
-- Account
-- Transaction
-- Category
-- Budget
-- SavingsGoal
-- FinancialPeriod
-- EducationContext
+Financial plaintext is intentionally kept out of:
+- localStorage;
+- sessionStorage;
+- IndexedDB;
+- remote Firestore financial persistence;
+- remote Go financial APIs;
+- GitHub;
+- Vercel application storage.
 
-The domain does not depend on Firestore, HTTP, React or UI concerns.
+The browser holds decrypted state only while the vault is unlocked.
 
-## FASE 3 persistence boundary
+## Vault lifecycle
 
-Persistence owns:
-- repository contracts;
-- Firestore document DTOs;
-- serialization mapping;
-- ownership-scoped paths;
-- query/index design.
+`text
+LOCKED
+  ↓
+vault file + password
+  ↓
+decrypt
+  ↓
+ACTIVE IN-MEMORY WORKSPACE
+  ↓
+save → encrypt/export
+  ↓
+lock / 15-minute inactivity
+  ↓
+clear active state
+  ↓
+LOCKED
+`
 
-Firestore SDK wiring is intentionally deferred to FASE 4.
+## Go/WASM boundary
 
-## Ownership
+Go remains part of the product as a local computation engine.
 
-All financial records are scoped to an owner identifier.
+It receives in-memory calculation input and returns calculation results. It does not receive financial data through a remote HTTP service.
 
-## Ledger principle
+The browser-facing loader may fetch the local WASM binary from `/wasm/financial-engine.wasm⟧. This is resource loading, not financial-data transport.
 
-Transactions are authoritative. Account balances and dashboard values are derived from opening balances plus authoritative transactions.
+## Domain rules
 
-## Transfer principle
+The domain/Go calculation layer owns financial meaning and invariants.
 
-A transfer is represented as linked transaction entries: one outgoing entry and one incoming entry sharing a transfer identifier.
+Core concepts include:
+- Money;
+- Account;
+- Transaction;
+- Category;
+- Budget;
+- SavingsGoal;
+- Debt;
+- Asset;
+- Liability;
+- EducationContext;
+- Net Worth.
+
+Rules:
+- Money uses integer minor units plus currency.
+- Transactions are authoritative for ledger-derived values.
+- Transfers are not budget expenses.
+- Savings contributions are goal progress.
+- Only debt principal reduces debt balance.
+- Net worth = assets − liabilities.
+
+## Legacy architecture
+
+The repository still contains the original Go REST/HTTP + Firebase/Firestore architecture.
+
+That architecture is preserved for historical traceability. It is not the active financial-data source of truth.
+
+## Deployment boundary
+
+Active:
+
+**GitHub main → Vercel Hobby → React/Vite PWA → encrypted local Financial Vault**
+
+Historical cloud deployment material is not an active prerequisite.
 
 ## Dependency rule
 
-presentation → application → domain
-persistence → domain
+Presentation → application/domain logic.
 
-The domain must not depend on outer layers.
+Persistence and platform adapters must not redefine financial meaning.
 
-## FASE 4 boundary
-
-HTTP handlers, configuration, Firebase initialization, logging and concrete repository wiring belong to FASE 4.
+For current work, the encrypted Vault is the persistence boundary and Go/WASM is the local calculation boundary.

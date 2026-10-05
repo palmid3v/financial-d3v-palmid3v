@@ -41,10 +41,10 @@ func (m Money) Add(other Money) (Money, error) {
 
 func (m Money) Subtract(other Money) (Money, error) {
 	if err := m.ensureSameCurrency(other); err != nil { return Money{}, err }
-	if other.MinorUnits > 0 && m.MinorUnits < math.MinInt64+other.MinUnits {
+	if other.MinorUnits > 0 && m.MinorUnits < math.MinInt64+other.MinorUnits {
 		return Money{}, ErrMoneyOverflow
 	}
-	if other.MinorUnits < 0 && m.MinorUnits > math.MaxInt64+other.MinUnits {
+	if other.MinorUnits < 0 && m.MinorUnits > math.MaxInt64+other.MinorUnits {
 		return Money{}, ErrMoneyOverflow
 	}
 	return Money{MinorUnits: m.MinorUnits - other.MinorUnits, Currency: m.Currency}, nil

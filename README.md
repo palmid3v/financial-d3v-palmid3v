@@ -1,103 +1,152 @@
 # Financial-D3v
 
-Financial-D3v is a private personal-finance application and financial learning workspace.
+> 🔐 Private personal-finance application + financial learning workspace.
 
-## Product loop
-Record → Categorize → Understand → Plan → Save → Review → Learn → Adjust
+**Last updated:** 2026-10-05  
+**Timezone:** America/Bogota (COT, UTC-05:00)  
+**Source of truth:** GitHub `main⟧
 
-## $0 architecture target
+## Product
 
-Financial-D3v is being redesigned around a user-controlled encrypted vault.
+Financial-D3v helps a private user record, understand, plan and learn from personal finances while keeping the financial source of truth under the user's control.
 
-```text
+**Core loop:** Record → Categorize → Understand → Plan → Save → Review → Learn → Adjust
+
+**Education:** FACT → CALCULATION → INTERPRETATION → ACTION
+
+## Current architecture — $0 local-first
+
+`text
 GitHub
-  ↓
+   ↓
 Vercel Hobby
-  ↓
-React + Vite PWA
-  ↓
-Financial Vault
-  ├── encrypted file persistence
-  ├── unlock with master password
-  ├── decrypted state only in memory
-  └── lock/auto-lock clears the active session
-```
+   ↓
+React + Vite + Tailwind PWA
+   ↓
+Financial Vault Gate
+   ↓
+FDV1 encrypted vault file
+   ↓
+decrypted state in active memory only
+   ↓
+React + Go/WASM local computation
+`
 
-The persistent financial source of truth is the encrypted Financial Vault file.
-
-Firebase remains optional. If Firebase Auth is retained, it is an access/account mechanism only; it is not the encryption key and it must not receive plaintext financial data.
+The encrypted .fdv file is the persistent financial source of truth. Financial plaintext is not intentionally persisted in browser storage or sent to a remote financial API.
 
 ## Approved stack
 
-React + Vite · Tailwind · Dark Mode · PWA · Go 1.27 · REST/HTTP · Firebase Auth/Firestore where justified · GitHub Actions · Markdown.
+| Layer | Technology |
+|---|---|
+| Frontend | React + Vite |
+| UI | Tailwind CSS |
+| Design | Dark-first, information-first design system |
+| PWA | Vite PWA / Workbox |
+| Local computation | Go 1.27 + WebAssembly |
+| Legacy API | Go REST/HTTP |
+| Legacy persistence | Firebase Firestore |
+| Optional identity | Firebase Auth |
+| CI | GitHub Actions |
+| Documentation | Markdown |
 
-## Deployment principle
+## Financial rules
 
-The project must remain deployable at $0 for personal use.
+- Money = integer MinorUnits + Currency.
+- Transfers are not ordinary budget expenses.
+- Budget actuals come from authoritative expense transactions.
+- Savings contributions are goal-progress records, not ordinary expenses.
+- Debt payments contain amount, principal, interest and fees.
+- Only principal reduces debt balance.
+- Net worth = assets − all liabilities.
+- Debt balances are liabilities.
+- Domain/Go calculations are authoritative; UI presents and explains results.
 
-Current target:
-- GitHub for source control.
-- Vercel Hobby for the web application.
-- Firebase Spark only for features that remain inside its no-cost limits.
-- No Cloud Run.
-- No Artifact Registry.
-- No Cloud Scheduler.
-- No Google Cloud Billing dependency for the financial vault.
+## Release status
 
-Vercel currently lists Hobby at $0/month and supports Git-based deployment. Firebase documents a no-cost Spark plan that does not require payment information; Firestore has a no-cost quota but can require billing for higher usage and certain features. citeturn2search0turn0search0turn0search1
+| Phase | Status |
+|---|---|
+| FASES 1–17 | ✅ APPROVED / BUILT |
+| FASES 18–24 | ✅ APPROVED / BUILT |
+| FASE 25 | ✅ APPROVED / BUILT / VALIDATED |
+| FASE 26 | ✅ APPROVED / BUILT / VALIDATED |
+| FASE 27 | ✅ APPROVED / BUILT / VALIDATED |
+| FASE 28 | ✅ APPROVED / BUILT / VALIDATED |
+| FASE 29 | ✅ APPROVED / BUILT / VALIDATED |
+| FASE 30 | ✅ APPROVED / BUILT / VALIDATED |
+| FASE 31 | ✅ APPROVED / BUILT / VALIDATED |
+| FASE 32+ | 🔵 PLANNED / CONTINUOUS EVOLUTION |
 
-## Current checkpoint
+**FASES 27–31 form the first-release private/local-first foundation.**
 
-- FASES 1–17: APPROVED / BUILT
-- FASES 18–24: IMPLEMENTED / VALIDATION PENDING
-- FASE 25: APPROVED / BUILT
-- FASE 26: APPROVED / BUILT
-- FASE 27: APPROVED / BUILT / VALIDATED — Financial Vault foundation
-- FASE 28: BUILT / VALIDATION PENDING — Vault migration + product UI
-- FASE 29: BUILT / VALIDATION PENDING — Go financial engine / local computation boundary
-- FASE 30: APPROVED / BUILT / VALIDATED — $0 deployment + design system + motion + PWA refinement
-- FASE 31: BUILT / VALIDATION PENDING — security, recovery and production validation
-- FASE 32+: CONTINUOUS EVOLUTION
+## Validación del Proyecto
 
-## Financial Vault
+`text
+Automated → Runtime → Security → Functional → PASS / FIX / APPROVED
+`
 
-The Financial Vault follows the privacy model established in PasswordVault:
+Run from the repository root:
 
-- locked by default;
-- user-controlled vault file;
-- password required to unlock;
-- decrypted data only in active memory;
-- no plaintext financial persistence in browser storage;
-- lock/auto-lock clears active financial state;
-- encrypted export/import;
-- versioned file format;
-- no secrets committed to Git.
+`powershell
+git pull origin main
+.\scripts\validate.ps1
+`
 
-The current web vault foundation is `frontend/src/vault/crypto.js` and `docs/PHASE-27-FINANCIAL-VAULT.md`.
+Security audit:
 
-The vault uses Web Crypto primitives (PBKDF2 + AES-GCM) for the first version. This is an implementation foundation, not a formal security audit or a claim of KDBX equivalence. Web Crypto itself warns that secure cryptographic system design requires specialist review. citeturn1search1turn1search3
+`powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\security-audit.ps1
+`
 
-## Documentation
+Runtime preview:
 
-- `docs/PHASE-27-FINANCIAL-VAULT.md`
-- `docs/PHASE-28-VAULT-DATA-MIGRATION.md`
-- `docs/PHASE-29-GO-FINANCIAL-ENGINE.md`
-- `docs/DESIGN-SYSTEM-REFERENCE.md`
-- `docs/13-ROADMAP.md`
-- `docs/08-SECURITY.md`
-- `docs/OPERATIONS-RUNBOOK.md`
-- `docs/PHASE-31-SECURITY-RECOVERY-PRODUCTION.md`
-- `STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md`
+`powershell
+cd frontend
+npm run preview
+`
 
-## Validation runner
+The runner does not start long-running preview processes automatically.
 
-The repository includes an adaptive PowerShell validation runner at `scripts/validate.ps1`. Run it from the repository root after pulling `main`:
+## Recovery
 
-```powershell
-.\\scripts\\validate.ps1
-```
+The recovery unit is the encrypted .fdv file plus its password.
 
-The runner detects the current frontend npm scripts and Go project capabilities instead of assuming a permanently fixed command order. It performs automated validation and leaves long-running runtime checks such as `npm run preview` for manual validation. See `docs/VALIDATION-RUNNER.md`.
+1. Preserve the encrypted file.
+2. Open Financial-D3v.
+3. Select Open vault.
+4. Select the .fdv file.
+5. Enter the password.
+6. Verify representative totals and records.
+7. Continue working.
+8. Save a new encrypted .fdv after meaningful changes.
+
+There is no password recovery service. Losing the password means the application cannot decrypt that vault.
+
+## Deployment
+
+`text
+GitHub main → Vercel Hobby → frontend/dist
+`
+
+Root `vercel.json⟧ configures the Vite build from `frontend/⟧.
+
+No Cloud Run, Artifact Registry, Cloud Scheduler or paid Google Cloud dependency is required for the active Financial Vault architecture.
+
+## Documentation map
+
+- `CONTEXT.md⟧ — continuation context and current state.
+- `STEP-BY-STEP-FINANCIAL-D3V-2026-10-05.md⟧ — step-by-step implementation and validation.
+- `docs/README.md⟧ — documentation index.
+- `docs/13-ROADMAP.md⟧ — roadmap.
+- `docs/03-ARCHITECTURE.md⟧ — current architecture.
+- `docs/07-FINANCIAL-RULES.md⟧ — financial invariants.
+- `docs/08-SECURITY.md⟧ — active security model.
+- `docs/09-TESTING.md⟧ — testing strategy.
+- `docs/10-DEPLOYMENT.md⟧ — active deployment model.
+- `docs/VALIDATION-RUNNER.md⟧ — validation process.
+- `docs/OPERATIONS-RUNBOOK.md⟧ — operations and recovery.
+- FASE 27–31 phase documents.
+
+Older Cloud Run/Firebase production documents are historical traceability, not active deployment instructions.
 
 ## Master execution rule
 
@@ -108,5 +157,6 @@ The runner detects the current frontend npm scripts and Go project capabilities 
 5. Validate runtime.
 6. Review UX/security.
 7. Update documentation.
-8. Mark APPROVED / BUILT only after evidence exists.
-9. Move to the next phase.
+8. Record evidence.
+9. Mark APPROVED / BUILT only after evidence exists.
+10. Move to the next phase.

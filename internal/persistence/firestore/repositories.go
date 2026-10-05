@@ -25,7 +25,8 @@ func(r *Repositories)SavingsContributions()*SavingsContributionRepository{return
 func(r *Repositories)Debts()*DebtRepository{return &DebtRepository{db:r.db}}
 func(r *Repositories)DebtPayments()*DebtPaymentRepository{return &DebtPaymentRepository{db:r.db}}
 func(r *Repositories)Assets()*AssetRepository{return &AssetRepository{db:r.db}}
-func(r *Repositories)Liabilities()*LiabilityRepository{return &LiabilityRepository{db:r.db}}\nfunc(r *Repositories)Audit()*AuditRepository{return &AuditRepository{db:r.db}}
+func(r *Repositories)Liabilities()*LiabilityRepository{return &LiabilityRepository{db:r.db}}
+func(r *Repositories)Audit()*AuditRepository{return &AuditRepository{db:r.db}}
 
 type AccountRepository struct{db *gcpfirestore.Client}
 func(r *AccountRepository)Create(ctx context.Context,v domain.Account)error{_,err:=r.db.Collection("users").Doc(v.OwnerID).Collection("accounts").Doc(v.ID).Create(ctx,AccountToDocument(v));return mapFirestoreError(err)}

@@ -4,21 +4,44 @@ import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
-  plugins:[
+  plugins: [
     react(),
     tailwindcss(),
     VitePWA({
-      registerType:"autoUpdate",
-      manifest:{
-        name:"Financial-D3v",
-        short_name:"Financial-D3v",
-        description:"Private personal finance and financial learning workspace",
-        theme_color:"#09090b",
-        background_color:"#09090b",
-        display:"standalone",
-        start_url:"/",
-        icons:[]
-      }
-    })
-  ]
+      registerType: "autoUpdate",
+      includeAssets: ["favicon.svg", "robots.txt", "apple-touch-icon.png"],
+      manifest: {
+        id: "/",
+        name: "Financial-D3v",
+        short_name: "Financial-D3v",
+        description: "Private personal finance and financial learning workspace",
+        lang: "es-CO",
+        start_url: "/",
+        scope: "/",
+        display: "standalone",
+        orientation: "portrait-primary",
+        theme_color: "#0b0d10",
+        background_color: "#0b0d10",
+        categories: ["finance", "productivity"],
+        icons: [
+          {
+            src: "/icon-192.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "any maskable",
+          },
+          {
+            src: "/icon-512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any maskable",
+          },
+        ],
+      },
+      workbox: {
+        cleanupOutdatedCaches: true,
+        navigateFallback: "/",
+      },
+    }),
+  ],
 });

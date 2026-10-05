@@ -88,6 +88,16 @@ The vault uses Web Crypto primitives (PBKDF2 + AES-GCM) for the first version. T
 - `docs/OPERATIONS-RUNBOOK.md`
 - `STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md`
 
+## Validation runner
+
+The repository includes an adaptive PowerShell validation runner at `scripts/validate.ps1`. Run it from the repository root after pulling `main`:
+
+```powershell
+.\\scripts\\validate.ps1
+```
+
+The runner detects the current frontend npm scripts and Go project capabilities instead of assuming a permanently fixed command order. It performs automated validation and leaves long-running runtime checks such as `npm run preview` for manual validation. See `docs/VALIDATION-RUNNER.md`.
+
 ## Master execution rule
 
 1. Define scope.

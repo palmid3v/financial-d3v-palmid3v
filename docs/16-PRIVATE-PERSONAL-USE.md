@@ -1,5 +1,9 @@
 # Private and Personal Use
 
+**Status:** ACTIVE PRODUCT SCOPE  
+**Last updated:** 2026-10-05  
+**Timezone:** America/Bogota (COT, UTC-05:00)
+
 ## Product status
 
 Financial-D3v is a private personal application.
@@ -11,38 +15,50 @@ It is not initially intended to be:
 - an automatic payment system;
 - a public financial-advice service.
 
-## Runtime model
+## Current runtime model
 
-The owner starts the application when they want to use it.
+The active architecture is local-first:
 
-Typical local flow:
-Start Firebase configuration → start Go API → start React/Vite → use private application → stop local processes.
+`text
+GitHub → Vercel Hobby → React/Vite PWA
+                         ↓
+                 encrypted Financial Vault
+                         ↓
+                 local Go/WASM
+`
 
-The private Firebase project remains the persistent storage service.
+The encrypted .fdv file is the financial source of truth.
 
 ## Data ownership
 
-Financial data belongs to the personal workflow represented by the application.
+The user controls:
+- the encrypted vault file;
+- the vault password;
+- recovery backups.
 
-The design should minimize unnecessary personal data.
+Financial plaintext is decrypted only for the active application session.
 
-## Access
+## Privacy
 
-Access should eventually use:
-- Firebase Authentication;
-- server-side authorization;
-- Firestore security rules;
-- explicit ownership checks.
+The active design intentionally avoids:
+- plaintext financial browser persistence;
+- remote financial-data persistence;
+- automatic upload of the vault;
+- automatic financial actions.
+
+## Access and identity
+
+Firebase Auth remains an optional future identity mechanism. It is not the financial-data encryption boundary.
 
 ## No automatic financial actions
 
-Financial-D3v should initially be a system for recording, organizing, understanding, planning and learning.
+Financial-D3v is a system for recording, organizing, understanding, planning and learning.
 
-It should not automatically move money, execute payments or perform external financial transactions.
+It does not automatically move money, execute payments or perform external financial transactions.
 
-## Privacy-first development
+## Privacy-first review
 
-Every feature should ask:
+For every feature ask:
 1. Does it need personal financial data?
 2. Does it store more data than necessary?
 3. Who can read it?
@@ -51,4 +67,4 @@ Every feature should ask:
 6. Can the data be recovered?
 7. Can the user understand what the system is doing?
 
-Privacy is part of the product design, not an afterthought.
+Privacy is part of the product architecture.

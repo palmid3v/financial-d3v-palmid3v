@@ -137,7 +137,7 @@ function Topbar({ active, dirty, saveVault, lock }) {
 }
 
 function Dashboard({ vault, setActive }) {
-  const { start, end } = currentMonthRange();
+  const { start, end } = useMemo(() => currentMonthRange(), []);
   const [goAnalysis, setGoAnalysis] = useState(null);
   const [goEngineStatus, setGoEngineStatus] = useState("loading");
 

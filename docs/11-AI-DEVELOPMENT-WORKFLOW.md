@@ -1,46 +1,11 @@
-# AI Development Workflow
+# AI Development Workflow — New Baseline
 
-Financial-D3v uses AI as an engineering accelerator while keeping human review at the center.
+AI is an engineering accelerator, not an authority.
 
-PALMI
- ↓
-Problem / financial goal
- ↓
-Nexsy
- ↓
-Analysis + architecture + plan
- ↓
-AI-assisted implementation
- ↓
-Human review
- ↓
-Tests
- ↓
-Financial validation
- ↓
-Product validation
- ↓
-Commit
- ↓
-Documentation
+Workflow:
 
-## New product rule
+PALMI → problem → Nexsy → analysis/design → implementation → human review → tests → validation → documentation
 
-Every significant feature is evaluated from two perspectives.
+Financial calculations, educational claims, privacy decisions and architecture require explicit human review.
 
-### Software engineering
-- Is the architecture understandable?
-- Are responsibilities clear?
-- Is the implementation testable?
-- Does it follow the approved stack?
-
-### Financial product
-- Is the financial concept correct?
-- Can the user understand it?
-- Is the calculation traceable?
-- Does it help the user make a better-informed decision?
-- Could it encourage unrealistic financial behavior?
-
-AI output is never automatically correct.
-
-Financial calculations, educational claims, security decisions and architectural decisions require explicit review.
+Each phase must be aligned with the current product vision before implementation.

@@ -5,394 +5,109 @@
 **Repository:** `palmid3v/financial-d3v-palmid3v`  
 **Source of truth:** GitHub `main`
 
-> 🧭 Operational execution guide for Financial-D3v. The filename always uses the **real last-update date in Colombia**.
+## Current checkpoint
+**FASE 26 — APPROVED / BUILT**
 
----
-
-## 🎯 Product identity
-
-Financial-D3v is a **private personal-finance application + financial learning workspace**.
-
-Core loop:
-
-**Record → Categorize → Understand → Plan → Save → Review → Learn → Adjust**
-
-Education model:
-
-**FACT → CALCULATION → INTERPRETATION → ACTION**
-
----
-
-## 🧱 Approved stack
-
-- ⚛️ React + Vite
-- 🎨 Tailwind CSS
-- 🌙 Dark Mode
-- 📱 PWA / mobile-first
-- 🐹 Go 1.27
-- 🔌 REST/HTTP
-- 🔥 Firebase Firestore
-- 🔐 Firebase Auth
-- 🤖 GitHub Actions
-- 📚 Markdown documentation
-
----
-
-## 🔄 Development workflow
-
-**Palmi → Nexsy → GitHub → Palmi pulls → Palmi tests → Palmi reports exact output → Nexsy fixes**
-
-When Nexsy says **BUILT**, it means the implementation was actually committed to GitHub.
-
-A phase becomes **APPROVED / BUILT** only after:
-
-1. 🎯 Scope is defined.
-2. 🔨 Implementation is committed.
-3. 🧪 Tests pass.
-4. 📦 Build passes.
-5. 🚀 Runtime/API behavior is validated when applicable.
-6. 🔐 Security/privacy boundaries are reviewed.
-7. 📚 Documentation is updated.
-8. ✅ Palmi explicitly approves the result.
-
-Never mark a phase as passed merely because code exists.
-
----
-
-# 1. ✅ PLATFORM — FASES 1–17
-
-These phases are the completed platform foundation:
-
-- [x] FASE 1 — Product definition
-- [x] FASE 2 — Financial Domain Model v2
-- [x] FASE 3 — Firestore persistence design
-- [x] FASE 4 — Go application foundation
-- [x] FASE 5 — Accounts and transactions
-- [x] FASE 6 — Budgeting
-- [x] FASE 7 — Savings and financial habits
-- [x] FASE 8 — Financial education
-- [x] FASE 9 — Debts
-- [x] FASE 10 — Assets, liabilities and net worth
-- [x] FASE 11 — Reports and financial dashboard
-- [x] FASE 12 — Authentication, privacy and audit
-- [x] FASE 13 — Frontend product
-- [x] FASE 14 — Testing hardening
-- [x] FASE 15 — Payroll
-- [x] FASE 16 — Private deployment and operations
-- [x] FASE 17 — Production readiness & product UX
-
-### Historical validation baseline
-
-Previously observed:
-
+Observed local evidence:
 ```text
-go test ./...       → PASS
-go build ./...      → PASS
-npm ci              → PASS
-npm run build       → PASS
-PWA generation      → PASS
-GET /health         → 200
-GET /ready          → 200
-runtime             → PASS
+go test ./...  → PASS
+go build ./... → PASS
+npm ci → PASS / 0 vulnerabilities
+npm run build → PASS
+PWA generation → PASS
+Firestore rules/index deploy → PASS
+authenticated frontend runtime → PASS
 ```
 
-⚠️ These are historical baseline results. They are **not** a claim that the newest commit has already passed validation.
-
----
-
-# 2. 🧩 PRODUCT — FASES 18–24
-
-The following product phases have implementation in the current project state, but remain **VALIDATION PENDING** until local build/runtime checks are observed.
-
-- [x] FASE 18 — Transactions UX — implementation complete
-- [x] FASE 19 — Accounts UX — implementation complete
-- [x] FASE 20 — Budget UX — implementation complete
-- [x] FASE 21 — Savings UX — implementation complete
-- [x] FASE 22 — Debt UX — implementation complete
-- [x] FASE 23 — Net Worth UX — implementation complete
-- [x] FASE 24 — Education UX — implementation complete
-
-**Status: IMPLEMENTED / VALIDATION PENDING**
-
----
-
-# 3. 🚧 FASE 25 — COMPLETE SAVINGS + DEBT UX
-
-**Status: IMPLEMENTED / VALIDATION PENDING**
-
-This is the **current active phase**.
-
-### 💰 Savings
-
-- [x] Goal creation
-- [x] Goal list/detail
-- [x] Contribution entry
-- [x] Progress
-- [x] Remaining amount
-- [x] Contribution history
-- [x] Required-pace context
-- [x] FACT → CALCULATION → INTERPRETATION → ACTION
-- [x] Existing `/api/v1/savings-goals` contract reused
-
-### 💳 Debts
-
-- [x] Debt creation
-- [x] Debt list/detail
-- [x] Current balance
-- [x] Minimum payment
-- [x] Annual rate
-- [x] Payment entry
-- [x] Principal / interest / fees
-- [x] Payment-total validation
-- [x] Payment history
-- [x] Backend-authoritative balance
-- [x] Contextual explanation
-- [x] Existing `/api/v1/debts` contract reused
-
-### 🛡️ Regression boundary
-
-- [x] Implemented from the repaired `main`
-- [x] Previous corrupted `App.jsx` was not reused
-- [x] Existing FASE 17 visual direction preserved
-- [x] Mobile-first workflow preserved
-- [x] Loading/empty/error states included
-
-### 🔗 Implementation commit
-
-`c37cc9f38c67f14fc8bc9ed6a3bd7c454562099a`
-
-### 🧪 Validation still required
-
-- [ ] `git pull`
-- [ ] `go test ./...`
-- [ ] `go build ./...`
-- [ ] `cd frontend`
-- [ ] `npm ci`
-- [ ] `npm run build`
-- [ ] Start the application
-- [ ] Verify Dashboard
-- [ ] Verify Transactions
-- [ ] Verify Accounts
-- [ ] Verify Budget
-- [ ] Verify Savings
-- [ ] Create a savings goal
-- [ ] Add a contribution
-- [ ] Verify progress and history
-- [ ] Verify Debts
-- [ ] Create a debt
-- [ ] Record a payment
-- [ ] Verify principal/interest/fees validation
-- [ ] Verify debt balance changes only by principal
-- [ ] Verify Net Worth
-- [ ] Verify Education
-- [ ] Review mobile layout
-- [ ] Report exact terminal/runtime output to Nexsy
-- [x] FASE 25 validated locally
-- [x] FASE 25 approved
-
----
-
-# 4. 🔐 NEXT ROADMAP
-
-FASE 25 is validated and approved. The active milestone is now FASE 26:
-
-## FASE 26 — Authentication / production security hardening 🔐
-
-- [x] Firebase ID-token verification boundary
-- [x] Authenticated owner scoping
-- [x] Production auth/configuration gates
-- [x] Explicit CORS allowlist
-- [x] API security headers
-- [x] Frontend authentication gate
-- [x] Frontend ID-token propagation and refresh
-- [x] Sign-out
-- [x] Security-header regression test
-- [ ] Local authenticated runtime validation
-- [ ] Final documentation approval
-
-- [ ] Firebase client authentication UI
-- [ ] Production auth configuration
-- [ ] Owner identity flow
-- [ ] Production security review
-- [ ] CORS/security review
-
-**Status: PLANNED**
-
-## FASE 27 — Private production deployment
-
-- [ ] Production Firebase project
-- [ ] Production Firestore
-- [ ] Production secrets
-- [ ] HTTPS/domain
-- [ ] API deployment
-- [ ] Frontend deployment
-- [ ] PWA installation validation
-- [ ] Production smoke test
-- [ ] Rollback procedure
-
-**Status: PLANNED**
-
-## FASE 28 — Backup / recovery
-
-- [ ] Automated backups
-- [ ] Restore procedure
-- [ ] Data export
-- [ ] Restore validation
-- [ ] Retention policy
-- [ ] Secret rotation
-- [ ] Disaster-recovery checklist
-
-**Status: PLANNED**
-
-## FASE 29 — Financial data integrity
-
-- [ ] Duplicate-entry protections
-- [ ] Balance reconciliation
-- [ ] Currency consistency review
-- [ ] Net-worth reconciliation
-- [ ] Data-integrity diagnostics
-- [ ] Import/export validation
-
-**Status: PLANNED**
-
-## FASE 30 — Observability
-
-- [ ] Structured production logs
-- [ ] Error monitoring
-- [ ] API latency visibility
-- [ ] Health monitoring
-- [ ] Alerting
-- [ ] Failure-path review
-- [ ] Incident runbook
-- [ ] Reliability tests
-
-**Status: PLANNED**
-
-## FASE 31 — Historical financial intelligence
-
-- [ ] Historical dashboard
-- [ ] Net-worth history
-- [ ] Spending trends
-- [ ] Budget trends
-- [ ] Savings trends
-- [ ] Debt trends
-- [ ] Period comparisons
-- [ ] Explainable trend insights
-
-**Status: PLANNED**
-
-## FASE 32+ — Continuous evolution
-
-- [ ] Better data-import workflows
-- [ ] Additional financial education
-- [ ] Advanced reporting
-- [ ] Personal financial planning tools
-- [ ] Accessibility refinement
-- [ ] Performance optimization
-- [ ] Security hardening
-- [ ] Architecture improvements
-
-**Status: CONTINUOUS / PLANNED**
-
----
-
-# 5. 🔥 FIREBASE LOCAL INFRASTRUCTURE
-
-Financial-D3v keeps Firebase infrastructure in the repository so the Firebase environment is reproducible.
-
-Versioned files:
-
-- `.firebaserc` — pins the default Firebase project.
-- `firebase.json` — points the Firebase CLI to Firestore rules and indexes.
-- `firebase/firestore.rules` — owner-scoped Firestore Security Rules.
-- `firebase/firestore.indexes.json` — composite indexes required by the current Go Firestore repositories.
-
-Expected Firestore ownership path:
-
-`/users/{firebaseUid}/{collection}/{documentId}`
-
-The Go API uses Firebase Admin credentials. Firestore Security Rules therefore do not replace backend authorization; they protect direct client access. Firebase's server SDKs bypass Firestore Security Rules and authenticate through server credentials/IAM.
-
-### Local Firebase setup
-
-1. Create the Firebase project and Web App.
-2. Enable Firebase Authentication with Email/Password.
-3. Create the local test user.
-4. Create the Firestore database.
-5. Keep the service-account JSON under `secrets/` locally only.
-6. Keep `.env` and `frontend/.env.local` local only.
-7. Pull the repository Firebase configuration.
-8. Deploy rules and indexes from the repository with the Firebase CLI.
-9. Restart the Go API with Firebase enabled.
-10. Validate authenticated frontend → Go API → Firestore runtime.
-
-### Security rule baseline
-
-Firestore starts closed. The versioned rules allow authenticated access only when the Firebase UID matches the `/users/{userId}` owner namespace. Everything outside that namespace remains denied.
-
-### Index baseline
-
-The repository indexes cover the current composite queries for:
-
-- transactions by account and occurrence time;
-- transactions by financial period;
-- transactions by category and occurrence time;
-- budgets by period;
-- savings contributions by goal;
-- debt payments by debt;
-- payroll periods by employee.
-
-Do not create ad-hoc console-only indexes. If a new query requires an index, update `firebase/firestore.indexes.json` and deploy from the repository.
-
----
-
-# 6. ⚠️ Known technical caveats
-
-1. Debt payment currently updates the debt before creating the payment record; a failure between those operations could cause inconsistency.
-2. Account balances plus explicit cash assets can potentially double-count in net worth.
-3. Debt interest/fees are recorded but are not automatically ordinary expense transactions.
-4. Net worth is currently a snapshot, not a historical series.
-5. Asset values are manually supplied.
-6. Generic liability update/delete coverage may need expansion.
-7. Some report aggregation paths may skip mismatched currencies.
-8. Frontend dependencies should eventually be hardened/pinned.
-9. Firebase client authentication UI is not yet wired.
-10. Production Firebase/cloud infrastructure is not provisioned.
-
----
-
-# 7. 🕐 DOCUMENTATION DATE RULE
-
-The filename of this document **must contain the date of its latest update**.
-
-Canonical timezone:
-
-**America/Bogota — COT — UTC-05:00**
-
-Rules:
-
-- 📅 Filename date = real last-update date in Colombia.
-- 📝 `Last updated` = same real date.
-- 🚫 Never use tomorrow's date because of UTC or another timezone.
-- 🚫 Never infer `Last updated` from an old filename.
-- 📌 Future planning dates belong in the content, not in the update metadata.
-
-Current document: FASE 26 — Authentication / production security hardening
-
-`STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md`
-
-Current update:
-
-**2026-10-04 — America/Bogota**
-
----
-
-# 8. 🧭 IMMEDIATE ACTION
-
-**Palmi pulls → validates FASE 26 → reports exact terminal/runtime results → Nexsy fixes anything that fails.**
-
-Do not move to FASE 27 until FASE 26 has been validated and explicitly approved.
-
----
-
-**Financial-D3v · PALMI-D3V · 2026-10-04 · America/Bogota**
+# 🚀 FASE 27 — Private production deployment
+
+Architecture:
+```text
+Browser → HTTPS → Firebase Hosting → /api/** → Cloud Run Go API
+                                      ↓
+                               Firebase Auth
+                                      ↓
+                                   Firestore
+```
+
+One-time bootstrap:
+```bash
+export GCP_PROJECT_ID=financial-d3v-palmid3v
+export GCP_REGION=us-central1
+export ARTIFACT_REGISTRY_REPOSITORY=financial-d3v
+export API_RUNTIME_SERVICE_ACCOUNT=financial-d3v-api@$GCP_PROJECT_ID.iam.gserviceaccount.com
+export BACKUP_SERVICE_ACCOUNT=financial-d3v-backup@$GCP_PROJECT_ID.iam.gserviceaccount.com
+export BACKUP_BUCKET=financial-d3v-palmid3v-backups
+export DEPLOYER_SERVICE_ACCOUNT=financial-d3v-deployer@$GCP_PROJECT_ID.iam.gserviceaccount.com
+bash deploy/bootstrap-production.sh
+```
+
+Configure GitHub `production` environment variables:
+```text
+GCP_WORKLOAD_IDENTITY_PROVIDER
+GCP_DEPLOYER_SERVICE_ACCOUNT
+GCP_REGION
+ARTIFACT_REGISTRY_REPOSITORY
+API_SERVICE_NAME
+API_RUNTIME_SERVICE_ACCOUNT
+BACKUP_SERVICE_ACCOUNT
+BACKUP_BUCKET
+BACKUP_JOB_NAME
+PRODUCTION_ORIGIN
+FIREBASE_PROJECT_ID
+FIREBASE_WEB_API_KEY
+```
+
+Run: **GitHub → Actions → Production deployment → Run workflow**
+
+Validation:
+- [ ] production deployment passes
+- [ ] Hosting and Cloud Run healthy
+- [ ] `/health` 200
+- [ ] `/ready` 200
+- [ ] protected unauthenticated API 401
+- [ ] authenticated production login
+- [ ] Transactions/Savings/Debts/Net Worth smoke test
+- [ ] PWA install over HTTPS
+- [ ] rollback artifact confirmed
+
+# 💾 FASE 28 — Backup / recovery
+
+Schedule: `03:00 America/Bogota` daily.
+
+Configure:
+```bash
+export GCP_PROJECT_ID=financial-d3v-palmid3v
+export GCP_REGION=us-central1
+export BACKUP_JOB_NAME=financial-d3v-firestore-backup
+export BACKUP_SERVICE_ACCOUNT=financial-d3v-backup@$GCP_PROJECT_ID.iam.gserviceaccount.com
+export SCHEDULER_LOCATION=us-central1
+export BACKUP_SCHEDULE='0 3 * * *'
+export BACKUP_TIMEZONE='America/Bogota'
+bash deploy/schedule-backup.sh
+```
+
+Validate export at:
+```text
+gs://financial-d3v-palmid3v-backups/firestore/<timestamp>/
+```
+
+Restore only into an isolated recovery project:
+```bash
+export RECOVERY_PROJECT_ID=<isolated-recovery-project>
+export BACKUP_BUCKET=financial-d3v-palmid3v-backups
+export EXPORT_PATH=firestore/<timestamp>
+bash deploy/restore-firestore.sh
+```
+
+Acceptance:
+- [ ] export exists
+- [ ] import succeeds
+- [ ] owner-scoped data preserved
+- [ ] balances reconcile
+- [ ] debt/savings/net-worth reconcile
+- [ ] authenticated restored app reads data
+- [ ] restore result recorded
+
+## Important
+**FASES 27–28 are BUILT / VALIDATION PENDING.** Real production and recovery execution are still required before approval.

@@ -1,118 +1,426 @@
-import { useEffect, useMemo, useState } from "react";
-import { api } from "./api";
+import { useMemo, useState } from "react";
+import { useVault } from "./vault/VaultContext";
+import {
+  accountBalance,
+  budgetSummary,
+  currentMonthRange,
+  debtBalance,
+  makeAccount,
+  makeAsset,
+  makeBudget,
+  makeDebt,
+  makeDebtPayment,
+  makeLiability,
+  makeSavingsContribution,
+  makeSavingsGoal,
+  makeTransaction,
+  monthSeries,
+  netWorth,
+  normalizeVault,
+  savingsProgress,
+  transactionTotals,
+} from "./vault/finance";
 
-const money = (m) => new Intl.NumberFormat("es-CO",{style:"currency",currency:m?.currency||"COP",maximumFractionDigits:0}).format((Number(m?.minorUnits)||0)/100);
-const toMinor = (value) => Math.round(Number(value||0)*100);
-const today = new Date();
-const monthStart = new Date(today.getFullYear(),today.getMonth(),1).toISOString();
-const monthEnd = new Date(today.getFullYear(),today.getMonth()+1,1).toISOString();
+const money = (minorUnits = 0, currency = "COP") =>
+  new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format((Number(minorUnits) || 0) / 100);
 
-const nav = [
-  ["dashboard","Overview","⌂"],["transactions","Transactions","↕"],["accounts","Accounts","▣"],
-  ["budget","Budget","◫"],["savings","Savings","◎"],["debts","Debts","◇"],
-  ["net-worth","Net worth","◆"],["education","Education","?"]
+const numberValue = (value) => Math.round((Number(value) || 0) * 100);
+const todayInput = () => new Date().toISOString().slice(0, 10);
+const monthInput = (date) => new Date(date.getFullYear(), date.getMonth(), 1).toISOString().slice(0, 10);
+const nextMonthInput = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString().slice(0, 10);
+
+const navGroups = [
+  { label: "Finanzas", items: [["dashboard", "Dashboard", "⌂"], ["accounts", "Cuentas", "▣"], ["transactions", "Transacciones", "↕"], ["budget", "Presupuestos", "◫"]] },
+  { label: "Planeación", items: [["savings", "Ahorro y metas", "◎"], ["debts", "Deudas", "◇"]] },
+  { label: "Patrimonio", items: [["net-worth", "Patrimonio neto", "◆"]] },
+  { label: "Aprendizaje", items: [["education", "Educación", "?"]] },
 ];
-const accountTypes = [["cash","Cash"],["bank","Bank"],["credit","Credit"],["investment","Investment"],["other","Other"]];
-const transactionTypes = [["expense","Expense"],["income","Income"],["transfer","Transfer"]];
 
-function Button({children,onClick,primary=false,disabled=false,type="button"}){return <button type={type} disabled={disabled} onClick={onClick} className={primary?"button primary":"button"}>{children}</button>}
-function Input({label,...props}){return <label className="field"><span>{label}</span><input {...props}/></label>}
-function Select({label,children,...props}){return <label className="field"><span>{label}</span><select {...props}>{children}</select></label>}
-function Panel({children,className=""}){return <section className={"panel "+className}>{children}</section>}
-function Loading(){return <div className="state">Loading your financial workspace…</div>}
-function Empty({title,text}){return <div className="empty"><b>+</b><h3>{title}</h3><p>{text}</p></div>}
-function Notice({error,onRetry}){return error?<div className="notice error"><b>Something needs attention.</b><span>{error}</span>{onRetry&&<Button onClick={onRetry}>Try again</Button>}</div>:null}
-function Metric({label,value,detail,icon}){return <article className="metric"><div><small>{label}</small><span>{icon}</span></div><strong>{value}</strong><em>{detail}</em></article>}
+const allNav = navGroups.flatMap((group) => group.items);
 
-function Sidebar({active,setActive}){return <aside className="sidebar"><div className="brand"><b className="brand-mark">F</b><div><strong>Financial-D3v</strong><small>Personal finance</small></div></div><span className="label">Workspace</span><nav>{nav.map(([key,label,icon])=><button key={key} onClick={()=>setActive(key)} className={active===key?"nav active":"nav"}><i>{icon}</i>{label}</button>)}</nav><div className="side-bottom"><div className="privacy"><span/><div><b>Private workspace</b><small>Your data stays yours.</small></div></div><small className="signature">PALMI-D3V · v0.1</small></div></aside>}
-function MobileNav({active,setActive}){return <nav className="mobile-nav">{nav.slice(0,5).map(([key,label,icon])=><button key={key} onClick={()=>setActive(key)} className={active===key?"active":""}><i>{icon}</i><small>{label}</small></button>)}</nav>}
-function Header({active,refresh,loading}){const label=nav.find(x=>x[0]===active)?.[1]||"Overview";return <header className="topbar"><div><small>Financial-D3v <b>/</b> {label}</small><h1>{label}</h1></div><div className="top-actions"><span className="status"><i/> Local mode</span><Button onClick={refresh}>{loading?"Refreshing…":"Refresh"}</Button><b className="avatar">P</b></div></header>}
-
-function Dashboard({data,setActive}){
- const s=data?.summary;
- const income=Number(s?.income?.minorUnits)||0, expenses=Number(s?.expenses?.minorUnits)||0, max=Math.max(income,expenses,1);
- return <><section className="hero"><div><small>Your financial picture</small><h2>Make your money <em>make sense.</em></h2><p>Record the movement, understand the state, then decide what comes next.</p></div><Button primary onClick={()=>setActive("transactions")}>＋ Record movement</Button></section>
- <div className="metrics"><Metric label="Income" value={money(s?.income)} detail="Money in this month" icon="↗"/><Metric label="Expenses" value={money(s?.expenses)} detail="Money out this month" icon="↘"/><Metric label="Net cash flow" value={money(s?.netCashFlow)} detail="Income minus expenses" icon="≈"/><Metric label="Net worth" value={money(s?.netWorth?.net)} detail="Assets minus liabilities" icon="◆"/></div>
- <div className="two-col"><Panel><div className="panel-head"><div><small>Monthly cash flow</small><h2>Where your money moved</h2></div></div><div className="flow-row">{[["Income",income,s?.income,"↗"],["Expenses",expenses,s?.expenses,"↘"]].map(([label,value,amount,icon])=><div className="flow" key={label}><div><label>{label}</label><b>{money(amount)}</b></div><div className="track"><i style={{width:`${Math.max((value/max)*100,value?8:0)}%`}}/></div></div>)}</div></Panel><Panel className="education"><span className="badge">Learn</span><small>Financial education</small><h2>Your numbers should teach you something.</h2><p>Financial-D3v connects the number with the reason behind it, then turns that understanding into your next action.</p><div>FACT <b>→</b> CALCULATION <b>→</b> INTERPRETATION <b>→</b> ACTION</div></Panel></div>
- <section><div className="section-head"><div><small>Next actions</small><h2>Keep the loop moving</h2></div></div><div className="actions">{[["transactions","Add transaction","Record money in or out"],["accounts","Manage accounts","See where money lives"],["budget","Review budget","Compare planned vs actual"]].map(([key,title,detail])=><button key={key} onClick={()=>setActive(key)}><b>+</b><div><strong>{title}</strong><small>{detail}</small></div><i>↗</i></button>)}</div></section></>
+function Button({ children, onClick, primary = false, disabled = false, type = "button", className = "" }) {
+  return <button type={type} disabled={disabled} onClick={onClick} className={`button ${primary ? "primary" : ""} ${className}`}>{children}</button>;
 }
 
-function Transactions({ownerId}){
- const [accounts,setAccounts]=useState([]),[categories,setCategories]=useState([]),[items,setItems]=useState([]),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState(""),[message,setMessage]=useState("");
- const [form,setForm]=useState({type:"expense",amount:"",accountId:"",categoryId:"",description:"",occurredAt:new Date().toISOString().slice(0,16)});
- const load=async()=>{setLoading(true);setError("");try{const [a,c,t]=await Promise.all([api("/api/v1/accounts",{ownerId}),api("/api/v1/categories",{ownerId}),api(`/api/v1/transactions?start=${encodeURIComponent(monthStart)}&end=${encodeURIComponent(monthEnd)}`,{ownerId})]);setAccounts(a||[]);setCategories(c||[]);setItems(t||[]);if(!form.accountId&&a?.[0])setForm(f=>({...f,accountId:a[0].id||a[0].ID}))}catch(e){setError(e.message)}finally{setLoading(false)}};
- useEffect(()=>{load()},[]);
- const filtered=categories.filter(c=>(c.kind||c.Kind)===form.type);
- const submit=async(e)=>{e.preventDefault();setSaving(true);setError("");setMessage("");try{const account=accounts.find(a=>(a.id||a.ID)===form.accountId);if(!account)throw new Error("Select an account.");const currency=account.currency||account.Currency||"COP";await api("/api/v1/transactions",{ownerId,method:"POST",body:{accountId:form.accountId,type:form.type,minorUnits:toMinor(form.amount),currency,categoryId:form.type==="transfer"?"":form.categoryId,description:form.description,occurredAt:new Date(form.occurredAt).toISOString()}});setForm(f=>({...f,amount:"",description:""}));setMessage("Transaction recorded.");await load()}catch(e){setError(e.message)}finally{setSaving(false)}};
- return <div className="workspace"><div className="module-head"><div><small>Record → Categorize</small><h2>Transactions</h2><p>Capture money in, money out, and transfers without slowing down the workflow.</p></div></div><div className="two-col"><Panel><div className="panel-head"><div><small>Quick entry</small><h3>Record a movement</h3></div></div><form onSubmit={submit} className="form-grid"><Select label="Type" value={form.type} onChange={e=>setForm({...form,type:e.target.value,categoryId:""})}>{transactionTypes.map(([v,l])=><option key={v} value={v}>{l}</option>)}</Select><Input label="Amount" type="number" min="0.01" step="0.01" required value={form.amount} onChange={e=>setForm({...form,amount:e.target.value})}/><Select label="Account" value={form.accountId} onChange={e=>setForm({...form,accountId:e.target.value})}><option value="">Select account</option>{accounts.map(a=><option key={a.id||a.ID} value={a.id||a.ID}>{a.name||a.Name}</option>)}</Select>{form.type!=="transfer"&&<Select label="Category" value={form.categoryId} onChange={e=>setForm({...form,categoryId:e.target.value})}><option value="">Select category</option>{filtered.map(c=><option key={c.id||c.ID} value={c.id||c.ID}>{c.name||c.Name}</option>)}</Select>}<Input label="Date" type="datetime-local" value={form.occurredAt} onChange={e=>setForm({...form,occurredAt:e.target.value})}/><Input label="Description" placeholder="Optional note" value={form.description} onChange={e=>setForm({...form,description:e.target.value})}/><div className="form-actions"><Button primary disabled={saving} type="submit">{saving?"Saving…":"Record transaction"}</Button></div></form><Notice error={error}/>{message&&<div className="notice success">{message}</div>}</Panel><Panel><div className="panel-head"><div><small>This month</small><h3>Recent movements</h3></div></div>{loading?<Loading/>:items.length===0?<Empty title="No transactions yet" text="Record your first movement and the dashboard will start learning from your ledger."/>:<div className="list">{items.slice().reverse().map(t=><div className="list-row" key={t.id||t.ID}><div><b>{t.description||t.Description||"Transaction"}</b><small>{t.type||t.Type} · {new Date(t.occurredAt||t.OccurredAt).toLocaleDateString("es-CO")}</small></div><strong className={(t.type||t.Type)==="expense"?"negative":"positive"}>{(t.type||t.Type)==="expense"?"−":"+"}{money(t.amount||t.Amount)}</strong></div>)}</div>}</Panel></div></div>
+function Field({ label, ...props }) {
+  return <label className="field"><span>{label}</span><input {...props} /></label>;
 }
 
-function Accounts({ownerId}){
- const [items,setItems]=useState([]),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState(""),[form,setForm]=useState({name:"",type:"bank",currency:"COP",opening:""});
- const load=async()=>{setLoading(true);setError("");try{const accounts=await api("/api/v1/accounts",{ownerId})||[];const enriched=await Promise.all(accounts.map(async a=>{const accountId=a.id||a.ID;try{return {...a,balance:await api(`/api/v1/accounts/${accountId}/balance`,{ownerId})}}catch{return a}}));setItems(enriched)}catch(e){setError(e.message)}finally{setLoading(false)}};
- useEffect(()=>{load()},[]);
- const submit=async(e)=>{e.preventDefault();setSaving(true);setError("");try{await api("/api/v1/accounts",{ownerId,method:"POST",body:{name:form.name,type:form.type,currency:form.currency.toUpperCase(),openingMinorUnits:toMinor(form.opening)}});setForm({name:"",type:"bank",currency:"COP",opening:""});await load()}catch(e){setError(e.message)}finally{setSaving(false)}};
- return <div className="workspace"><div className="module-head"><div><small>Foundation</small><h2>Accounts</h2><p>Know where your money lives. Balances remain derived from the authoritative ledger.</p></div></div><div className="two-col"><Panel><div className="panel-head"><div><small>New account</small><h3>Add an account</h3></div></div><form onSubmit={submit} className="form-grid"><Input label="Name" placeholder="Main bank account" required value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/><Select label="Type" value={form.type} onChange={e=>setForm({...form,type:e.target.value})}>{accountTypes.map(([v,l])=><option key={v} value={v}>{l}</option>)}</Select><Input label="Currency" maxLength="3" value={form.currency} onChange={e=>setForm({...form,currency:e.target.value})}/><Input label="Opening balance" type="number" step="0.01" value={form.opening} onChange={e=>setForm({...form,opening:e.target.value})}/><div className="form-actions"><Button primary disabled={saving} type="submit">{saving?"Saving…":"Create account"}</Button></div></form><Notice error={error}/></Panel><Panel><div className="panel-head"><div><small>Your money</small><h3>Accounts</h3></div></div>{loading?<Loading/>:items.length===0?<Empty title="No accounts yet" text="Create your first cash or bank account to start recording transactions."/>:<div className="account-grid">{items.map(a=><article className="account-card" key={a.id||a.ID}><div><span className="badge">{a.type||a.Type}</span><small>{a.currency||a.Currency}</small></div><h3>{a.name||a.Name}</h3><strong>{money(a.balance||a.Balance||a.openingBalance||a.OpeningBalance)}</strong><p>Opening balance {money(a.openingBalance||a.OpeningBalance)}</p></article>)}</div>}</Panel></div></div>
+function Select({ label, children, ...props }) {
+  return <label className="field"><span>{label}</span><select {...props}>{children}</select></label>;
 }
 
-function Budget({ownerId}){
- const [categories,setCategories]=useState([]),[budgets,setBudgets]=useState([]),[selected,setSelected]=useState(null),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState(""),[form,setForm]=useState({name:"Monthly budget",items:[{categoryId:"",limit:""}]});
- const load=async()=>{setLoading(true);setError("");try{const [c,b]=await Promise.all([api("/api/v1/categories",{ownerId}),api(`/api/v1/budgets?start=${encodeURIComponent(monthStart)}&end=${encodeURIComponent(monthEnd)}`,{ownerId})]);setCategories((c||[]).filter(x=>(x.kind||x.Kind)==="expense"));setBudgets(b||[])}catch(e){setError(e.message)}finally{setLoading(false)}};
- useEffect(()=>{load()},[]);
- const setItem=(i,k,v)=>setForm(f=>({...f,items:f.items.map((x,n)=>n===i?{...x,[k]:v}:x)}));
- const createBudget=async(e)=>{e.preventDefault();setSaving(true);setError("");try{const items=form.items.filter(x=>x.categoryId&&Number(x.limit)>0).map(x=>({categoryId:x.categoryId,limitMinorUnits:toMinor(x.limit)}));if(!items.length)throw new Error("Add at least one expense category.");if(new Set(items.map(x=>x.categoryId)).size!==items.length)throw new Error("Each category can appear only once.");await api("/api/v1/budgets",{ownerId,method:"POST",body:{name:form.name,currency:"COP",startDate:monthStart,endDate:monthEnd,items}});setForm({name:"Monthly budget",items:[{categoryId:"",limit:""}]});await load()}catch(e){setError(e.message)}finally{setSaving(false)}};
- const open=async(b)=>{try{setSelected(await api(`/api/v1/budgets/${b.id||b.ID}/summary`,{ownerId}))}catch(e){setError(e.message)}};
- return <div className="workspace"><div className="module-head"><div><small>Plan → Understand</small><h2>Budget</h2><p>Set limits, then compare them with actual spending from the transaction ledger.</p></div></div><div className="two-col"><Panel><div className="panel-head"><div><small>Monthly plan</small><h3>Create a budget</h3></div></div><form onSubmit={createBudget} className="form-grid"><Input label="Budget name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/><div className="budget-items">{form.items.map((item,index)=><div className="budget-input-row" key={index}><Select label={`Category ${index+1}`} required value={item.categoryId} onChange={e=>setItem(index,"categoryId",e.target.value)}><option value="">Select category</option>{categories.map(c=><option key={c.id||c.ID} value={c.id||c.ID}>{c.name||c.Name}</option>)}</Select><Input label="Limit" type="number" min="0.01" step="0.01" required value={item.limit} onChange={e=>setItem(index,"limit",e.target.value)}/></div>)}</div><div className="form-actions"><Button primary disabled={saving} type="submit">{saving?"Saving…":"Create budget"}</Button></div></form><Notice error={error}/></Panel><Panel><div className="panel-head"><div><small>Planned vs actual</small><h3>Budget overview</h3></div></div>{loading?<Loading/>:budgets.length===0?<Empty title="No budget yet" text="Create a monthly budget and give your expense categories a clear job."/>:<div className="list">{budgets.map(b=><button className="list-row clickable" key={b.id||b.ID} onClick={()=>open(b)}><div><b>{b.name||b.Name}</b><small>{b.currency||b.Currency}</small></div><strong>{money({minorUnits:(b.items||b.Items||[]).reduce((sum,item)=>sum+(item.limitMinorUnits||item.LimitMinorUnits||item.limit?.minorUnits||item.Limit?.MinorUnits||0),0),currency:b.currency||b.Currency||"COP"})}</strong></button>)}</div>}</Panel></div>{selected&&<Panel className="budget-detail"><div className="panel-head"><div><small>FACT → CALCULATION</small><h3>Budget summary</h3></div><Button onClick={()=>setSelected(null)}>Close</Button></div><div className="metrics"><Metric label="Planned" value={money(selected.totalLimit||selected.TotalLimit)} detail="Budget limit" icon="◫"/><Metric label="Spent" value={money(selected.totalSpent||selected.TotalSpent)} detail="Authoritative ledger" icon="↘"/><Metric label="Remaining" value={money(selected.totalRemaining||selected.TotalRemaining)} detail="Limit minus spent" icon="≈"/></div></Panel>}</div>
+function Panel({ children, className = "" }) {
+  return <section className={`panel ${className}`}>{children}</section>;
 }
 
-function NetWorth({ownerId}){const [data,setData]=useState(null),[loading,setLoading]=useState(true),[error,setError]=useState("");const load=async()=>{setLoading(true);setError("");try{setData(await api("/api/v1/net-worth?currency=COP",{ownerId}))}catch(e){setError(e.message)}finally{setLoading(false)}};useEffect(()=>{load()},[]);return <div className="workspace"><div className="module-head"><div><small>Understand → Review</small><h2>Net worth</h2><p>See your financial position from backend-authoritative assets and liabilities.</p></div></div>{loading?<Loading/>:error?<Notice error={error} onRetry={load}/>:<><div className="metrics"><Metric label="Net worth" value={money(data?.net)} detail="Assets minus liabilities" icon="◆"/><Metric label="Assets" value={money(data?.assets)} detail="Tracked assets" icon="↗"/><Metric label="Liabilities" value={money(data?.liabilities)} detail="All liabilities" icon="↘"/><Metric label="Debt" value={money(data?.debtLiabilities)} detail="Debt balance included" icon="◇"/></div><Panel className="education"><span className="badge">FACT → CALCULATION → INTERPRETATION → ACTION</span><p><b>Fact:</b> these values come from the financial position service.</p><p><b>Calculation:</b> net worth = assets − liabilities.</p><p><b>Interpretation:</b> the result is a snapshot, not a forecast.</p><p><b>Action:</b> review the components and keep the ledger current.</p></Panel></>}</div>}
-
-function Education({ownerId}){const [cards,setCards]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState("");const load=async()=>{setLoading(true);setError("");try{setCards(await api("/api/v1/education",{ownerId})||[])}catch(e){setError(e.message)}finally{setLoading(false)}};useEffect(()=>{load()},[]);return <div className="workspace"><div className="module-head"><div><small>Learn → Adjust</small><h2>Education</h2><p>Learn financial concepts through explicit facts, calculations, interpretations and actions.</p></div></div>{loading?<Loading/>:error?<Notice error={error} onRetry={load}/>:cards.length===0?<Empty title="No education cards" text="Education content will appear here as the learning workspace evolves."/>:<div className="education-grid">{cards.map(card=><Panel className="education" key={card.id||card.ID}><span className="badge">{card.topic||card.Topic}</span><h3>{card.title||card.Title}</h3><div className="edu-step"><b>FACT</b><p>{card.fact||card.Fact}</p></div><div className="edu-step"><b>CALCULATION</b><p>{card.calculation||card.Calculation}</p></div><div className="edu-step"><b>INTERPRETATION</b><p>{card.interpretation||card.Interpretation}</p></div><div className="edu-step"><b>ACTION</b><p>{card.action||card.Action}</p></div></Panel>)}</div>}</div>}
-
-
-function Savings({ownerId}){
- const [goals,setGoals]=useState([]),[selected,setSelected]=useState(null),[accounts,setAccounts]=useState([]),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState(""),[message,setMessage]=useState("");
- const [form,setForm]=useState({name:"",target:"",currency:"COP",targetDate:""}),[contribution,setContribution]=useState({amount:"",sourceAccountId:"",note:""});
- const load=async()=>{setLoading(true);setError("");try{const [g,a]=await Promise.all([api("/api/v1/savings-goals",{ownerId}),api("/api/v1/accounts",{ownerId})]);setGoals(g||[]);setAccounts(a||[]);if(!selected&&g?.[0])await open(g[0])}catch(e){setError(e.message)}finally{setLoading(false)}};
- useEffect(()=>{load()},[]);
- const open=async(g)=>{try{setSelected(await api("/api/v1/savings-goals/"+(g.id||g.ID)+"/summary",{ownerId}))}catch(e){setError(e.message)}};
- const create=async(e)=>{e.preventDefault();setSaving(true);setError("");setMessage("");try{if(toMinor(form.target)<=0)throw new Error("Target amount must be greater than zero.");await api("/api/v1/savings-goals",{ownerId,method:"POST",body:{name:form.name,targetMinorUnits:toMinor(form.target),currency:form.currency.toUpperCase(),targetDate:form.targetDate?new Date(form.targetDate+"T23:59:59").toISOString():""}});setForm({name:"",target:"",currency:"COP",targetDate:""});setMessage("Savings goal created.");await load()}catch(e){setError(e.message)}finally{setSaving(false)}};
- const addContribution=async(e)=>{e.preventDefault();if(!selected)return;setSaving(true);setError("");setMessage("");try{const goal=selected.goal||selected.Goal||selected;if(toMinor(contribution.amount)<=0)throw new Error("Contribution must be greater than zero.");await api("/api/v1/savings-goals/"+(goal.id||goal.ID)+"/contributions",{ownerId,method:"POST",body:{amountMinorUnits:toMinor(contribution.amount),currency:goal.target?.currency||goal.Target?.Currency||goal.currency||goal.Currency||"COP",sourceAccountId:contribution.sourceAccountId,transactionId:"",contributedAt:new Date().toISOString(),note:contribution.note}});setContribution({amount:"",sourceAccountId:"",note:""});setMessage("Contribution recorded.");await load()}catch(e){setError(e.message)}finally{setSaving(false)}};
- const goal=selected?.goal||selected?.Goal||selected,progress=selected?.progress||selected?.Progress||selected,history=selected?.contributions||selected?.Contributions||[];
- return <div className="workspace"><div className="module-head"><div><small>Plan → Save → Review</small><h2>Savings</h2><p>Make saving visible without turning contributions into ordinary expenses.</p></div></div>
- <div className="two-col"><Panel><div className="panel-head"><div><small>New goal</small><h3>Create a savings goal</h3></div></div><form onSubmit={create} className="form-grid"><Input label="Goal name" placeholder="Emergency fund" required value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/><Input label="Target amount" type="number" min="0.01" step="0.01" required value={form.target} onChange={e=>setForm({...form,target:e.target.value})}/><Input label="Currency" maxLength="3" value={form.currency} onChange={e=>setForm({...form,currency:e.target.value})}/><Input label="Target date" type="date" value={form.targetDate} onChange={e=>setForm({...form,targetDate:e.target.value})}/><div className="form-actions"><Button primary disabled={saving} type="submit">{saving?"Saving…":"Create goal"}</Button></div></form></Panel>
- <Panel><div className="panel-head"><div><small>Your goals</small><h3>Savings progress</h3></div></div>{loading?<Loading/>:goals.length===0?<Empty title="No savings goals yet" text="Create a goal and turn future contributions into visible progress."/>:<div className="list">{goals.map(g=><button className="list-row clickable" key={g.id||g.ID} onClick={()=>open(g)}><div><b>{g.name||g.Name}</b><small>{money(g.target||g.Target)}</small></div><strong>View</strong></button>)}</div>}</Panel></div>
- {goal&&<div className="two-col"><Panel><div className="panel-head"><div><small>Goal detail</small><h3>{goal.name||goal.Name}</h3></div></div><div className="metrics"><Metric label="Target" value={money(goal.target||goal.Target)} detail="Chosen goal" icon="◎"/><Metric label="Saved" value={money(progress.contributed||progress.Contributed)} detail="Goal-progress records" icon="↗"/><Metric label="Remaining" value={money(progress.remaining||progress.Remaining)} detail="Target minus saved" icon="≈"/><Metric label="Progress" value={(Number(progress.percentage||progress.Percentage||0)).toFixed(0)+"%"} detail="Completion" icon="%"/></div><div className="notice"><b>FACT</b><span>Target and contributions are recorded financial data.</span><b>CALCULATION</b><span>Remaining and percentage come from the savings summary.</span><b>INTERPRETATION</b><span>Progress shows how far the chosen target has advanced.</span><b>ACTION</b><span>Choose a contribution pattern that fits your plan.</span></div>{(progress.requiredPerDay||progress.RequiredPerDay)?.minorUnits!==undefined&&<div className="notice"><b>Required pace</b><span>{money(progress.requiredPerDay||progress.RequiredPerDay)} per day · {Number(progress.daysRemaining||progress.DaysRemaining||0)} days remaining.</span></div>}</Panel>
- <Panel><div className="panel-head"><div><small>Continue the habit</small><h3>Add contribution</h3></div></div><form onSubmit={addContribution} className="form-grid"><Input label="Amount" type="number" min="0.01" step="0.01" required value={contribution.amount} onChange={e=>setContribution({...contribution,amount:e.target.value})}/><Select label="Source account (optional)" value={contribution.sourceAccountId} onChange={e=>setContribution({...contribution,sourceAccountId:e.target.value})}><option value="">No source account</option>{accounts.map(a=><option key={a.id||a.ID} value={a.id||a.ID}>{a.name||a.Name}</option>)}</Select><Input label="Note" placeholder="Optional" value={contribution.note} onChange={e=>setContribution({...contribution,note:e.target.value})}/><div className="form-actions"><Button primary disabled={saving} type="submit">{saving?"Saving…":"Record contribution"}</Button></div></form><div className="panel-head" style={{marginTop:22}}><div><small>History</small><h3>Contributions</h3></div></div>{history.length===0?<Empty title="No contributions yet" text="The goal ledger will appear here after the first contribution."/>:<div className="list">{history.slice().reverse().map(c=><div className="list-row" key={c.id||c.ID}><div><b>{money(c.amount||c.Amount)}</b><small>{new Date(c.contributedAt||c.ContributedAt).toLocaleDateString("es-CO")} · {c.note||c.Note||"Contribution"}</small></div><strong>+</strong></div>)}</div>}</Panel></div>}
- {error&&<Notice error={error}/>} {message&&<div className="notice success">{message}</div>}</div>
+function Notice({ children, tone = "" }) {
+  return <div className={`notice ${tone}`}>{children}</div>;
 }
 
-function Debts({ownerId}){
- const [items,setItems]=useState([]),[selected,setSelected]=useState(null),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState(""),[message,setMessage]=useState("");
- const [form,setForm]=useState({name:"",original:"",balance:"",minimum:"",rate:"",currency:"COP"}),[payment,setPayment]=useState({amount:"",principal:"",interest:"",fees:"",note:""});
- const load=async()=>{setLoading(true);setError("");try{const d=await api("/api/v1/debts",{ownerId});setItems(d||[]);if(!selected&&d?.[0])await open(d[0])}catch(e){setError(e.message)}finally{setLoading(false)}};
- useEffect(()=>{load()},[]);
- const open=async(d)=>{try{setSelected(await api("/api/v1/debts/"+(d.id||d.ID)+"/summary",{ownerId}))}catch(e){setError(e.message)}};
- const create=async(e)=>{e.preventDefault();setSaving(true);setError("");setMessage("");try{const original=toMinor(form.original),balance=toMinor(form.balance),minimum=toMinor(form.minimum);if(original<=0||balance<0||balance>original)throw new Error("Debt balance must be between zero and the original principal.");await api("/api/v1/debts",{ownerId,method:"POST",body:{name:form.name,originalPrincipalMinorUnits:original,balanceMinorUnits:balance,minimumPaymentMinorUnits:minimum,currency:form.currency.toUpperCase(),annualRateBPS:Math.round(Number(form.rate||0)*100)}});setForm({name:"",original:"",balance:"",minimum:"",rate:"",currency:"COP"});setMessage("Debt created.");await load()}catch(e){setError(e.message)}finally{setSaving(false)}};
- const pay=async(e)=>{e.preventDefault();if(!selected)return;setSaving(true);setError("");setMessage("");try{const debt=selected.debt||selected.Debt,amount=toMinor(payment.amount),principal=toMinor(payment.principal),interest=toMinor(payment.interest),fees=toMinor(payment.fees);if(amount<=0||amount!==principal+interest+fees)throw new Error("Payment total must equal principal + interest + fees.");await api("/api/v1/debts/"+(debt.id||debt.ID)+"/payments",{ownerId,method:"POST",body:{amountMinorUnits:amount,principalMinorUnits:principal,interestMinorUnits:interest,feesMinorUnits:fees,currency:debt.balance?.currency||debt.Balance?.Currency||"COP",paidAt:new Date().toISOString(),note:payment.note}});setPayment({amount:"",principal:"",interest:"",fees:"",note:""});setMessage("Debt payment recorded.");await load()}catch(e){setError(e.message)}finally{setSaving(false)}};
- const debt=selected?.debt||selected?.Debt,payments=selected?.payments||selected?.Payments||[],totalPaid=selected?.totalPaid||selected?.TotalPaid;
- return <div className="workspace"><div className="module-head"><div><small>Understand → Adjust</small><h2>Debts</h2><p>Make obligations transparent and show exactly how each payment changes the balance.</p></div></div>
- <div className="two-col"><Panel><div className="panel-head"><div><small>New debt</small><h3>Add an obligation</h3></div></div><form onSubmit={create} className="form-grid"><Input label="Name" placeholder="Credit card" required value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/><Input label="Original principal" type="number" min="0.01" step="0.01" required value={form.original} onChange={e=>setForm({...form,original:e.target.value})}/><Input label="Current balance" type="number" min="0" step="0.01" required value={form.balance} onChange={e=>setForm({...form,balance:e.target.value})}/><Input label="Minimum payment" type="number" min="0" step="0.01" value={form.minimum} onChange={e=>setForm({...form,minimum:e.target.value})}/><Input label="Annual rate (%)" type="number" min="0" step="0.01" value={form.rate} onChange={e=>setForm({...form,rate:e.target.value})}/><Input label="Currency" maxLength="3" value={form.currency} onChange={e=>setForm({...form,currency:e.target.value})}/><div className="form-actions"><Button primary disabled={saving} type="submit">{saving?"Saving…":"Create debt"}</Button></div></form></Panel>
- <Panel><div className="panel-head"><div><small>Your obligations</small><h3>Debt overview</h3></div></div>{loading?<Loading/>:items.length===0?<Empty title="No debts yet" text="Add an obligation to make its balance and payment composition visible."/>:<div className="list">{items.map(d=><button className="list-row clickable" key={d.id||d.ID} onClick={()=>open(d)}><div><b>{d.name||d.Name}</b><small>{d.status||d.Status} · {money(d.balance||d.Balance)}</small></div><strong>{money(d.minimumPayment||d.MinimumPayment)}</strong></button>)}</div>}</Panel></div>
- {debt&&<div className="two-col"><Panel><div className="panel-head"><div><small>Debt detail</small><h3>{debt.name||debt.Name}</h3></div></div><div className="metrics"><Metric label="Original" value={money(debt.originalPrincipal||debt.OriginalPrincipal)} detail="Original principal" icon="◎"/><Metric label="Balance" value={money(debt.balance||debt.Balance)} detail="Backend-authoritative" icon="◇"/><Metric label="Minimum" value={money(debt.minimumPayment||debt.MinimumPayment)} detail="Minimum payment" icon="≈"/><Metric label="Paid" value={money(totalPaid)} detail="Recorded payment totals" icon="↘"/></div><div className="notice"><b>FACT</b><span>Debt balance and payment records come from the backend.</span><b>CALCULATION</b><span>Only principal reduces the outstanding debt balance.</span><b>INTERPRETATION</b><span>Interest and fees explain payment composition; they are not principal.</span><b>ACTION</b><span>Review the balance and choose the next payment intentionally.</span></div></Panel>
- <Panel><div className="panel-head"><div><small>Payment entry</small><h3>Record payment</h3></div></div><div className="notice"><b>Validation</b><span>Total must equal principal + interest + fees.</span></div><form onSubmit={pay} className="form-grid"><Input label="Total payment" type="number" min="0.01" step="0.01" required value={payment.amount} onChange={e=>setPayment({...payment,amount:e.target.value})}/><Input label="Principal" type="number" min="0" step="0.01" required value={payment.principal} onChange={e=>setPayment({...payment,principal:e.target.value})}/><Input label="Interest" type="number" min="0" step="0.01" required value={payment.interest} onChange={e=>setPayment({...payment,interest:e.target.value})}/><Input label="Fees" type="number" min="0" step="0.01" required value={payment.fees} onChange={e=>setPayment({...payment,fees:e.target.value})}/><Input label="Note" placeholder="Optional" value={payment.note} onChange={e=>setPayment({...payment,note:e.target.value})}/><div className="form-actions"><Button primary disabled={saving} type="submit">{saving?"Saving…":"Record payment"}</Button></div></form></Panel></div>}
- <div className="panel-head" style={{marginTop:22}}><div><small>History</small><h3>Payments</h3></div></div>{debt&&(payments.length===0?<Empty title="No payments yet" text="Payment history will appear here after the first payment."/>:<div className="list">{payments.slice().reverse().map(p=><div className="list-row" key={p.id||p.ID}><div><b>{money(p.amount||p.Amount)}</b><small>Principal {money(p.principal||p.Principal)} · Interest {money(p.interest||p.Interest)} · Fees {money(p.fees||p.Fees)}</small></div><strong>{new Date(p.paidAt||p.PaidAt).toLocaleDateString("es-CO")}</strong></div>)}</div>)}
- {error&&<Notice error={error}/>} {message&&<div className="notice success">{message}</div>}</div>
+function Empty({ title, text, action }) {
+  return <div className="empty">
+    <b>＋</b>
+    <h3>{title}</h3>
+    <p>{text}</p>
+    {action}
+  </div>;
 }
 
+function Progress({ value, tone = "green" }) {
+  const safe = Math.max(0, Math.min(100, Number(value) || 0));
+  return <div className={`progress ${tone}`}><i style={{ width: `${safe}%` }} /></div>;
+}
 
-function Placeholder({active,setActive}){const item=nav.find(n=>n[0]===active);return <div className="module"><small>Workspace</small><h2>{item?.[1]}</h2><p>This product surface is reserved for its validated workflow.</p><Panel className="empty"><b>{item?.[2]}</b><h3>{item?.[1]} is part of the financial learning loop.</h3><p>Continue with the next validated product iteration without changing the financial source of truth.</p><Button onClick={()=>setActive("dashboard")}>Back to overview</Button></Panel></div>}
+function Metric({ label, value, detail, tone = "" }) {
+  return <article className="metric reveal">
+    <div><small>{label}</small><span className={tone}>●</span></div>
+    <strong>{value}</strong>
+    <em>{detail}</em>
+  </article>;
+}
 
-export default function App(){
- const [active,setActive]=useState("dashboard"),[ownerId]=useState(localStorage.getItem("financial_owner")||"local-owner"),[data,setData]=useState(null),[error,setError]=useState(""),[loading,setLoading]=useState(true);
- const period=useMemo(()=>`start=${encodeURIComponent(monthStart)}&end=${encodeURIComponent(monthEnd)}&currency=COP`,[]);
- const load=async()=>{setLoading(true);setError("");try{setData(await api(`/api/v1/dashboard?${period}`,{ownerId}))}catch(e){setError(e.message)}finally{setLoading(false)}};
- useEffect(()=>{localStorage.setItem("financial_owner",ownerId);load()},[]);
- const content=active==="dashboard"?<Dashboard data={data} setActive={setActive}/>:active==="transactions"?<Transactions ownerId={ownerId}/>:active==="accounts"?<Accounts ownerId={ownerId}/>:active==="budget"?<Budget ownerId={ownerId}/>:active==="savings"?<Savings ownerId={ownerId}/>:active==="debts"?<Debts ownerId={ownerId}/>:active==="net-worth"?<NetWorth ownerId={ownerId}/>:active==="education"?<Education ownerId={ownerId}/>:<Placeholder active={active} setActive={setActive}/>;
- return <div className="shell"><Sidebar active={active} setActive={setActive}/><div className="main"><Header active={active} refresh={load} loading={loading}/><main>{active==="dashboard"?(loading?<Loading/>:error?<Notice error={error} onRetry={load}/>:content):content}<footer>Private by design · Financial-D3v · PALMI-D3V</footer></main></div><MobileNav active={active} setActive={setActive}/></div>
+function Sidebar({ active, setActive, onLock, dirty }) {
+  return <aside className="sidebar">
+    <div className="brand">
+      <b className="brand-mark">F</b>
+      <div><strong>Financial-D3v</strong><small>Personal finance</small></div>
+    </div>
+    {navGroups.map((group) => <div className="nav-group" key={group.label}>
+      <span className="label">{group.label}</span>
+      <nav>{group.items.map(([key, label, icon]) =>
+        <button key={key} onClick={() => setActive(key)} className={active === key ? "nav active" : "nav"}>
+          <i>{icon}</i><span>{label}</span>
+        </button>
+      )}</nav>
+    </div>)}
+    <div className="side-bottom">
+      <div className="privacy"><span /><div><b>Private workspace</b><small>Vault · encrypted</small></div></div>
+      <button className="lock-link" onClick={onLock}>⌕ {dirty ? "Guardar y bloquear" : "Bloquear"}</button>
+      <small className="signature">PALMI-D3V · v0.1</small>
+    </div>
+  </aside>;
+}
+
+function MobileNav({ active, setActive, moreOpen, setMoreOpen }) {
+  const items = [["dashboard", "Inicio", "⌂"], ["transactions", "Movs", "↕"], ["budget", "Presup.", "◫"], ["net-worth", "Patrimonio", "◆"]];
+  return <>
+    {moreOpen && <div className="mobile-more">
+      {allNav.filter(([key]) => !items.some(([item]) => item === key)).map(([key, label, icon]) =>
+        <button key={key} onClick={() => { setActive(key); setMoreOpen(false); }} className={active === key ? "active" : ""}>
+          <i>{icon}</i><span>{label}</span>
+        </button>
+      )}
+    </div>}
+    <nav className="mobile-nav">
+      {items.map(([key, label, icon]) => <button key={key} onClick={() => setActive(key)} className={active === key ? "active" : ""}><i>{icon}</i><small>{label}</small></button>)}
+      <button onClick={() => setMoreOpen((value) => !value)} className={moreOpen ? "active" : ""}><i>•••</i><small>Más</small></button>
+    </nav>
+  </>;
+}
+
+function Topbar({ active, dirty, saveVault, lock }) {
+  const label = allNav.find(([key]) => key === active)?.[1] || "Dashboard";
+  return <header className="topbar">
+    <div><small>Financial-D3v <b>/</b> {label}</small><h1>{label}</h1></div>
+    <div className="top-actions">
+      <span className={dirty ? "save-status dirty" : "save-status"}><i /> {dirty ? "Cambios sin guardar" : "Vault guardado"}</span>
+      <Button onClick={saveVault} disabled={!dirty}>{dirty ? "Guardar vault" : "Guardado"}</Button>
+      <button className="avatar" onClick={lock} aria-label="Bloquear vault">P</button>
+    </div>
+  </header>;
+}
+
+function Dashboard({ vault, setActive }) {
+  const { start, end } = currentMonthRange();
+  const totals = transactionTotals(vault.transactions, start, end);
+  const nw = netWorth(vault);
+  const accountsTotal = vault.accounts.reduce((sum, account) => sum + accountBalance(account, vault.transactions), 0);
+  const savingsRate = totals.income ? (totals.income > 0 ? (Math.max(0, totals.income - totals.expenses) / totals.income) * 100 : 0) : 0;
+  const debt = nw.debtLiabilities;
+  const series = monthSeries(vault.transactions, 6);
+  const max = Math.max(...series.flatMap((row) => [row.income, row.expenses]), 1);
+  const expenseCategories = vault.categories.filter((item) => item.kind === "expense").map((category) => ({
+    ...category,
+    value: vault.transactions.filter((tx) => tx.type === "expense" && tx.categoryId === category.id && new Date(tx.occurredAt) >= start && new Date(tx.occurredAt) < end).reduce((sum, tx) => sum + tx.minorUnits, 0),
+  })).filter((item) => item.value > 0).sort((a, b) => b.value - a.value);
+  const totalCategorySpend = expenseCategories.reduce((sum, item) => sum + item.value, 0);
+  const budget = vault.budgets.find((item) => new Date(item.startDate) <= start && new Date(item.endDate) >= end) || vault.budgets[0];
+  const budgetData = budget ? budgetSummary(budget, vault, new Date(budget.startDate), new Date(budget.endDate)) : null;
+  const recent = [...vault.transactions].sort((a, b) => new Date(b.occurredAt) - new Date(a.occurredAt)).slice(0, 6);
+
+  return <div className="workspace dashboard-page">
+    <section className="hero reveal">
+      <div><small>Resumen financiero · {new Intl.DateTimeFormat("es-CO", { month: "long", year: "numeric" }).format(new Date())}</small><h2>Haz que tu dinero <em>tenga sentido.</em></h2><p>Registra el movimiento, entiende el estado y decide qué sigue.</p></div>
+      <Button primary onClick={() => setActive("transactions")}>＋ Nueva transacción</Button>
+    </section>
+
+    <div className="metrics metrics-4">
+      <Metric label="Patrimonio neto" value={money(nw.net)} detail="Activos − pasivos" tone="green" />
+      <Metric label="Flujo de caja" value={`+ ${money(totals.netCashFlow)}`} detail="Este mes" tone="green" />
+      <Metric label="Ahorro del mes" value={`${Math.round(savingsRate)}%`} detail="Ingreso − gasto" tone="yellow" />
+      <Metric label="Deuda pendiente" value={money(debt)} detail="Saldo de deudas" tone="blue" />
+    </div>
+
+    <div className="dashboard-grid">
+      <Panel className="chart-panel reveal">
+        <div className="panel-head"><div><small>Últimos 6 meses</small><h3>Ingresos vs gastos</h3></div><div className="legend"><span><i className="green-dot" />Ingresos</span><span><i className="red-dot" />Gastos</span></div></div>
+        <div className="bar-chart">
+          {series.map((row) => <div className="bar-group" key={row.label}>
+            <div className="bar-pair">
+              <i className="bar income-bar" style={{ height: `${Math.max(4, row.income / max * 100)}%` }} />
+              <i className="bar expense-bar" style={{ height: `${Math.max(4, row.expenses / max * 100)}%` }} />
+            </div>
+            <small>{row.label}</small>
+          </div>)}
+        </div>
+      </Panel>
+
+      <Panel className="chart-panel reveal">
+        <div className="panel-head"><div><small>Este mes</small><h3>Gasto por categoría</h3></div></div>
+        {totalCategorySpend === 0 ? <Empty title="Sin gastos todavía" text="Registra una transacción y aquí aparecerá la distribución." /> :
+          <div className="donut-wrap">
+            <div className="donut" style={{ background: `conic-gradient(${expenseCategories.slice(0, 6).map((item, index) => {
+              const colors = ["#3b82f6", "#22c55e", "#f5b700", "#a78bfa", "#f0525b", "#64748b"];
+              const from = expenseCategories.slice(0, index).reduce((sum, current) => sum + current.value, 0) / totalCategorySpend * 360;
+              const to = expenseCategories.slice(0, index + 1).reduce((sum, current) => sum + current.value, 0) / totalCategorySpend * 360;
+              return `${colors[index % colors.length]} ${from}deg ${to}deg`;
+            }).join(",")})` }}><strong>{money(totalCategorySpend)}</strong><span>gastado</span></div>
+            <div className="donut-legend">{expenseCategories.slice(0, 6).map((item, index) => <div key={item.id}><span className={`series-dot series-${index + 1}`} />{item.name}<b>{Math.round(item.value / totalCategorySpend * 100)}%</b></div>)}</div>
+          </div>}
+      </Panel>
+    </div>
+
+    <div className="dashboard-bottom">
+      <Panel className="reveal"><div className="panel-head"><div><small>Tu dinero</small><h3>Cuentas</h3></div><button onClick={() => setActive("accounts")} className="text-link">Ver todas</button></div>
+        {vault.accounts.length === 0 ? <Empty title="Crea tu primera cuenta" text="Las cuentas son el punto de partida del ledger." action={<Button primary onClick={() => setActive("accounts")}>Agregar cuenta</Button>} /> :
+          <div className="stack-list">{vault.accounts.slice(0, 4).map((account) => <div className="stack-row" key={account.id}><span className="account-icon">{account.type === "credit" ? "▭" : "▣"}</span><div><b>{account.name}</b><small>{account.type} · {account.currency}</small></div><strong>{money(accountBalance(account, vault.transactions), account.currency)}</strong></div>)}</div>}
+        <div className="panel-total"><span>Saldo total</span><b>{money(accountsTotal)}</b></div>
+      </Panel>
+
+      <Panel className="reveal"><div className="panel-head"><div><small>Presupuesto</small><h3>Presupuesto del mes</h3></div><button onClick={() => setActive("budget")} className="text-link">Ver todo</button></div>
+        {!budgetData ? <Empty title="Sin presupuesto" text="Crea un presupuesto para comparar plan contra realidad." action={<Button primary onClick={() => setActive("budget")}>Crear presupuesto</Button>} /> :
+          <div className="budget-preview"><div className="budget-total"><strong>{Math.round(budgetData.percent)}%</strong><span>usado</span></div>{budgetData.lines.slice(0, 4).map((line, index) => <div className="budget-line" key={line.categoryId}><div><b><i className={`series-dot series-${index + 1}`} />{line.categoryName}</b><span>{money(line.spent)} / {money(line.limitMinorUnits)}</span></div><Progress value={line.percent} tone={line.percent >= 100 ? "red" : index === 1 ? "green" : index === 2 ? "yellow" : "blue"} /></div>)}</div>}
+      </Panel>
+
+      <Panel className="reveal"><div className="panel-head"><div><small>Ledger</small><h3>Movimientos recientes</h3></div><button onClick={() => setActive("transactions")} className="text-link">Ver todos</button></div>
+        {recent.length === 0 ? <Empty title="Tu ledger está vacío" text="Registra el primer movimiento para empezar." /> :
+          <div className="stack-list">{recent.map((tx) => <div className="stack-row" key={tx.id}><span className={`movement-icon ${tx.type}`}>{tx.type === "income" ? "↗" : tx.type === "expense" ? "↘" : "⇄"}</span><div><b>{tx.description || "Movimiento"}</b><small>{tx.type} · {new Date(tx.occurredAt).toLocaleDateString("es-CO")}</small></div><strong className={tx.type === "expense" ? "negative" : tx.type === "income" ? "positive" : ""}>{tx.type === "expense" ? "−" : tx.type === "income" ? "+" : ""}{money(tx.minorUnits, tx.currency)}</strong></div>)}</div>}
+      </Panel>
+    </div>
+  </div>;
+}
+
+function Transactions({ vault, updateVault }) {
+  const [form, setForm] = useState({ type: "expense", amount: "", accountId: "", toAccountId: "", categoryId: "cat-food", description: "", occurredAt: new Date().toISOString().slice(0, 16) });
+  const [message, setMessage] = useState("");
+  const categories = vault.categories.filter((item) => item.kind === form.type);
+  const save = (event) => {
+    event.preventDefault();
+    const account = vault.accounts.find((item) => item.id === form.accountId);
+    if (!account || !form.amount) return;
+    const transaction = makeTransaction({
+      accountId: form.accountId,
+      toAccountId: form.type === "transfer" ? form.toAccountId : "",
+      type: form.type,
+      minorUnits: numberValue(form.amount),
+      currency: account.currency,
+      categoryId: form.type === "transfer" ? "" : form.categoryId,
+      description: form.description || (form.type === "income" ? "Ingreso" : form.type === "expense" ? "Gasto" : "Transferencia"),
+      occurredAt: new Date(form.occurredAt).toISOString(),
+    });
+    updateVault((current) => ({ ...current, transactions: [...current.transactions, transaction] }));
+    setMessage("Movimiento guardado en memoria. Guarda el Vault para persistirlo cifrado.");
+    setForm((current) => ({ ...current, amount: "", description: "" }));
+  };
+  const items = [...vault.transactions].sort((a, b) => new Date(b.occurredAt) - new Date(a.occurredAt));
+
+  return <Module title="Transacciones" eyebrow="Registrar → Categorizar" description="Captura ingresos, gastos y transferencias directamente en el ledger privado.">
+    <div className="two-col">
+      <Panel><div className="panel-head"><div><small>Nueva transacción</small><h3>Registrar movimiento</h3></div></div>
+        <form onSubmit={save} className="form-grid">
+          <div className="segmented full"><button type="button" className={form.type === "expense" ? "active" : ""} onClick={() => setForm({ ...form, type: "expense", categoryId: "cat-food" })}>Gasto</button><button type="button" className={form.type === "income" ? "active" : ""} onClick={() => setForm({ ...form, type: "income", categoryId: "cat-salary" })}>Ingreso</button><button type="button" className={form.type === "transfer" ? "active" : ""} onClick={() => setForm({ ...form, type: "transfer", categoryId: "" })}>Transfer.</button></div>
+          <Field label="Monto" type="number" min="0.01" step="0.01" required value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
+          <Select label="Cuenta" required value={form.accountId} onChange={(e) => setForm({ ...form, accountId: e.target.value })}><option value="">Selecciona cuenta</option>{vault.accounts.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select>
+          {form.type === "transfer" ? <Select label="Cuenta destino" required value={form.toAccountId} onChange={(e) => setForm({ ...form, toAccountId: e.target.value })}><option value="">Selecciona destino</option>{vault.accounts.filter((item) => item.id !== form.accountId).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select> :
+            <Select label="Categoría" value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })}>{categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select>}
+          <Field label="Fecha" type="datetime-local" value={form.occurredAt} onChange={(e) => setForm({ ...form, occurredAt: e.target.value })} />
+          <Field label="Descripción" placeholder="Opcional" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+          <div className="form-actions"><Button primary type="submit">Guardar movimiento</Button></div>
+        </form>
+        {message && <Notice tone="success"><b>Guardado.</b><span>{message}</span></Notice>}
+      </Panel>
+      <Panel><div className="panel-head"><div><small>Ledger privado</small><h3>Movimientos</h3></div><span>{items.length} registros</span></div>
+        {items.length === 0 ? <Empty title="Sin movimientos" text="El ledger está listo. Registra tu primer ingreso, gasto o transferencia." /> :
+          <div className="stack-list">{items.map((tx) => <div className="stack-row" key={tx.id}><span className={`movement-icon ${tx.type}`}>{tx.type === "income" ? "↗" : tx.type === "expense" ? "↘" : "⇄"}</span><div><b>{tx.description}</b><small>{tx.type} · {new Date(tx.occurredAt).toLocaleString("es-CO")}</small></div><strong className={tx.type === "expense" ? "negative" : tx.type === "income" ? "positive" : ""}>{tx.type === "expense" ? "−" : tx.type === "income" ? "+" : ""}{money(tx.minorUnits, tx.currency)}</strong></div>)}</div>}
+      </Panel>
+    </div>
+  </Module>;
+}
+
+function Accounts({ vault, updateVault }) {
+  const [form, setForm] = useState({ name: "", type: "bank", currency: "COP", opening: "" });
+  const save = (event) => {
+    event.preventDefault();
+    if (!form.name) return;
+    updateVault((current) => ({ ...current, accounts: [...current.accounts, makeAccount({ name: form.name, type: form.type, currency: form.currency, openingMinorUnits: numberValue(form.opening) })] }));
+    setForm({ name: "", type: "bank", currency: "COP", opening: "" });
+  };
+  return <Module title="Cuentas" eyebrow="Dónde vive tu dinero" description="Los saldos se derivan del opening balance y del ledger. No hay un balance paralelo que pueda contradecir las transacciones.">
+    <div className="two-col">
+      <Panel><div className="panel-head"><div><small>Nueva cuenta</small><h3>Agregar cuenta</h3></div></div><form onSubmit={save} className="form-grid">
+        <Field label="Nombre" placeholder="Cuenta de ahorros" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+        <Select label="Tipo" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}><option value="cash">Efectivo</option><option value="bank">Banco</option><option value="credit">Crédito</option><option value="investment">Inversión</option><option value="other">Otro</option></Select>
+        <Field label="Moneda" maxLength="3" value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value.toUpperCase() })} />
+        <Field label="Saldo inicial" type="number" step="0.01" value={form.opening} onChange={(e) => setForm({ ...form, opening: e.target.value })} />
+        <div className="form-actions"><Button primary type="submit">Crear cuenta</Button></div>
+      </form></Panel>
+      <Panel><div className="panel-head"><div><small>Tu dinero</small><h3>Cuentas</h3></div></div>
+        {vault.accounts.length === 0 ? <Empty title="Todavía no hay cuentas" text="Crea la primera cuenta para empezar a registrar movimientos." /> :
+          <div className="account-grid">{vault.accounts.map((account) => <article className="account-card reveal" key={account.id}><div><span className="badge">{account.type}</span><small>{account.currency}</small></div><h3>{account.name}</h3><strong>{money(accountBalance(account, vault.transactions), account.currency)}</strong><p>Saldo inicial {money(account.openingMinorUnits, account.currency)}</p></article>)}</div>}
+      </Panel>
+    </div>
+  </Module>;
+}
+
+function Budget({ vault, updateVault }) {
+  const { start, end } = currentMonthRange();
+  const [name, setName] = useState("Presupuesto de octubre");
+  const [rows, setRows] = useState([{ categoryId: "cat-housing", limit: "" }, { categoryId: "cat-food", limit: "" }, { categoryId: "cat-transport", limit: "" }]);
+  const expenseCategories = vault.categories.filter((item) => item.kind === "expense");
+  const budgets = vault.budgets;
+  const save = (event) => {
+    event.preventDefault();
+    const items = rows.filter((row) => row.categoryId && Number(row.limit) > 0).map((row) => ({ categoryId: row.categoryId, limitMinorUnits: numberValue(row.limit) }));
+    if (!items.length) return;
+    updateVault((current) => ({ ...current, budgets: [...current.budgets, makeBudget({ name, currency: "COP", startDate: start.toISOString(), endDate: end.toISOString(), items })] }));
+    setRows([{ categoryId: "cat-housing", limit: "" }]);
+  };
+  return <Module title="Presupuestos" eyebrow="Plan → Entender" description="Define límites y compara el plan contra el gasto real del ledger. Los actuals siempre salen de las transacciones.">
+    <div className="two-col">
+      <Panel><div className="panel-head"><div><small>Plan mensual</small><h3>Crear presupuesto</h3></div></div><form onSubmit={save} className="form-grid">
+        <Field label="Nombre" value={name} onChange={(e) => setName(e.target.value)} />
+        <div className="budget-inputs">{rows.map((row, index) => <div className="budget-input-row" key={index}><Select label={`Categoría ${index + 1}`} value={row.categoryId} onChange={(e) => setRows(rows.map((item, i) => i === index ? { ...item, categoryId: e.target.value } : item))}>{expenseCategories.map((cat) => <option key={cat.id} value={cat.id}>{cat.name}</option>)}</Select><Field label="Límite" type="number" min="0.01" step="0.01" value={row.limit} onChange={(e) => setRows(rows.map((item, i) => i === index ? { ...item, limit: e.target.value } : item))} /></div>)}<Button onClick={() => setRows([...rows, { categoryId: "cat-other", limit: "" }])}>＋ Agregar categoría</Button></div>
+        <div className="form-actions"><Button primary type="submit">Crear presupuesto</Button></div>
+      </form></Panel>
+      <Panel><div className="panel-head"><div><small>Plan vs realidad</small><h3>Presupuestos</h3></div></div>
+        {budgets.length === 0 ? <Empty title="Sin presupuesto" text="Crea un presupuesto y dale un trabajo concreto a cada peso." /> :
+          <div className="budget-list">{budgets.map((budget) => { const data = budgetSummary(budget, vault, new Date(budget.startDate), new Date(budget.endDate)); return <article className="budget-card reveal" key={budget.id}><div className="budget-card-head"><div><b>{budget.name}</b><small>{new Date(budget.startDate).toLocaleDateString("es-CO")} — {new Date(budget.endDate).toLocaleDateString("es-CO")}</small></div><strong>{Math.round(data.percent)}%</strong></div>{data.lines.map((line) => <div className="budget-line" key={line.categoryId}><div><b>{line.categoryName}</b><span>{money(line.spent)} / {money(line.limitMinorUnits)}</span></div><Progress value={line.percent} tone={line.percent >= 100 ? "red" : line.percent >= 80 ? "yellow" : "green"} /></div>)}</article>; })}</div>}
+      </Panel>
+    </div>
+  </Module>;
+}
+
+function Savings({ vault, updateVault }) {
+  const [goal, setGoal] = useState({ name: "", target: "", targetDate: "" });
+  const [contribution, setContribution] = useState({ goalId: "", amount: "", note: "" });
+  const saveGoal = (event) => { event.preventDefault(); if (!goal.name || !goal.target) return; updateVault((current) => ({ ...current, savingsGoals: [...current.savingsGoals, makeSavingsGoal({ name: goal.name, targetMinorUnits: numberValue(goal.target), targetDate: goal.targetDate })] })); setGoal({ name: "", target: "", targetDate: "" }); };
+  const saveContribution = (event) => { event.preventDefault(); if (!contribution.goalId || !contribution.amount) return; updateVault((current) => ({ ...current, savingsContributions: [...current.savingsContributions, makeSavingsContribution({ goalId: contribution.goalId, amountMinorUnits: numberValue(contribution.amount), note: contribution.note })] })); setContribution({ goalId: contribution.goalId, amount: "", note: "" }); };
+  return <Module title="Ahorro y metas" eyebrow="Planeación" description="Las contribuciones son registros de progreso de una meta, no gastos del presupuesto.">
+    <div className="two-col">
+      <Panel><div className="panel-head"><div><small>Nueva meta</small><h3>Define qué estás construyendo</h3></div></div><form onSubmit={saveGoal} className="form-grid">
+        <Field label="Nombre" placeholder="Fondo de emergencia" required value={goal.name} onChange={(e) => setGoal({ ...goal, name: e.target.value })} />
+        <Field label="Objetivo" type="number" min="0.01" step="0.01" required value={goal.target} onChange={(e) => setGoal({ ...goal, target: e.target.value })} />
+        <Field label="Fecha objetivo" type="date" value={goal.targetDate} onChange={(e) => setGoal({ ...goal, targetDate: e.target.value })} />
+        <div className="form-actions"><Button primary type="submit">Crear meta</Button></div>
+      </form></Panel>
+      <Panel><div className="panel-head"><div><small>Progreso</small><h3>Contribuir</h3></div></div><form onSubmit={saveContribution} className="form-grid">
+        <Select label="Meta" required value={contribution.goalId} onChange={(e) => setContribution({ ...contribution, goalId: e.target.value })}><option value="">Selecciona meta</option>{vault.savingsGoals.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select>
+        <Field label="Monto" type="number" min="0.01" step="0.01" required value={contribution.amount} onChange={(e) => setContribution({ ...contribution, amount: e.target.value })} />
+        <Field label="Nota" placeholder="Opcional" value={contribution.note} onChange={(e) => setContribution({ ...contribution, note: e.target.value })} />
+        <div className="form-actions"><Button primary type="submit" disabled={!vault.savingsGoals.length}>Registrar aporte</Button></div>
+      </form></Panel>
+    </div>
+    <div className="goal-grid">{vault.savingsGoals.map((item) => { const data = savingsProgress(item, vault.savingsContributions); return <Panel className="goal-card reveal" key={item.id}><div className="goal-head"><div><span className="badge">Meta</span><h3>{item.name}</h3></div><strong>{Math.round(data.percent)}%</strong></div><Progress value={data.percent} tone="green" /><div className="goal-values"><span>{money(data.saved)}</span><span>{money(data.target)}</span></div>{item.targetDate && <small>Objetivo · {new Date(item.targetDate).toLocaleDateString("es-CO")}</small>}</Panel>; })}</div>
+  </Module>;
+}
+
+function Debts({ vault, updateVault }) {
+  const [debt, setDebt] = useState({ name: "", amount: "", dueDate: "" });
+  const [payment, setPayment] = useState({ debtId: "", amount: "", principal: "", interest: "", fees: "" });
+  const saveDebt = (event) => { event.preventDefault(); if (!debt.name || !debt.amount) return; updateVault((current) => ({ ...current, debts: [...current.debts, makeDebt({ name: debt.name, originalMinorUnits: numberValue(debt.amount), dueDate: debt.dueDate })] })); setDebt({ name: "", amount: "", dueDate: "" }); };
+  const savePayment = (event) => { event.preventDefault(); if (!payment.debtId || !payment.amount) return; updateVault((current) => ({ ...current, debtPayments: [...current.debtPayments, makeDebtPayment({ debtId: payment.debtId, amountMinorUnits: numberValue(payment.amount), principalMinorUnits: numberValue(payment.principal || payment.amount), interestMinorUnits: numberValue(payment.interest), feesMinorUnits: numberValue(payment.fees) })] })); setPayment({ ...payment, amount: "", principal: "", interest: "", fees: "" }); };
+  return <Module title="Deudas" eyebrow="Planeación" description="Los pagos separan principal, intereses y cargos. Solo el principal reduce el saldo de la deuda.">
+    <div className="two-col">
+      <Panel><div className="panel-head"><div><small>Nueva deuda</small><h3>Registrar obligación</h3></div></div><form onSubmit={saveDebt} className="form-grid">
+        <Field label="Nombre" placeholder="Crédito de consumo" required value={debt.name} onChange={(e) => setDebt({ ...debt, name: e.target.value })} />
+        <Field label="Saldo inicial" type="number" min="0.01" step="0.01" required value={debt.amount} onChange={(e) => setDebt({ ...debt, amount: e.target.value })} />
+        <Field label="Fecha objetivo" type="date" value={debt.dueDate} onChange={(e) => setDebt({ ...debt, dueDate: e.target.value })} />
+        <div className="form-actions"><Button primary type="submit">Agregar deuda</Button></div>
+      </form></Panel>
+      <Panel><div className="panel-head"><div><small>Pago</small><h3>Registrar pago</h3></div></div><form onSubmit={savePayment} className="form-grid">
+        <Select label="Deuda" required value={payment.debtId} onChange={(e) => setPayment({ ...payment, debtId: e.target.value })}><option value="">Selecciona deuda</option>{vault.debts.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select>
+        <Field label="Pago total" type="number" min="0.01" step="0.01" required value={payment.amount} onChange={(e) => setPayment({ ...payment, amount: e.target.value })} />
+        <Field label="Principal" type="number" min="0" step="0.01" value={payment.principal} onChange={(e) => setPayment({ ...payment, principal: e.target.value })} />
+        <Field label="Intereses" type="number" min="0" step="0.01" value={payment.interest} onChange={(e) => setPayment({ ...payment, interest: e.target.value })} />
+        <Field label="Cargos" type="number" min="0" step="0.01" value={payment.fees} onChange={(e) => setPayment({ ...payment, fees: e.target.value })} />
+        <div className="form-actions"><Button primary type="submit" disabled={!vault.debts.length}>Registrar pago</Button></div>
+      </form></Panel>
+    </div>
+    <div className="debt-grid">{vault.debts.map((item) => { const balance = debtBalance(item, vault.debtPayments); return <Panel className="debt-card reveal" key={item.id}><div className="goal-head"><div><span className="badge">Deuda</span><h3>{item.name}</h3></div><strong className="negative">{money(balance)}</strong></div><Progress value={item.originalMinorUnits ? ((item.originalMinorUnits - balance) / item.originalMinorUnits) * 100 : 0} tone="red" /><div className="goal-values"><span>Pagado {money(item.originalMinorUnits - balance)}</span><span>Inicial {money(item.originalMinorUnits)}</span></div></Panel>; })}</div>
+  </Module>;
+}
+
+function NetWorth({ vault, updateVault }) {
+  const [asset, setAsset] = useState({ name: "", amount: "" });
+  const [liability, setLiability] = useState({ name: "", amount: "" });
+  const data = netWorth(vault);
+  const addAsset = (event) => { event.preventDefault(); if (!asset.name || !asset.amount) return; updateVault((current) => ({ ...current, assets: [...current.assets, makeAsset({ name: asset.name, minorUnits: numberValue(asset.amount) })] })); setAsset({ name: "", amount: "" }); };
+  const addLiability = (event) => { event.preventDefault(); if (!liability.name || !liability.amount) return; updateVault((current) => ({ ...current, liabilities: [...current.liabilities, makeLiability({ name: liability.name, minorUnits: numberValue(liability.amount) })] })); setLiability({ name: "", amount: "" }); };
+  return <Module title="Patrimonio neto" eyebrow="Activos − pasivos" description="Una vista patrimonial: activos menos todos los pasivos. Los saldos de deuda se incluyen como pasivos.">
+    <div className="metrics metrics-4"><Metric label="Patrimonio neto" value={money(data.net)} detail="Activos − pasivos" tone="green" /><Metric label="Activos" value={money(data.assets)} detail="Activos registrados" tone="green" /><Metric label="Pasivos" value={money(data.liabilities)} detail="Incluye deudas" tone="red" /><Metric label="Deuda" value={money(data.debtLiabilities)} detail="Saldo pendiente" tone="blue" /></div>
+    <div className="two-col">
+      <Panel><div className="panel-head"><div><small>Patrimonio</small><h3>Activos</h3></div></div><form onSubmit={addAsset} className="form-grid"><Field label="Nombre" placeholder="Apartamento" required value={asset.name} onChange={(e) => setAsset({ ...asset, name: e.target.value })} /><Field label="Valor" type="number" min="0" step="0.01" required value={asset.amount} onChange={(e) => setAsset({ ...asset, amount: e.target.value })} /><div className="form-actions"><Button primary type="submit">Agregar activo</Button></div></form><div className="stack-list compact">{vault.assets.map((item) => <div className="stack-row" key={item.id}><div><b>{item.name}</b><small>Activo</small></div><strong>{money(item.minorUnits)}</strong></div>)}</div></Panel>
+      <Panel><div className="panel-head"><div><small>Patrimonio</small><h3>Pasivos</h3></div></div><form onSubmit={addLiability} className="form-grid"><Field label="Nombre" placeholder="Obligación" required value={liability.name} onChange={(e) => setLiability({ ...liability, name: e.target.value })} /><Field label="Valor" type="number" min="0" step="0.01" required value={liability.amount} onChange={(e) => setLiability({ ...liability, amount: e.target.value })} /><div className="form-actions"><Button primary type="submit">Agregar pasivo</Button></div></form><div className="stack-list compact">{vault.liabilities.map((item) => <div className="stack-row" key={item.id}><div><b>{item.name}</b><small>Pasivo</small></div><strong className="negative">{money(item.minorUnits)}</strong></div>)}{vault.debts.map((item) => <div className="stack-row" key={`debt-${item.id}`}><div><b>{item.name}</b><small>Deuda</small></div><strong className="negative">{money(debtBalance(item, vault.debtPayments))}</strong></div>)}</div></Panel>
+    </div>
+  </Module>;
+}
+
+function Education({ vault }) {
+  return <Module title="Educación" eyebrow="Aprender → ajustar" description="Cada concepto sigue FACT → CALCULATION → INTERPRETATION → ACTION.">
+    <div className="education-grid">{vault.education.map((card) => <Panel className="education-card reveal" key={card.id}><span className="badge">{card.topic}</span><h3>{card.title}</h3><div><b>FACT</b><p>{card.fact}</p></div><div><b>CALCULATION</b><p>{card.calculation}</p></div><div><b>INTERPRETATION</b><p>{card.interpretation}</p></div><div><b>ACTION</b><p>{card.action}</p></div></Panel>)}</div>
+  </Module>;
+}
+
+function Module({ title, eyebrow, description, children }) {
+  return <div className="workspace module"><div className="module-head reveal"><div><small>{eyebrow}</small><h2>{title}</h2><p>{description}</p></div></div>{children}</div>;
+}
+
+export default function App() {
+  const { vault, updateVault, saveVault, dirty, lock } = useVault();
+  const [active, setActive] = useState("dashboard");
+  const [moreOpen, setMoreOpen] = useState(false);
+  const safeVault = useMemo(() => normalizeVault(vault), [vault]);
+
+  const guardedLock = () => {
+    if (dirty && !window.confirm("Tienes cambios sin guardar. ¿Bloquear sin guardar?")) return;
+    lock();
+  };
+
+  if (!vault) return null;
+
+  const render = () => {
+    if (active === "dashboard") return <Dashboard vault={safeVault} setActive={setActive} />;
+    if (active === "transactions") return <Transactions vault={safeVault} updateVault={updateVault} />;
+    if (active === "accounts") return <Accounts vault={safeVault} updateVault={updateVault} />;
+    if (active === "budget") return <Budget vault={safeVault} updateVault={updateVault} />;
+    if (active === "savings") return <Savings vault={safeVault} updateVault={updateVault} />;
+    if (active === "debts") return <Debts vault={safeVault} updateVault={updateVault} />;
+    if (active === "net-worth") return <NetWorth vault={safeVault} updateVault={updateVault} />;
+    return <Education vault={safeVault} />;
+  };
+
+  return <div className="app-shell">
+    <Sidebar active={active} setActive={setActive} onLock={guardedLock} dirty={dirty} />
+    <div className="main">
+      <Topbar active={active} dirty={dirty} saveVault={saveVault} lock={guardedLock} />
+      <main>{render()}</main>
+      <footer>PRIVATE BY DESIGN · FINANCIAL-D3V · ENCRYPTED VAULT</footer>
+    </div>
+    <MobileNav active={active} setActive={setActive} moreOpen={moreOpen} setMoreOpen={setMoreOpen} />
+  </div>;
 }

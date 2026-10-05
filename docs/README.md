@@ -1,41 +1,76 @@
 # Financial-D3v Documentation
 
-The documentation follows the new personal-finance-first product lifecycle.
+**Last updated:** 2026-10-05  
+**Timezone:** America/Bogota (COT, UTC-05:00)  
+**Source of truth:** GitHub `main⟧
 
-## Current phase
+## Current state
 
-**FASE 1 — Product Definition: APPROVED / BUILT**
+FASES 1–31 are complete through the first-release local-first foundation.
 
-Canonical product specification:
+Active architecture:
 
-`docs/PHASE-1-PRODUCT-SPEC.md`
+`text
+GitHub
+  ↓
+Vercel Hobby
+  ↓
+React + Vite + Tailwind PWA
+  ↓
+FDV1 encrypted Financial Vault
+  ↓
+decrypted in-memory state
+  ↓
+Go/WASM local computation
+`
 
-## Phase sequence
+FASE 32 is the next planned evolution.
 
-1. Product definition
-2. Financial domain model v2
-3. Firestore persistence design
-4. Go application foundation
-5. Accounts and transactions
-6. Budgeting
-7. Savings and financial habits
-8. Financial education
-9. Debts
-10. Assets, liabilities and net worth
-11. Reports and financial dashboard
-12. Authentication, privacy and audit
-13. Frontend product
-14. Testing hardening
-15. Payroll
-16. Private deployment and operations
-17. Production readiness
+## Canonical documents
 
-## Documentation rule
+| Document | Purpose |
+|---|---|
+| `../CONTEXT.md⟧ | Current continuation context |
+| `../STEP-BY-STEP-FINANCIAL-D3V-2026-10-05.md⟧ | Step-by-step project history |
+| `01-PRODUCT-VISION.md⟧ | Product vision |
+| `02-REQUIREMENTS.md⟧ | Requirements |
+| `03-ARCHITECTURE.md⟧ | Current architecture |
+| `04-DOMAIN-MODEL.md⟧ | Domain model |
+| `05-DATABASE-DESIGN.md⟧ | Persistence history and Vault boundary |
+| `06-API-DESIGN.md⟧ | Legacy API boundary |
+| `07-FINANCIAL-RULES.md⟧ | Financial invariants |
+| `08-SECURITY.md⟧ | Active security model |
+| `09-TESTING.md⟧ | Testing |
+| `10-DEPLOYMENT.md⟧ | Active deployment |
+| `11-AI-DEVELOPMENT-WORKFLOW.md⟧ | AI workflow |
+| `12-LEARNING-GO.md⟧ | Go learning |
+| `13-ROADMAP.md⟧ | Roadmap |
+| `14-UI-UX-DESIGN.md⟧ | UX direction |
+| `15-FINANCIAL-EDUCATION.md⟧ | Education |
+| `16-PRIVATE-PERSONAL-USE.md⟧ | Private-use scope |
+| `VALIDATION-RUNNER.md⟧ | Validación del Proyecto |
+| `OPERATIONS-RUNBOOK.md⟧ | Operations/recovery |
+| `DESIGN-SYSTEM-REFERENCE.md⟧ | Visual system |
+| `DEPLOYMENT-VERCEL.md⟧ | Vercel deployment |
 
-The repository is the source of truth.
+## Phase history
 
-Previous documentation is historical when it conflicts with the new product baseline.
+Phase documents are preserved for traceability. Later architecture decisions override earlier deployment assumptions.
 
-A phase is complete only when its new requirements, implementation, validation and acceptance criteria are satisfied.
+Important evolution:
+1. Initial Go + Firestore/API architecture.
+2. Product UX expansion.
+3. Authentication/security hardening.
+4. Re-scope to $0 local-first encrypted Financial Vault.
+5. Go moved to local WASM computation.
+6. FASE 30 established design/PWA/deployment foundation.
+7. FASE 31 completed security/recovery validation.
 
-Do not infer completion from old code.
+## Historical cloud documents
+
+These are not active deployment instructions:
+- `PHASE-27-PRIVATE-PRODUCTION-DEPLOYMENT.md⟧
+- `PHASE-28-BACKUP-RECOVERY.md⟧
+- Cloud Run / Artifact Registry / Scheduler material under `deploy/⟧.
+
+Follow current architecture documents for active work.

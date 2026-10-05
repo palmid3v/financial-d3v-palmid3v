@@ -19,13 +19,13 @@ It is not initially intended to be:
 
 The active architecture is local-first:
 
-`text
+```text
 GitHub → Vercel Hobby → React/Vite PWA
                          ↓
                  encrypted Financial Vault
                          ↓
                  local Go/WASM
-`
+```
 
 The encrypted .fdv file is the financial source of truth.
 

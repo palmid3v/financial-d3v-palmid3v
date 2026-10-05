@@ -1,31 +1,69 @@
-# Architecture — New Product Baseline
+# Architecture — Financial-D3v
 
-**Status: FASE 3 PENDING**
+## Product architecture
 
-## Approved direction
+Financial-D3v is a private personal-finance application and financial learning workspace.
 
 React + Vite + Tailwind + PWA
 ↓
 Go REST/HTTP API
 ↓
-Application layer
+Application Services
 ↓
-Financial domain
+Financial Domain
 ↓
-Repository layer
+Repository Contracts
+↓
+Firestore Adapter
 ↓
 Firebase Firestore
 
-## Reset rule
+## FASE 2 domain boundary
 
-The previous architecture was created before the personal-finance-first and educational vision was fully defined. It is not treated as a completed architecture baseline.
+The domain owns financial meaning and invariants.
 
-The new architecture must be derived from product jobs, user flows, financial invariants, privacy requirements, persistence needs and educational requirements.
+Core concepts:
+- Money
+- Account
+- Transaction
+- Category
+- Budget
+- SavingsGoal
+- FinancialPeriod
+- EducationContext
 
-No abstraction should exist only for architectural appearance.
+The domain does not depend on Firestore, HTTP, React or UI concerns.
 
-## Runtime
+## FASE 3 persistence boundary
 
-The owner starts the application when needed. The local runtime can contain the Go API and React/Vite application while Firestore provides persistence.
+Persistence owns:
+- repository contracts;
+- Firestore document DTOs;
+- serialization mapping;
+- ownership-scoped paths;
+- query/index design.
 
-The exact package boundaries are defined after FASE 2 and FASE 3.
+Firestore SDK wiring is intentionally deferred to FASE 4.
+
+## Ownership
+
+All financial records are scoped to an owner identifier.
+
+## Ledger principle
+
+Transactions are authoritative. Account balances and dashboard values are derived from opening balances plus authoritative transactions.
+
+## Transfer principle
+
+A transfer is represented as linked transaction entries: one outgoing entry and one incoming entry sharing a transfer identifier.
+
+## Dependency rule
+
+presentation → application → domain
+persistence → domain
+
+The domain must not depend on outer layers.
+
+## FASE 4 boundary
+
+HTTP handlers, configuration, Firebase initialization, logging and concrete repository wiring belong to FASE 4.

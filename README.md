@@ -47,7 +47,7 @@ It is not initially a public SaaS and does not automatically execute external fi
 
 ## Current checkpoint
 
-### FASES 1–17 — APPROVED / BUILT\n\n### FASES 18–24 — IMPLEMENTED / VALIDATION PENDING
+### FASES 1–17 — APPROVED / BUILT\n\n### FASES 18–24 — IMPLEMENTED / VALIDATION PENDING\n\n### FASE 25 — SAVINGS + DEBT UX RESTORED / VALIDATION PENDING
 
 The platform foundation is complete through production-readiness UX.
 
@@ -55,7 +55,7 @@ The backend covers:
 
 `Account → Transaction → Balance → Budget → Planned vs Actual → Savings Goal → Contributions → Progress → Financial Education → Debt → Assets/Liabilities → Net Worth → Reports → Auth/Audit`
 
-The frontend currently provides the production-oriented product shell and dashboard experience, with Transactions, Budget, Savings, Debts and Net Worth module surfaces ready for the next product phases.
+The frontend now provides functional Transactions, Accounts, Budget, Savings, Debts, Net Worth and Education surfaces. Savings and Debt were restored on the repaired `main` without reintroducing the previous `App.jsx` corruption.
 
 ## Full roadmap
 
@@ -102,7 +102,7 @@ See `docs/13-ROADMAP.md` for the detailed checklist and `STEP-BY-STEP-FINANCIAL-
 
 ## Validation checkpoint
 
-The current FASE 17 state has been locally validated:
+Previously validated baseline (FASE 17):
 
 ```text
 go test ./...   → PASS

@@ -10,13 +10,13 @@ Financial-D3v no longer uses Firestore as the active financial-data source of tr
 
 The active source of truth is the encrypted user-controlled Financial Vault file:
 
-`text
+```text
 FDV1 encrypted .fdv
        ↓
 browser unlock
        ↓
 decrypted in-memory state
-`
+```
 
 No plaintext financial database is required for the active $0 architecture.
 
@@ -38,7 +38,7 @@ Those structures are not required for Vault mode.
 
 Transactions remain the authoritative ledger concept.
 
-Balances, budget actuals, savings progress, debt balances and net worth must be reproducible from authoritative domain records according to `docs/07-FINANCIAL-RULES.md⟧.
+Balances, budget actuals, savings progress, debt balances and net worth must be reproducible from authoritative domain records according to `docs/07-FINANCIAL-RULES.md`.
 
 ## Monetary representation
 

@@ -5,8 +5,91 @@ function Field({ label, ...props }) {
   return <label className="field"><span>{label}</span><input {...props}/></label>;
 }
 
-export default function VaultGate({ children }) {
-  const { locked, fileName, createVault, unlockFile, saveVault, lock } = useVault();
+function VaultWorkspace({ fileName, vault, saveVault, lock }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSave = async () => {
+    setBusy(true);
+    setError("");
+
+    try {
+      await saveVault();
+    } catch (err) {
+      setError(err.message || "Unable to save the Financial Vault.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const counts = Object.entries(vault || {})
+    .filter(([key, value]) => key !== "schemaVersion" && key !== "createdAt" && key !== "updatedAt" && Array.isArray(value))
+    .map(([key, value]) => [key, value.length]);
+
+  return (
+    <main style={{minHeight:"100vh",display:"grid",placeItems:"center",padding:24}}>
+      <section className="panel" style={{width:"min(720px,100%)"}}>
+        <div className="panel-head">
+          <div>
+            <small>Financial-D3v · Private Vault</small>
+            <h2>🔓 Financial Vault unlocked</h2>
+          </div>
+        </div>
+
+        <p>
+          The encrypted vault is the persistence boundary. Financial data is
+          currently available only in active application memory.
+        </p>
+
+        <div className="notice">
+          <b>Vault file</b>
+          <span>{fileName || "financial-d3v.fdv"}</span>
+        </div>
+
+        <div className="metrics" style={{marginTop:20}}>
+          <article className="metric">
+            <div><small>Vault schema</small><span>◇</span></div>
+            <strong>FDV1</strong>
+            <em>Version {vault?.schemaVersion || 1}</em>
+          </article>
+          <article className="metric">
+            <div><small>Financial collections</small><span>▣</span></div>
+            <strong>{counts.length}</strong>
+            <em>Prepared for migration</em>
+          </article>
+          <article className="metric">
+            <div><small>Stored records</small><span>≋</span></div>
+            <strong>{counts.reduce((sum, [, count]) => sum + count, 0)}</strong>
+            <em>Currently in memory</em>
+          </article>
+        </div>
+
+        {error && (
+          <div className="notice error" style={{marginTop:20}}>
+            <b>Vault save failed.</b>
+            <span>{error}</span>
+          </div>
+        )}
+
+        <div className="notice" style={{marginTop:20}}>
+          <b>FASE 27 boundary</b>
+          <span>Legacy API-backed financial screens are intentionally not mounted during this Vault validation.</span>
+          <span>FASE 28 will migrate the product modules to this in-memory Financial Vault.</span>
+        </div>
+
+        <div className="form-actions" style={{marginTop:20}}>
+          <button className="button primary" disabled={busy} onClick={handleSave}>
+            {busy ? "Saving…" : "Save encrypted vault"}
+          </button>
+          <button className="button" disabled={busy} onClick={lock}>Lock vault</button>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+export default function VaultGate() {
+  const { locked, fileName, vault, createVault, unlockFile, saveVault, lock } = useVault();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [mode, setMode] = useState("open");
@@ -15,16 +98,7 @@ export default function VaultGate({ children }) {
   const fileRef = useRef(null);
 
   if (!locked) {
-    return <div className="vault-session">
-      <div className="vault-session-bar">
-        <span>🔓 {fileName || "Financial Vault"}</span>
-        <div>
-          <button className="button" onClick={() => saveVault()}>Save encrypted vault</button>
-          <button className="button" onClick={lock}>Lock</button>
-        </div>
-      </div>
-      {children}
-    </div>;
+    return <VaultWorkspace fileName={fileName} vault={vault} saveVault={saveVault} lock={lock} />;
   }
 
   const submit = async (event) => {
@@ -68,8 +142,8 @@ export default function VaultGate({ children }) {
       </p>
 
       <div className="actions" style={{marginBottom:20}}>
-        <button className={mode === "open" ? "active" : ""} onClick={() => setMode("open")}>Open vault</button>
-        <button className={mode === "create" ? "active" : ""} onClick={() => setMode("create")}>Create vault</button>
+        <button type="button" className={mode === "open" ? "active" : ""} onClick={() => { setMode("open"); setError(""); }}>Open vault</button>
+        <button type="button" className={mode === "create" ? "active" : ""} onClick={() => { setMode("create"); setError(""); }}>Create vault</button>
       </div>
 
       <form onSubmit={submit} className="form-grid">

@@ -5,18 +5,18 @@
 
 ## Source of truth
 
-GitHub `main⟧ is authoritative.
+GitHub `main` is authoritative.
 
-`powershell
+```powershell
 git pull origin main
-`
+```
 
 ## Automated validation
 
-`powershell
+```powershell
 .\scripts\validate.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\security-audit.ps1
-`
+```
 
 Expected checks:
 - frontend dependencies;
@@ -29,10 +29,10 @@ Expected checks:
 
 ## Runtime validation
 
-`powershell
+```powershell
 cd frontend
 npm run preview
-`
+```
 
 Validate:
 1. Create Vault.
@@ -76,11 +76,11 @@ Auto-lock: **15 minutes of inactivity**.
 
 Expected:
 
-`text
+```text
 Vault unavailable.
 Unable to open the Financial Vault.
 Check the password or file integrity.
-`
+```
 
 ### Lost password
 
@@ -102,7 +102,7 @@ Do not commit .fdv files, decrypted financial JSON or passwords to Git.
 
 ## Deployment
 
-`text
+```text
 GitHub main
    ↓
 Vercel Hobby
@@ -110,9 +110,9 @@ Vercel Hobby
 React/Vite PWA
    ↓
 local encrypted Financial Vault
-`
+```
 
-Root `vercel.json⟧ defines install, build and output for the frontend.
+Root `vercel.json` defines install, build and output for the frontend.
 
 A real Vercel deployment remains a separate production smoke-test activity.
 

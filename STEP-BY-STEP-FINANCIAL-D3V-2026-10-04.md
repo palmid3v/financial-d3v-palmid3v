@@ -7,7 +7,7 @@
 
 ## Current checkpoint
 
-**FASE 26 — APPROVED / BUILT**
+**FASE 30 — BUILT / VALIDATION PENDING**
 
 Google Cloud FASES 27–28 are no longer the active execution path. The project is being re-scoped to preserve the user's $0 constraint and implement a user-controlled encrypted Financial Vault.
 

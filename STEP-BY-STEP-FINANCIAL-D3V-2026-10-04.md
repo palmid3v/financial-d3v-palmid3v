@@ -187,15 +187,28 @@ This is the **current active phase**.
 - [ ] Verify Education
 - [ ] Review mobile layout
 - [ ] Report exact terminal/runtime output to Nexsy
-- [ ] Explicitly approve FASE 25
+- [x] FASE 25 validated locally
+- [x] FASE 25 approved
 
 ---
 
 # 4. 🔐 NEXT ROADMAP
 
-Only after FASE 25 is validated and approved:
+FASE 25 is validated and approved. The active milestone is now FASE 26:
 
-## FASE 26 — Authentication / production security hardening
+## FASE 26 — Authentication / production security hardening 🔐
+
+- [x] Firebase ID-token verification boundary
+- [x] Authenticated owner scoping
+- [x] Production auth/configuration gates
+- [x] Explicit CORS allowlist
+- [x] API security headers
+- [x] Frontend authentication gate
+- [x] Frontend ID-token propagation and refresh
+- [x] Sign-out
+- [x] Security-header regression test
+- [ ] Local authenticated runtime validation
+- [ ] Final documentation approval
 
 - [ ] Firebase client authentication UI
 - [ ] Production auth configuration
@@ -314,7 +327,7 @@ Rules:
 - 🚫 Never infer `Last updated` from an old filename.
 - 📌 Future planning dates belong in the content, not in the update metadata.
 
-Current document:
+Current document: FASE 26 — Authentication / production security hardening
 
 `STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md`
 
@@ -326,9 +339,9 @@ Current update:
 
 # 7. 🧭 IMMEDIATE ACTION
 
-**Palmi pulls → validates FASE 25 → reports exact results → Nexsy fixes anything that fails.**
+**Palmi pulls → validates FASE 26 → reports exact terminal/runtime results → Nexsy fixes anything that fails.**
 
-Do not move to FASE 26 until FASE 25 has been validated and explicitly approved.
+Do not move to FASE 27 until FASE 26 has been validated and explicitly approved.
 
 ---
 

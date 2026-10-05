@@ -1,26 +1,64 @@
-# Deployment — Private Production Baseline
+# Deployment — Financial-D3v
 
-**Status: FASE 27 BUILT / VALIDATION PENDING**
+**Status:** ACTIVE $0 DEPLOYMENT BASELINE  
+**Last updated:** 2026-10-05  
+**Timezone:** America/Bogota (COT, UTC-05:00)
 
-Financial-D3v production uses Firebase Hosting + Cloud Run + Firestore.
+## Active architecture
 
-## Architecture
-- Firebase Hosting serves the React/Vite PWA over HTTPS.
-- Hosting rewrites `/api/**` to the Go API on Cloud Run.
-- Cloud Run runs immutable API revisions.
-- Firebase Authentication provides identity.
-- Go enforces authorization and owner scoping.
-- Firestore is the financial source of truth.
-- Artifact Registry stores deployable images.
-- GitHub Actions deploys through Workload Identity Federation.
+`text
+GitHub main
+    ↓
+Vercel Hobby
+    ↓
+React + Vite PWA
+    ↓
+encrypted Financial Vault
+`
 
-## Setup
-1. Run `deploy/bootstrap-production.sh`.
-2. Configure GitHub OIDC/WIF.
-3. Configure the GitHub `production` environment variables.
-4. Run the manual Production deployment workflow.
-5. Configure the daily backup schedule.
-6. Validate authenticated production runtime and backup recovery.
+The active deployment has no financial-data server.
 
-## Rollback
-Keep the previous Cloud Run revision/image and Hosting release. Roll back those artifacts rather than editing financial records to compensate for a release failure.
+## Vercel configuration
+
+The repository root `vercel.json⟧ defines:
+
+- install command: `cd frontend && npm ci⟧;
+- build command: `cd frontend && npm run build⟧;
+- output directory: `frontend/dist⟧.
+
+## Local production-like verification
+
+From repository root:
+
+`powershell
+.\scripts\validate.ps1
+`
+
+Then:
+
+`powershell
+cd frontend
+npm run preview
+`
+
+Validate Vault creation, save/export, unlock, lock, recovery and PWA behavior.
+
+## Cost boundary
+
+The target remains $0 for personal use.
+
+No Cloud Run, Artifact Registry, Cloud Scheduler or paid Google Cloud financial-data dependency is required.
+
+Firebase may remain in the repository as historical infrastructure or as optional future identity infrastructure, but it is not the active financial-data persistence layer.
+
+## Production validation
+
+A real Vercel deployment is validated separately by:
+1. deploying from `main⟧;
+2. opening the deployed application;
+3. creating/opening a test vault;
+4. validating lock/unlock/recovery;
+5. validating PWA metadata/install/update behavior;
+6. recording the exact result.
+
+The application architecture is considered deployment-ready; a deployment URL is not claimed as validated unless it has actually been tested.

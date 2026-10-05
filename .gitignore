@@ -12,6 +12,12 @@ coverage.out
 .env.*
 !.env.example
 
+# Firebase / secrets
+/secrets/
+/firebase-debug.log
+*.pem
+*.key
+
 # IDE / OS
 .vscode/
 .idea/

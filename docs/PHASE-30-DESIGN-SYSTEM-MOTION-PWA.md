@@ -56,7 +56,7 @@ FASE 30 standardizes the install/runtime metadata:
 - Spanish-Colombia document locale;
 - standalone display;
 - portrait-first mobile orientation;
-- 192px and 512px install icons;
+- a scalable Financial-D3v install icon;
 - Apple touch icon;
 - theme/background colors;
 - generated Vite PWA manifest;

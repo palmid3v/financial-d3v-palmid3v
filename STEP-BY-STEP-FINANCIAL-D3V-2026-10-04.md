@@ -47,10 +47,10 @@ Not approved yet.
 Required:
 - [ ] create vault
 - [ ] open vault
-- [ ] wrong password rejection
-- [ ] tamper rejection
+- [x] wrong password rejection
+- [x] tamper rejection
 - [ ] lock/session clear
-- [ ] auto-lock
+- [x] auto-lock (15-minute inactivity timeout)
 - [ ] import/export round trip
 - [ ] browser persistence audit
 - [ ] security review

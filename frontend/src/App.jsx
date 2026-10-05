@@ -130,7 +130,9 @@ function Topbar({ active, dirty, saveVault, lock }) {
     <div><small>Financial-D3v <b>/</b> {label}</small><h1>{label}</h1></div>
     <div className="top-actions">
       <span className={dirty ? "save-status dirty" : "save-status"}><i /> {dirty ? "Cambios sin guardar" : "Vault guardado"}</span>
-      <Button onClick={saveVault} disabled={!dirty}>{dirty ? "Guardar vault" : "Guardado"}</Button>
+      <Button onClick={() => saveVault()} disabled={!dirty}>
+        {dirty ? "Guardar vault" : "Guardado"}
+      </Button>
       <button className="avatar" onClick={lock} aria-label="Bloquear vault">P</button>
     </div>
   </header>;
@@ -215,12 +217,14 @@ function Dashboard({ vault, setActive }) {
         <div className="panel-head"><div><small>Este mes</small><h3>Gasto por categoría</h3></div></div>
         {totalCategorySpend === 0 ? <Empty title="Sin gastos todavía" text="Registra una transacción y aquí aparecerá la distribución." /> :
           <div className="donut-wrap">
-            <div className="donut" style={{ background: `conic-gradient(${expenseCategories.slice(0, 6).map((item, index) => {
-              const colors = ["#3b82f6", "#22c55e", "#f5b700", "#a78bfa", "#f0525b", "#64748b"];
-              const from = expenseCategories.slice(0, index).reduce((sum, current) => sum + current.value, 0) / totalCategorySpend * 360;
-              const to = expenseCategories.slice(0, index + 1).reduce((sum, current) => sum + current.value, 0) / totalCategorySpend * 360;
-              return `${colors[index % colors.length]} ${from}deg ${to}deg`;
-            }).join(",")})` }}><strong>{money(totalCategorySpend)}</strong><span>gastado</span></div>
+            <div className="donut" style={{
+              background: `conic-gradient(${expenseCategories.slice(0, 6).map((item, index) => {
+                const colors = ["#3b82f6", "#22c55e", "#f5b700", "#a78bfa", "#f0525b", "#64748b"];
+                const from = expenseCategories.slice(0, index).reduce((sum, current) => sum + current.value, 0) / totalCategorySpend * 360;
+                const to = expenseCategories.slice(0, index + 1).reduce((sum, current) => sum + current.value, 0) / totalCategorySpend * 360;
+                return `${colors[index % colors.length]} ${from}deg ${to}deg`;
+              }).join(",")})`
+            }}><strong>{money(totalCategorySpend)}</strong><span>gastado</span></div>
             <div className="donut-legend">{expenseCategories.slice(0, 6).map((item, index) => <div key={item.id}><span className={`series-dot series-${index + 1}`} />{item.name}<b>{Math.round(item.value / totalCategorySpend * 100)}%</b></div>)}</div>
           </div>}
       </Panel>

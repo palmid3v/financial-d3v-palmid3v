@@ -1,37 +1,10 @@
 {
   "indexes": [
-    {
-      "collectionGroup": "transactions",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "accountId", "order": "ASCENDING" },
-        { "fieldPath": "occurredAt", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "transactions",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "occurredAt", "order": "ASCENDING" },
-        { "fieldPath": "createdAt", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "transactions",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "categoryId", "order": "ASCENDING" },
-        { "fieldPath": "occurredAt", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "budgets",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "startDate", "order": "ASCENDING" },
-        { "fieldPath": "endDate", "order": "ASCENDING" }
-      ]
-    }
+    {"collectionGroup":"transactions","queryScope":"COLLECTION","fields":[{"fieldPath":"accountId","order":"ASCENDING"},{"fieldPath":"occurredAt","order":"DESCENDING"}]},
+    {"collectionGroup":"transactions","queryScope":"COLLECTION","fields":[{"fieldPath":"occurredAt","order":"ASCENDING"},{"fieldPath":"createdAt","order":"DESCENDING"}]},
+    {"collectionGroup":"transactions","queryScope":"COLLECTION","fields":[{"fieldPath":"categoryId","order":"ASCENDING"},{"fieldPath":"occurredAt","order":"DESCENDING"}]},
+    {"collectionGroup":"budgets","queryScope":"COLLECTION","fields":[{"fieldPath":"startDate","order":"ASCENDING"},{"fieldPath":"endDate","order":"ASCENDING"}]},
+    {"collectionGroup":"savingsContributions","queryScope":"COLLECTION","fields":[{"fieldPath":"goalId","order":"ASCENDING"},{"fieldPath":"contributedAt","order":"DESCENDING"}]}
   ],
   "fieldOverrides": []
 }

@@ -11,37 +11,37 @@ Financial-D3v uses a repository-local PowerShell validation runner for the Palmi
 
 ## Automated runner
 
-`powershell
+```powershell
 .\scripts\validate.ps1
-`
+```
 
-The runner detects frontend package/lock files, npm scripts, `go.mod⟧ and Go availability.
+The runner detects frontend package/lock files, npm scripts, `go.mod` and Go availability.
 
 Current checks:
-1. `npm ci⟧.
-2. `npm run test⟧.
-3. `npm run build⟧.
-4. `npm run build:wasm⟧.
+1. `npm ci`.
+2. `npm run test`.
+3. `npm run build`.
+4. `npm run build:wasm`.
 5. Vault security source audit.
-6. `go test ./...⟧.
-7. `go build ./...⟧.
+6. `go test ./...`.
+7. `go build ./...`.
 
 ## Security audit
 
-`powershell
+```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\security-audit.ps1
-`
+```
 
 The audit checks the Vault boundary for localStorage, sessionStorage, IndexedDB, navigator.sendBeacon, XMLHttpRequest and unexpected fetch() usage.
 
-The legitimate fetch() in `frontend/src/vault/goEngine.js⟧ is allowed because it loads the local `/wasm/financial-engine.wasm⟧ resource.
+The legitimate fetch() in `frontend/src/vault/goEngine.js` is allowed because it loads the local `/wasm/financial-engine.wasm` resource.
 
 ## Manual runtime
 
-`powershell
+```powershell
 cd frontend
 npm run preview
-`
+```
 
 FASE 31 runtime evidence included Vault creation/save/open, incorrect-password rejection, lock/unlock, recovery/import and security-boundary review.
 
@@ -62,7 +62,7 @@ Never claim CI, deployment, runtime or security success without observed evidenc
 
 ## Workflow
 
-`text
+```text
 Nexsy implements
       ↓
 GitHub main updated
@@ -80,4 +80,4 @@ Palmi reports exact output
 Nexsy diagnoses/fixes
       ↓
 Documentation update
-`
+```

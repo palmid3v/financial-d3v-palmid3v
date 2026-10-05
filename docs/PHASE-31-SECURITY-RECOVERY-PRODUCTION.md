@@ -10,7 +10,7 @@ Close the first-release security and recovery gate for the local-first Financial
 
 ## Security boundary
 
-`text
+```text
 Encrypted FDV1 file
         ↓
 Browser unlock + password
@@ -24,12 +24,12 @@ lock / 15-minute inactivity timeout
 active state + password reference cleared
         ↓
 LOCKED
-`
+```
 
 ## Automated validation — PASS
 
 Observed validation:
-- `npm ci⟧ PASS;
+- `npm ci` PASS;
 - frontend tests 10/10 PASS;
 - frontend production build PASS;
 - PWA generation PASS;
@@ -38,7 +38,7 @@ Observed validation:
 - Go tests PASS;
 - Go build PASS.
 
-The security audit initially exposed two audit-script defects: a regex parsing issue and then the legitimate local WASM `fetch()⟧. The audit was corrected to allow only the local WASM resource load while continuing to reject browser persistence and unexpected network APIs.
+The security audit initially exposed two audit-script defects: a regex parsing issue and then the legitimate local WASM `fetch()`. The audit was corrected to allow only the local WASM resource load while continuing to reject browser persistence and unexpected network APIs.
 
 ## Runtime validation — PASS
 
@@ -53,17 +53,17 @@ Validated:
 
 Observed incorrect-password behavior:
 
-`text
+```text
 Vault unavailable.
 Unable to open the Financial Vault.
 Check the password or file integrity.
-`
+```
 
 This is the expected locked failure path.
 
 ## Recovery
 
-The encrypted `.fdv⟧ file and its password are separate recovery dependencies.
+The encrypted `.fdv` file and its password are separate recovery dependencies.
 
 Normal:
 1. Preserve the encrypted file.
@@ -79,7 +79,7 @@ Lost password cannot be recovered by the application.
 
 ## Production path
 
-`text
+```text
 GitHub main
    ↓
 Vercel Hobby
@@ -87,7 +87,7 @@ Vercel Hobby
 React/Vite PWA
    ↓
 encrypted Financial Vault
-`
+```
 
 The architecture is $0-oriented. Cloud Run, Artifact Registry, Cloud Scheduler and remote financial persistence are not required.
 

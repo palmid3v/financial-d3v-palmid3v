@@ -25,3 +25,8 @@ func DebtToDocument(v domain.Debt)DebtDocument{return DebtDocument{ID:v.ID,Owner
 func DebtPaymentToDocument(v domain.DebtPayment)DebtPaymentDocument{return DebtPaymentDocument{ID:v.ID,OwnerID:v.OwnerID,DebtID:v.DebtID,Amount:moneyDocument(v.Amount),Principal:moneyDocument(v.Principal),Interest:moneyDocument(v.Interest),Fees:moneyDocument(v.Fees),PaidAt:v.PaidAt,Note:v.Note,CreatedAt:v.CreatedAt}}
 func AssetToDocument(v domain.Asset)AssetDocument{return AssetDocument{ID:v.ID,OwnerID:v.OwnerID,Name:v.Name,Kind:string(v.Kind),Value:moneyDocument(v.Value),AsOf:v.AsOf,CreatedAt:v.CreatedAt}}
 func LiabilityToDocument(v domain.Liability)LiabilityDocument{return LiabilityDocument{ID:v.ID,OwnerID:v.OwnerID,Name:v.Name,Kind:string(v.Kind),Balance:moneyDocument(v.Balance),AsOf:v.AsOf,CreatedAt:v.CreatedAt}}
+
+
+type AuditEventDocument struct { ID string `firestore:"id"`; OwnerID string `firestore:"ownerId"`; Action string `firestore:"action"`; Path string `firestore:"path"`; RequestID string `firestore:"requestId"`; OccurredAt time.Time `firestore:"occurredAt"` }
+func AuditEventToDocument(v domain.AuditEvent) AuditEventDocument { return AuditEventDocument{ID:v.ID,OwnerID:v.OwnerID,Action:v.Action,Path:v.Path,RequestID:v.RequestID,OccurredAt:v.OccurredAt} }
+func AuditEventFromDocument(d AuditEventDocument)(domain.AuditEvent,error){return domain.NewAuditEvent(d.ID,d.OwnerID,d.Action,d.Path,d.RequestID,d.OccurredAt)}

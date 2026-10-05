@@ -24,8 +24,12 @@ func NewServer(ctx context.Context,cfg config.Config)(*Server,error){
 	categories:=application.NewCategoryService(repos.Categories())
 	budgets:=application.NewBudgetService(repos.Budgets(),repos.Categories(),repos.Transactions())
 	savings:=application.NewSavingsService(repos.SavingsGoals(),repos.SavingsContributions(),repos.Accounts())
+	debts:=application.NewDebtService(repos.Debts(),repos.DebtPayments())
+	assets:=application.NewAssetService(repos.Assets())
+	liabilities:=application.NewLiabilityService(repos.Liabilities())
+	position:=application.NewFinancialPositionService(accounts,assets,liabilities,debts)
 	education:=application.NewEducationService(budgets,savings)
-	handler:=httpapi.NewServer(accounts,transactions,categories,budgets,savings,education,true).Handler()
+	handler:=httpapi.NewServerWithFinancialPosition(accounts,transactions,categories,budgets,savings,education,debts,assets,liabilities,position,true).Handler()
 	h:=&http.Server{Addr:cfg.HTTPAddr,Handler:handler,ReadHeaderTimeout:5*time.Second,ReadTimeout:15*time.Second,WriteTimeout:15*time.Second,IdleTimeout:60*time.Second}
 	return &Server{HTTP:h,Close:db.Close},nil
 }

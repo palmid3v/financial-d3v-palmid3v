@@ -1,8 +1,8 @@
 # API Design
 
-The initial HTTP surface is intentionally small.
+The HTTP API is the application boundary between the frontend and the financial domain.
 
-## Health
+## Initial HTTP surface
 
 GET /health
 
@@ -18,8 +18,25 @@ Returns a machine-readable service status.
 - /debts
 - /assets
 - /liabilities
-- /payroll
+- /net-worth
 - /reports
+- /education
+- /payroll
 - /audit
 
-Handlers must delegate business behavior to application/domain code.
+## API principles
+
+- JSON over HTTP.
+- Explicit request and response contracts.
+- Stable error structure.
+- Server-side validation.
+- Server-side authorization.
+- No direct UI access to persistence as the authoritative write path.
+- Financial mutations should be idempotent where operation semantics allow it.
+- Educational endpoints return explanations/insights based on explicit domain facts.
+
+## First useful vertical slice
+
+Account → Transaction → Balance → Dashboard summary → Educational explanation
+
+This gives the user both a working financial feature and a learning opportunity.

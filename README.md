@@ -49,7 +49,7 @@ It is not initially a public SaaS and does not automatically execute external fi
 
 ## Current checkpoint
 
-### FASES 1–15 — APPROVED / BUILT
+### FASES 1–17 — APPROVED / BUILT
 
 The backend foundation now covers:
 
@@ -69,9 +69,9 @@ npm run build    → PASS
 PWA generation   → PASS
 ```
 
-### Remaining phases
+### Current product checkpoint
 
-**1 phase remains: FASE 17.**
+**FASE 17 is implemented and built as the final roadmap phase.**
 
 | Fase | Focus | Status |
 | --- | --- | --- |
@@ -79,13 +79,13 @@ PWA generation   → PASS
 | **14** | Testing hardening — broader coverage, integration and reliability | APPROVED / BUILT |
 | **15** | Payroll — specialized later domain | APPROVED / BUILT |
 | **16** | Private deployment & operations | APPROVED / BUILT |
-| **17** | Production readiness | PENDING |
+| **17** | Production readiness & product UX | APPROVED / BUILT |
 
-### Next
+### Final phase
 
-**FASE 17 — Production readiness**
+**FASE 17 — Production readiness & product UX**
 
-The final phase is the production-readiness review across security, privacy, UX, reliability, documentation and operations.
+The final phase adds the product-wide UI/UX system and final readiness boundary. Cloud production still requires explicit Firebase, secrets, infrastructure and backup configuration.
 
 ## Documentation
 

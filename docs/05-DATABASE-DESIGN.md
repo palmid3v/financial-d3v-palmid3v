@@ -1,70 +1,62 @@
 # Database Design — Firebase Firestore
 
+**Status: FASE 3 APPROVED / BUILT**
+
 Firebase Firestore is the approved persistence layer for Financial-D3v.
 
-PostgreSQL is no longer the active database target. The previous PostgreSQL migration is retained only as historical reference.
+PostgreSQL is historical only and is not part of the active persistence design.
 
-## Why Firestore
+## Architecture
 
-For the current private/personal application, Firestore provides:
-- managed document persistence;
-- straightforward personal-data storage;
-- Firebase ecosystem integration;
-- flexible document structures;
-- security rules;
-- low operational burden for a private project;
-- a natural path to Firebase Authentication.
+React/PWA → Go REST/HTTP API → Application Services → Financial Domain → Repository Contracts → Firestore Adapter → Firebase Firestore
 
-The Go API remains the authoritative application layer.
+FASE 3 defines the persistence boundary. Firebase SDK initialization and concrete repository implementations belong to FASE 4.
 
-## Persistence principle
+## Ownership
 
-Preferred flow:
+Active financial records use owner-scoped subcollections:
 
-React/PWA → Go API → Repository → Firestore
+users/{ownerId}/accounts/{accountId}
+users/{ownerId}/transactions/{transactionId}
+users/{ownerId}/categories/{categoryId}
+users/{ownerId}/budgets/{budgetId}
+users/{ownerId}/savingsGoals/{goalId}
 
-Financial mutations should remain governed by the backend/domain layer.
+Later domains may add debts, assets, liabilities and payroll.
 
-## Proposed collection model
+## Authoritative data
 
-users/{userId}
-  profile
+Transactions are the authoritative ledger.
 
-users/{userId}/accounts/{accountId}
-users/{userId}/transactions/{transactionId}
-users/{userId}/categories/{categoryId}
-users/{userId}/budgets/{budgetId}
-users/{userId}/savingsGoals/{goalId}
-users/{userId}/debts/{debtId}
-users/{userId}/debtPayments/{paymentId}
-users/{userId}/assets/{assetId}
-users/{userId}/liabilities/{liabilityId}
+Balances and dashboard values must be reproducible from authoritative records or explicitly documented snapshots.
 
-users/{userId}/payrollEmployees/{employeeId}
-users/{userId}/contracts/{contractId}
-users/{userId}/payrollPeriods/{periodId}
-users/{userId}/payrollRuns/{runId}
+## Monetary serialization
 
-users/{userId}/auditEvents/{eventId}
+Money is stored as:
+- minorUnits: int64-compatible integer;
+- currency: ISO-style currency code string.
 
-The exact structure can change after query patterns and repository interfaces are designed.
+Floating-point money is not used for persistence.
 
-## Document rules
+## Repository contracts
 
-- Every financial document has a stable identifier.
-- Ownership is explicit.
-- Monetary values use deterministic integer minor units plus currency.
-- Timestamps are explicit and consistent.
-- Historical financial records are append-oriented whenever possible.
-- Derived values are reproducible from authoritative records.
-- Denormalization is acceptable when documented and kept consistent.
+Defined under internal/persistence:
+- AccountRepository
+- TransactionRepository
+- CategoryRepository
+- BudgetRepository
+- SavingsGoalRepository
+
+Contracts require owner scope for reads and writes.
+
+## Query/index strategy
+
+Initial composite indexes are defined in firebase/firestore.indexes.json.
+
+The main query patterns are account history, transaction period history, transaction category history and budgets by period.
 
 ## Security
 
-Firestore access must be private and restricted.
+Ownership paths are designed now, but authentication, authorization middleware, Firestore rules, audit and secret management remain later phases.
 
-Security rules are an additional boundary, not a replacement for server-side authorization.
-
-## Historical PostgreSQL migration
-
-The previous PostgreSQL migration represented an earlier architecture. It must not be used as the active persistence implementation. The historical artifact is preserved to maintain architectural traceability.
+**FASE 3 EXIT: APPROVED**

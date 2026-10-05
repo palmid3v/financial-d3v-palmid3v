@@ -47,9 +47,15 @@ It is not initially a public SaaS and does not automatically execute external fi
 
 ## 🧭 Current checkpoint
 
-### ✅ FASES 1–17 — APPROVED / BUILT\n\n### 🧩 FASES 18–24 — IMPLEMENTED / VALIDATION PENDING\n\n### FASE 25 — SAVINGS + DEBT UX RESTORED / VALIDATION PENDING
+### 🧱 FASES 1–17 — APPROVED / BUILT
 
-The platform foundation is complete through production-readiness UX.
+### 🧩 FASES 18–24 — IMPLEMENTED / VALIDATION PENDING
+
+### 💰 FASE 25 — SAVINGS + DEBT UX RESTORED / VALIDATED
+
+### 🔐 FASE 26 — AUTHENTICATION / SECURITY HARDENING — IMPLEMENTED / VALIDATION PENDING
+
+The product workflow through Savings and Debt is implemented and locally validated; FASE 26 is now the active production-security hardening milestone.
 
 The backend covers:
 

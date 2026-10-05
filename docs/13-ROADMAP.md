@@ -178,3 +178,14 @@ FASE 32+ is post-finalization evolution, not required for the first finalized re
 The financial workspace is now mounted directly on the encrypted in-memory Financial Vault. Accounts, transactions, budgets, savings, debts, net worth, education, dashboard calculations, and the approved dark/minimal product UI are implemented. Validation remains pending before FASE 28 can be approved.
 
 See docs/PHASE-28-VAULT-DATA-MIGRATION.md for the acceptance checklist.
+
+
+## FASE 29 — Go Financial Engine / Local Computation Boundary
+
+**Status: BUILT / VALIDATION PENDING**
+
+A pure Go financial engine now computes cash flow, account balances, transfers, budget actuals, savings progress, debt principal reduction, and net worth without Firebase, HTTP, Firestore, or remote financial persistence.
+
+A browser WASM adapter and local build script were added. The Dashboard uses the Go engine when the WASM artifact is available and falls back to the same in-memory JavaScript calculations when it is not.
+
+See `docs/PHASE-29-GO-FINANCIAL-ENGINE.md`.

@@ -1,6 +1,6 @@
 # Roadmap — Financial-D3v
 
-**Baseline:** October 5, 2026  
+**Baseline:** October 4, 2026  
 **Product identity:** Private personal-finance application + financial learning workspace.
 
 This roadmap is the authoritative execution checklist. A phase is only **BUILT** after implementation, validation and documentation are complete. Future phases are planned work and are not considered implemented merely because backend contracts already exist.

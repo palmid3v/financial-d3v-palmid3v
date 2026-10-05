@@ -10,9 +10,9 @@ The active Financial Vault architecture does not require a remote financial API.
 
 Financial calculations and financial persistence happen locally:
 
-`text
+```text
 Vault memory → Go/WASM → React
-`
+```
 
 The original Go REST/HTTP API remains in the repository for historical traceability and possible future non-Vault use.
 

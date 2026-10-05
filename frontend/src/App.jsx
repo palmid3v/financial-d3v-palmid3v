@@ -18,7 +18,7 @@ function Metric({label,value,detail,icon}){return <article className="metric"><d
 function CashFlow({s}){
  const income=s?.income?.minorUnits||0, expense=s?.expenses?.minorUnits||0, max=Math.max(income,expense,1);
  return <section className="panel cashflow"><div className="panel-head"><div><small>Monthly cash flow</small><h2>Where your money moved</h2></div><span>{now.toLocaleDateString("en-US",{month:"long",year:"numeric"})}</span></div>
-  {[["Income",income,s?.income,"income"],["Expenses",expense,s?.expenses,"expense"]].map(([name,val,m,t])=><div className="flow" key={name}><div><label><i className={t}/>{name}</label><b>{money(m)}</b></div><div className="track"><i className={t} style={{width:\`\${Math.max((val/max)*100,val?8:0)}%\`}}/></div></div>)}
+  {[["Income",income,s?.income,"income"],["Expenses",expense,s?.expenses,"expense"]].map(([name,val,m,t])=><div className="flow" key={name}><div><label><i className={t}/>{name}</label><b>{money(m)}</b></div><div className="track"><i className={t} style={{width:`${Math.max((val/max)*100,val?8:0)}%`}}/></div></div>)}
   <div className="net"><div><small>Net cash flow</small><strong>{money(s?.netCashFlow)}</strong></div><small>Income minus expenses</small></div>
  </section>
 }
@@ -28,8 +28,8 @@ function Dashboard({data,setActive}){const s=data?.summary;return <><section cla
 function Module({active,setActive}){const x={transactions:["Transactions","Record and understand every movement.","Your transaction workspace is ready for the API workflows."],budget:["Budget","Give every category a job.","Plan your limits, then compare them with authoritative actuals."],savings:["Savings","Turn intentions into visible progress.","Create goals and track contributions without treating them as expenses."],debts:["Debts","See obligations clearly.","Track balances and payment components with transparent calculations."],"net-worth":["Net worth","Understand your complete financial position.","Assets minus liabilities, with the backend remaining the source of truth."]}[active];return <div className="module"><small>Workspace</small><h2>{x[0]}</h2><p>{x[1]}</p><section className="panel empty"><b>{nav.find(n=>n[0]===active)?.[2]}</b><h3>{x[0]} is next in the product flow.</h3><p>{x[2]}</p><Button onClick={()=>setActive("dashboard")}>Back to overview</Button></section></div>}
 export default function App(){
  const [active,setActive]=useState("dashboard"),[ownerId]=useState(localStorage.getItem("financial_owner")||"local-owner"),[data,setData]=useState(null),[error,setError]=useState(""),[loading,setLoading]=useState(true);
- const period=useMemo(()=>\`start=\${encodeURIComponent(start)}&end=\${encodeURIComponent(end)}&currency=COP\`,[]);
- const load=async()=>{setLoading(true);setError("");try{setData(await api(\`/api/v1/dashboard?\${period}\`,{ownerId}))}catch(e){setError(e.message)}finally{setLoading(false)}};
+ const period=useMemo(()=>`start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}&currency=COP`,[]);
+ const load=async()=>{setLoading(true);setError("");try{setData(await api(`/api/v1/dashboard?${period}`,{ownerId}))}catch(e){setError(e.message)}finally{setLoading(false)}};
  useEffect(()=>{localStorage.setItem("financial_owner",ownerId);load()},[]);
  return <div className="shell"><Sidebar active={active} setActive={setActive}/><div className="main"><Header active={active} refresh={load} loading={loading}/><main>{active==="dashboard"?(loading?<div className="state">Loading your financial picture…</div>:error?<div className="state"><b>We couldn't load your overview.</b><span>{error}</span><Button onClick={load}>Try again</Button></div>:<Dashboard data={data} setActive={setActive}/>):<Module active={active} setActive={setActive}/>}<footer>Private by design · Financial-D3v · PALMI-D3V</footer></main></div><MobileNav active={active} setActive={setActive}/></div>
 }

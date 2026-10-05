@@ -1,25 +1,29 @@
-# Binaries
-/bin/
-/dist/
+# Dependencies
+node_modules/
+frontend/node_modules/
 
-# Go tooling
-*.test
-*.out
-coverage.out
+# Frontend build
+frontend/dist/
+dist/
 
-# Local environment
+# Environment / secrets
 .env
 .env.*
 !.env.example
 
-# Firebase / secrets
-/secrets/
-/firebase-debug.log
-*.pem
-*.key
+# Firebase / credentials
+secrets/
+*.json
 
-# IDE / OS
-.vscode/
-.idea/
+# Go
+*.exe
+*.test
+coverage.out
+
+# OS
 .DS_Store
 Thumbs.db
+
+# IDE
+.vscode/
+.idea/

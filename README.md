@@ -49,16 +49,20 @@ It is not initially a public SaaS and does not automatically execute external fi
 
 ## Current phase
 
-### FASE 1 — Product definition
+### FASE 8 — Financial education
 **APPROVED / BUILT**
+
+The backend now includes reusable financial education cards and contextual insights tied to budget and savings data.
 
 See:
 
-`docs/PHASE-1-PRODUCT-SPEC.md`
+`docs/PHASE-8-FINANCIAL-EDUCATION.md`
 
-The previous implementation phases are not considered completed under this new vision.
+### Next
 
+**FASE 9 — Debts**
 
+Debt accounting remains intentionally separate from conceptual debt education.
 
 ## Documentation
 

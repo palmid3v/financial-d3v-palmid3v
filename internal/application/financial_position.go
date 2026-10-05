@@ -27,11 +27,13 @@ func(s *FinancialPositionService)NetWorth(ctx context.Context,ownerID,currency s
  liabilities,err:=s.liabilities.List(ctx,ownerID);if err!=nil{return domain.NetWorth{},err}
  debts,err:=s.debts.List(ctx,ownerID);if err!=nil{return domain.NetWorth{},err}
  allAssets:=make([]domain.Asset,0,len(accounts)+len(assets))
+	accountLiabilities:=make([]domain.Liability,0)
  for _,a:=range accounts{
   if a.Currency!=currency{continue}
   balance,err:=s.accounts.Balance(ctx,ownerID,a.ID);if err!=nil{return domain.NetWorth{},err}
-  if balance.MinorUnits>0{kind:=domain.AssetOther;if a.Type==domain.AccountTypeCash||a.Type==domain.AccountTypeBank{kind=domain.AssetCash};if a.Type==domain.AccountTypeInvestment{kind=domain.AssetInvestment};value,_:=domain.NewAsset("account-"+a.ID,ownerID,a.Name,kind,balance,asOf,time.Now().UTC());allAssets=append(allAssets,value)}
+  if balance.MinorUnits>0{kind:=domain.AssetOther;if a.Type==domain.AccountTypeCash||a.Type==domain.AccountTypeBank{kind=domain.AssetCash};if a.Type==domain.AccountTypeInvestment{kind=domain.AssetInvestment};value,_:=domain.NewAsset("account-"+a.ID,ownerID,a.Name,kind,balance,asOf,time.Now().UTC());allAssets=append(allAssets,value)} else if balance.MinorUnits<0 {value:=balance;value.MinorUnits=-value.MinorUnits;liability,_:=domain.NewLiability("account-"+a.ID,ownerID,a.Name,domain.LiabilityOtherDebt,value,asOf,time.Now().UTC());accountLiabilities=append(accountLiabilities,liability)}
  }
  for _,a:=range assets{if a.Value.Currency==currency{allAssets=append(allAssets,a)}}
+ liabilities=append(liabilities,accountLiabilities...)
  return domain.CalculateNetWorth(currency,allAssets,liabilities,debts,asOf)
 }

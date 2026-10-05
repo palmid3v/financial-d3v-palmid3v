@@ -59,30 +59,33 @@ FASE 11 provides explainable reports and dashboard data.
 
 FASE 12 provides Firebase Auth integration, owner authorization and owner-scoped auditability. FASE 13 adds the first mobile-first React product shell, FASE 14 hardens validation and CI, and FASE 15 adds the specialized payroll foundation.
 
-Local validation after the latest FASE 11/12 implementation:
+Local validation after FASE 13–15 and the local runtime hardening:
 
 ```text
-go test ./...  → PASS
-go build ./... → PASS
+go test ./...   → PASS
+go build ./...  → PASS
+npm install      → PASS
+npm run build    → PASS
+PWA generation   → PASS
 ```
 
 ### Remaining phases
 
-**5 phases remain: FASE 13–17.**
+**1 phase remains: FASE 17.**
 
 | Fase | Focus | Status |
 | --- | --- | --- |
 | **13** | Frontend product — React + Vite + Tailwind + PWA + Dark Mode | APPROVED / BUILT |
 | **14** | Testing hardening — broader coverage, integration and reliability | APPROVED / BUILT |
 | **15** | Payroll — specialized later domain | APPROVED / BUILT |
-| **16** | Private deployment & operations | PENDING |
+| **16** | Private deployment & operations | APPROVED / BUILT |
 | **17** | Production readiness | PENDING |
 
 ### Next
 
-**FASE 13 — Frontend product**
+**FASE 17 — Production readiness**
 
-The next implementation step is to turn the validated backend into the actual mobile-first product experience while preserving the financial-domain and privacy boundaries already established.
+The final phase is the production-readiness review across security, privacy, UX, reliability, documentation and operations.
 
 ## Documentation
 
@@ -95,6 +98,8 @@ Start with:
 5. `docs/13-ROADMAP.md`
 6. `docs/PHASE-11-REPORTS-DASHBOARD.md`
 7. `docs/PHASE-12-AUTH-PRIVACY-AUDIT.md`
+8. `docs/PHASE-16-PRIVATE-DEPLOYMENT-OPERATIONS.md`
+9. `docs/OPERATIONS-RUNBOOK.md`
 
 The repository is the source of truth.
 

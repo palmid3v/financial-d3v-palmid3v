@@ -10,7 +10,7 @@ Keep Go as a real financial computation boundary without sending private financi
 
 ## Architecture
 
-`text
+```text
 Encrypted FDV1
       ↓
 Browser decrypts
@@ -22,7 +22,7 @@ Go Financial Engine / WASM
 Calculated result
       ↓
 React UI
-`
+```
 
 ## Implemented calculations
 
@@ -38,16 +38,16 @@ Money remains integer minor units plus currency.
 
 ## Browser adapter
 
-`frontend/src/vault/goEngine.js⟧ loads the local Go runtime and `/wasm/financial-engine.wasm⟧.
+`frontend/src/vault/goEngine.js` loads the local Go runtime and `/wasm/financial-engine.wasm`.
 
-The loader's `fetch()⟧ is only for the local WASM resource. Financial request data is passed to the in-memory engine and is not sent through a remote financial API.
+The loader's `fetch()` is only for the local WASM resource. Financial request data is passed to the in-memory engine and is not sent through a remote financial API.
 
 ## Build
 
-`powershell
+```powershell
 cd frontend
 npm run build:wasm
-`
+```
 
 ## Validation
 

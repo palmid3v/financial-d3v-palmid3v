@@ -54,7 +54,7 @@ Vercel currently lists Hobby at $0/month and supports Git-based deployment. Fire
 - FASE 26: APPROVED / BUILT
 - FASE 27: APPROVED / BUILT / VALIDATED — Financial Vault foundation
 - FASE 28: BUILT / VALIDATION PENDING — Vault migration + product UI
-- FASE 29: PLANNED — Go financial engine / local computation boundary
+- FASE 29: BUILT / VALIDATION PENDING — Go financial engine / local computation boundary
 - FASE 30: PLANNED — Design system + motion + PWA refinement
 - FASE 31: PLANNED — $0 deployment + security, recovery and production validation
 - FASE 32+: CONTINUOUS EVOLUTION
@@ -81,6 +81,7 @@ The vault uses Web Crypto primitives (PBKDF2 + AES-GCM) for the first version. T
 
 - `docs/PHASE-27-FINANCIAL-VAULT.md`
 - `docs/PHASE-28-VAULT-DATA-MIGRATION.md`
+- `docs/PHASE-29-GO-FINANCIAL-ENGINE.md`
 - `docs/DESIGN-SYSTEM-REFERENCE.md`
 - `docs/13-ROADMAP.md`
 - `docs/08-SECURITY.md`

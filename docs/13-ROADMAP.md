@@ -78,9 +78,9 @@ Payroll domain tests, explicit financial-domain coverage and frontend build vali
 Payroll is implemented as a specialized owner-scoped domain without changing the product identity. It deliberately avoids unverified Colombian legal/tax compliance claims. See `docs/PHASE-15-PAYROLL.md`.
 
 ## FASE 16 — Private deployment and operations
-**PENDING**
+**APPROVED / BUILT**
 
-Private deployment, runtime configuration, operational procedures, secrets handling, backups and recovery procedures.
+Environment safety gates, configurable CORS, provider-neutral container artifacts, CI reproducibility, health/readiness semantics, secrets boundaries, backup requirements and recovery procedures. See `docs/PHASE-16-PRIVATE-DEPLOYMENT-OPERATIONS.md` and `docs/OPERATIONS-RUNBOOK.md`.
 
 ## FASE 17 — Production readiness
 **PENDING**
@@ -89,9 +89,9 @@ Final readiness review against the private personal-finance product vision, incl
 
 ### Current checkpoint
 
-**FASES 1–12: APPROVED / BUILT**
+**FASES 1–16: APPROVED / BUILT**
 
-**FASES RESTANTES: 5 — FASES 13–17**
+**FASES RESTANTES: 1 — FASE 17**
 
 The backend learning path now covers:
 
@@ -104,7 +104,7 @@ The backend learning path now covers:
 | **13** | Frontend product | APPROVED / BUILT |
 | **14** | Testing hardening | APPROVED / BUILT |
 | **15** | Payroll | APPROVED / BUILT |
-| **16** | Private deployment & operations | PENDING |
+| **16** | Private deployment & operations | APPROVED / BUILT |
 | **17** | Production readiness | PENDING |
 
 ### Rule

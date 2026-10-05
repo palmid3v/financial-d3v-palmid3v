@@ -1,33 +1,32 @@
-# Roadmap — New Product Baseline
+# Roadmap — Financial-D3v
 
-The previous roadmap is superseded. The new roadmap starts at FASE 1.
+The product reset on October 4, 2026 remains the authoritative roadmap baseline.
 
 ## FASE 1 — Product definition
 **APPROVED / BUILT**
 
-Artifact: docs/PHASE-1-PRODUCT-SPEC.md
-
-Defines the personal-finance purpose, primary user, financial jobs, education goals, MVP, savings objective, metrics, privacy boundaries and product exclusions.
+Personal-finance product definition, MVP, financial learning model, savings objective, privacy boundaries and approved stack.
 
 ## FASE 2 — Financial Domain Model v2
-**PENDING**
+**APPROVED / BUILT**
 
-Rebuild financial vocabulary, Money model, accounts, transactions, categories, budgets, savings, periods, education context, invariants and domain tests.
+Rebuilt Money, Account, Transaction, Category, Budget, Savings Goal, Financial Period and Education Context. Defined invariants, balance semantics and domain tests.
 
 ## FASE 3 — Firestore persistence design
-**PENDING**
+**APPROVED / BUILT**
 
-Define collections/documents, ownership paths, indexes, repository contracts, serialization and persistence tests.
+Defined owner-scoped collections, repository contracts, persistence DTOs, serialization rules, query patterns, composite indexes and persistence mapping tests.
 
 ## FASE 4 — Go application foundation
 **PENDING**
 
-Configuration, HTTP application, errors, validation, logging, persistence adapter, repository wiring and integration tests.
+Configuration, HTTP application, Firebase initialization, concrete repositories, errors, validation, logging, readiness and integration tests.
 
 ## FASE 5 — Accounts and transactions
 **PENDING**
 
-First usable financial workflow.
+First usable financial workflow:
+Account → Transaction → Balance → Summary.
 
 ## FASE 6 — Budgeting
 **PENDING**
@@ -37,8 +36,6 @@ First usable financial workflow.
 
 ## FASE 8 — Financial education
 **PENDING**
-
-Build contextual education on top of real financial data.
 
 ## FASE 9 — Debts
 **PENDING**

@@ -32,19 +32,8 @@ type ReportService struct {
 }
 func NewReportService(a *AccountService,t *TransactionService,c *CategoryService,b *BudgetService,s *SavingsService,d *DebtService,p *FinancialPositionService)*ReportService{return &ReportService{accounts:a,transactions:t,categories:c,budgets:b,savings:s,debts:d,position:p}}
 
-func(s *ReportService)Summary(ctx context.Context,ownerID,currency string,p domain.FinancialPeriod,asOf time.Time)(FinancialReport,error){
- tx,err:=s.transactions.ListByPeriod(ctx,ownerID,p);if err!=nil{return FinancialReport{},err}
- cats,err:=s.categories.List(ctx,ownerID);if err!=nil{return FinancialReport{},err}
- names:=map[string]string{};for _,c:=range cats{names[c.ID]=c.Name}
- income,expenses:=domain.Money{Currency:currency},domain.Money{Currency:currency};by:=map[string]domain.Money{}
- for _,t:=range tx{
-  if t.Amount.Currency!=currency||t.Type==domain.TransactionTransfer{continue}
-  if t.Type==domain.TransactionIncome{income,err=income.Add(t.Amount)}else if t.Type==domain.TransactionExpense{expenses,err=expenses.Add(t.Amount);if err==nil&&t.CategoryID!=""{v:=by[t.CategoryID];if v.Currency==""{v=domain.Money{Currency:currency}};v,err=v.Add(t.Amount);by[t.CategoryID]=v}}
-  if err!=nil{return FinancialReport{},err}
- }
- net,err:=income.Subtract(expenses);if err!=nil{return FinancialReport{},err}
- categoryReport:=make([]CategoryReport,0,len(by));for id,amount:=range by{categoryReport=append(categoryReport,CategoryReport{CategoryID:id,CategoryName:names[id],Amount:amount})}
- sort.Slice(categoryReport,func(i,j int)bool{return categoryReport[i].Amount.MinorUnits>categoryReport[j].Amount.MinorUnits})
+func summarizeTransactions(transactions []domain.Transaction,currency string,names map[string]string)(domain.Money,domain.Money,domain.Money,[]CategoryReport,error){
+ income,expenses,net,categoryReport,err:=summarizeTransactions(tx,currency,names);if err!=nil{return FinancialReport{},err}
  budgets,err:=s.budgets.ListByPeriod(ctx,ownerID,p);if err!=nil{return FinancialReport{},err};budgetSummaries:=make([]domain.BudgetSummary,0,len(budgets));for _,b:=range budgets{v,e:=s.budgets.Summary(ctx,ownerID,b.ID);if e!=nil{return FinancialReport{},e};budgetSummaries=append(budgetSummaries,budgetSummary(v))}
  goals,err:=s.savings.ListGoals(ctx,ownerID);if err!=nil{return FinancialReport{},err};savings:=make([]SavingsGoalSummary,0,len(goals));for _,g:=range goals{v,e:=s.savings.Summary(ctx,ownerID,g.ID,asOf);if e!=nil{return FinancialReport{},e};savings=append(savings,v)}
  debts,err:=s.debts.List(ctx,ownerID);if err!=nil{return FinancialReport{},err};debtTotal:=domain.Money{Currency:currency};for _,d:=range debts{if d.Balance.Currency==currency{debtTotal,err=debtTotal.Add(d.Balance);if err!=nil{return FinancialReport{},err}}}

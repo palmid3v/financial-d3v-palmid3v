@@ -43,14 +43,14 @@ Savings goals, contribution records, goal progress, remaining amount, completion
 Financial education cards and contextual insights using the FACT → CALCULATION → INTERPRETATION → ACTION model. Initial topics cover cash flow, budget utilization, savings progress, transaction categorization and debt basics. Debt accounting remains FASE 9.
 
 ## FASE 9 — Debts
-**PENDING**
+**APPROVED / BUILT**
 
-Debt obligations, payments, balances, interest/fees and debt-specific financial context.
+Debt obligations, balances, principal/interest/fees payment components, payment history, debt status and debt-specific financial context.
 
 ## FASE 10 — Assets, liabilities and net worth
-**PENDING**
+**APPROVED / BUILT**
 
-Assets, liabilities, net-worth history and related calculations.
+Assets, generic liabilities, debt liabilities, account-position integration and net-worth calculation with explicit double-counting boundaries.
 
 ## FASE 11 — Reports and financial dashboard
 **PENDING**
@@ -89,11 +89,11 @@ Final readiness review against the private personal-finance product vision.
 
 ### Current checkpoint
 
-**FASES 1–8: APPROVED / BUILT**
+**FASES 1–10: APPROVED / BUILT**
 
 The backend learning path now covers:
 
-`Account → Transaction → Balance → Budget → Planned vs Actual → Savings Goal → Contributions → Progress → Financial Education`
+`Account → Transaction → Balance → Budget → Planned vs Actual → Savings Goal → Contributions → Progress → Financial Education → Debt → Assets/Liabilities → Net Worth`
 
 ### Rule
 

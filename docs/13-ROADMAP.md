@@ -273,7 +273,7 @@ These phases turn the validated platform into the day-to-day personal-finance pr
 - [ ] Tests/build validation
 - [ ] Documentation update
 
-**Status: PLANNED**
+**Status: IMPLEMENTED / VALIDATION PENDING**
 
 ## FASE 22 — Debt UX
 - [ ] Debt overview
@@ -289,7 +289,7 @@ These phases turn the validated platform into the day-to-day personal-finance pr
 - [ ] Tests/build validation
 - [ ] Documentation update
 
-**Status: PLANNED**
+**Status: IMPLEMENTED / VALIDATION PENDING**
 
 ## FASE 23 — Net Worth UX
 - [ ] Net-worth overview
@@ -424,11 +424,11 @@ For every phase:
 
 **FASES 1–17: APPROVED / BUILT**
 
-**FASES 18–20: IMPLEMENTED / VALIDATION PENDING**
+**FASES 18–22: IMPLEMENTED / VALIDATION PENDING**
 
-User approval covers the scope of FASES 18–20. Completion still requires local build/runtime validation and explicit phase approval.
+User approval covers the scope of FASES 20–22. FASES 18–20 are included in the implementation branch as their prerequisite product foundation. Completion still requires local build/runtime validation and explicit phase approval.
 
-**NEXT CHECKPOINT: Validate FASES 18–20, then continue to FASE 21 — Savings UX**
+**NEXT CHECKPOINT: Validate FASES 20–22, then continue to FASE 23 — Net Worth UX**
 
 The platform is complete enough to stop expanding infrastructure and start completing the actual personal-finance product experience.
 

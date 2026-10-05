@@ -1,18 +1,20 @@
 # Security — New Baseline
 
-**Status: FASE 12 PENDING**
+**Status: FASE 26 IMPLEMENTED / VALIDATION PENDING**
 
 Financial-D3v is private by design.
 
-Security must eventually cover:
+The current security baseline covers:
 - Firebase Authentication;
 - server-side authorization;
 - ownership boundaries;
-- Firestore security rules;
-- secret management;
+- explicit production CORS allowlisting;
+- API security headers;
 - audit events;
 - safe logging;
-- backup and recovery.
+- secret management boundaries.
+
+Backup and recovery remain part of FASE 28.
 
 The frontend is never a security boundary.
 

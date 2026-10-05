@@ -47,7 +47,7 @@ It is not initially a public SaaS and does not automatically execute external fi
 
 ## Current checkpoint
 
-### FASES 1–17 — APPROVED / BUILT\n\n### FASES 18–20 — IMPLEMENTED / VALIDATION PENDING
+### FASES 1–17 — APPROVED / BUILT\n\n### FASES 18–22 — IMPLEMENTED / VALIDATION PENDING
 
 The platform foundation is complete through production-readiness UX.
 
@@ -84,8 +84,8 @@ The frontend currently provides the production-oriented product shell and dashbo
 - [x] FASE 18 — Transactions UX (implementation complete; validation pending)
 - [x] FASE 19 — Accounts UX (implementation complete; validation pending)
 - [x] FASE 20 — Budget UX (implementation complete; validation pending)
-- [ ] FASE 21 — Savings UX
-- [ ] FASE 22 — Debt UX
+- [x] FASE 21 — Savings UX (implementation complete; validation pending)
+- [x] FASE 22 — Debt UX (implementation complete; validation pending)
 - [ ] FASE 23 — Net Worth UX
 - [ ] FASE 24 — Education UX
 

@@ -2,8 +2,8 @@
 
 **Last updated:** 2026-10-05  
 **Timezone:** America/Bogota (COT, UTC-05:00)  
-**Repository:** `palmid3v/financial-d3v-palmid3v⟧  
-**Source of truth:** GitHub `main⟧
+**Repository:** `palmid3v/financial-d3v-palmid3v`  
+**Source of truth:** GitHub `main`
 
 ## 1. Product baseline
 
@@ -36,7 +36,7 @@ Older cloud implementation remains in GitHub for traceability but is not the act
 
 ## 3. Current architecture
 
-`text
+```text
 GitHub
    ↓
 Vercel Hobby
@@ -52,13 +52,13 @@ decrypted in-memory state
 Go 1.27 / WASM
    ↓
 React UI
-`
+```
 
 The encrypted .fdv file is the persistent source of truth.
 
 ## 4. Financial Vault lifecycle
 
-`text
+```text
 LOCKED
   ↓
 Open/Create Vault
@@ -78,7 +78,7 @@ LOCK / AUTO-LOCK
 clear state + password reference
   ↓
 LOCKED
-`
+```
 
 Auto-lock: **15 minutes of inactivity**.
 
@@ -120,7 +120,7 @@ The local Go engine computes:
 
 Browser path:
 
-`text
+```text
 Vault memory
    ↓
 JSON calculation request
@@ -130,9 +130,9 @@ Go/WASM
 calculation result
    ↓
 React
-`
+```
 
-`frontend/src/vault/goEngine.js⟧ may load the local WASM binary using `fetch()⟧. This is local resource loading, not financial-data transport.
+`frontend/src/vault/goEngine.js` may load the local WASM binary using `fetch()`. This is local resource loading, not financial-data transport.
 
 ## 8. PWA and design system
 
@@ -152,7 +152,7 @@ FASE 30 established:
 
 The project validation process is:
 
-`text
+```text
 Automated
    ↓
 Runtime
@@ -162,16 +162,16 @@ Security
 Functional
    ↓
 PASS / FIX / APPROVED
-`
+```
 
 ### Automated
 
 From repository root:
 
-`powershell
+```powershell
 git pull origin main
 .\scripts\validate.ps1
-`
+```
 
 Current automated gate:
 - npm ci;
@@ -184,16 +184,16 @@ Current automated gate:
 
 ### Security audit
 
-`powershell
+```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\security-audit.ps1
-`
+```
 
 ### Runtime
 
-`powershell
+```powershell
 cd frontend
 npm run preview
-`
+```
 
 ## 10. FASE 31 final validation evidence
 
@@ -218,11 +218,11 @@ Observed runtime results:
 
 Expected incorrect-password message:
 
-`text
+```text
 Vault unavailable.
 Unable to open the Financial Vault.
 Check the password or file integrity.
-`
+```
 
 ## 11. Recovery procedure
 

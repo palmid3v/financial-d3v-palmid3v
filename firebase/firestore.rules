@@ -1,0 +1,28 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Financial-D3v stores owner-scoped data below:
+    // /users/{firebaseUid}/{collection}/{documentId}
+    //
+    // The Go API uses Firebase Admin credentials and therefore bypasses
+    // Firestore Security Rules. These rules protect direct client access
+    // and preserve the same UID ownership boundary.
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /users/{userId}/{document=**} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Everything outside an authenticated owner's namespace stays denied.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

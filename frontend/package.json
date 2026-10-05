@@ -1,9 +1,24 @@
 {
-  "name":"financial-d3v-frontend",
-  "private":true,
-  "version":"0.1.0",
-  "type":"module",
-  "scripts":{"dev":"vite","build":"vite build","preview":"vite preview","test:vault":"node --test src/vault/crypto.test.js"},
-  "dependencies":{"@vitejs/plugin-react":"latest","vite":"latest","react":"latest","react-dom":"latest","tailwindcss":"latest","@tailwindcss/vite":"latest","vite-plugin-pwa":"latest"},
-  "devDependencies":{}
+  "name": "financial-d3v-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test:vault": "node --test src/vault/crypto.test.js",
+    "test:finance": "node --test src/vault/finance.test.js",
+    "test": "node --test src/vault/*.test.js"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "tailwindcss": "latest",
+    "@tailwindcss/vite": "latest",
+    "vite-plugin-pwa": "latest"
+  },
+  "devDependencies": {}
 }

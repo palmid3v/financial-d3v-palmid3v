@@ -49,7 +49,7 @@ It is not initially a public SaaS and does not automatically execute external fi
 
 ## Current checkpoint
 
-### FASES 1–12 — APPROVED / BUILT
+### FASES 1–15 — APPROVED / BUILT
 
 The backend foundation now covers:
 
@@ -57,7 +57,7 @@ The backend foundation now covers:
 
 FASE 11 provides explainable reports and dashboard data.
 
-FASE 12 provides Firebase Auth integration, owner authorization and owner-scoped auditability.
+FASE 12 provides Firebase Auth integration, owner authorization and owner-scoped auditability. FASE 13 adds the first mobile-first React product shell, FASE 14 hardens validation and CI, and FASE 15 adds the specialized payroll foundation.
 
 Local validation after the latest FASE 11/12 implementation:
 
@@ -72,9 +72,9 @@ go build ./... → PASS
 
 | Fase | Focus | Status |
 | --- | --- | --- |
-| **13** | Frontend product — React + Vite + Tailwind + PWA + Dark Mode | PENDING |
-| **14** | Testing hardening — broader coverage, integration and reliability | PENDING |
-| **15** | Payroll — specialized later domain | PENDING |
+| **13** | Frontend product — React + Vite + Tailwind + PWA + Dark Mode | APPROVED / BUILT |
+| **14** | Testing hardening — broader coverage, integration and reliability | APPROVED / BUILT |
+| **15** | Payroll — specialized later domain | APPROVED / BUILT |
 | **16** | Private deployment & operations | PENDING |
 | **17** | Production readiness | PENDING |
 

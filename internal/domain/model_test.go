@@ -56,3 +56,13 @@ func TestAccountBalanceIsReproducibleFromTransactions(t *testing.T) {
 	if err != nil { t.Fatal(err) }
 	if balance.MinorUnits != 120000 { t.Fatalf("expected 120000, got %d", balance.MinorUnits) }
 }
+
+func TestTransferPairRequiresConservation(t *testing.T) {
+	outgoing, _ := NewTransaction("tx-out", "owner-1", "account-a", TransactionTransfer, MustMoney(1000, "COP"), time.Now())
+	incoming, _ := NewTransaction("tx-in", "owner-1", "account-b", TransactionTransfer, MustMoney(1000, "COP"), time.Now())
+	outgoing.TransferID = "transfer-1"
+	incoming.TransferID = "transfer-1"
+	if err := ValidateTransferPair(outgoing, incoming); err != nil { t.Fatal(err) }
+	incoming.Amount = MustMoney(900, "COP")
+	if err := ValidateTransferPair(outgoing, incoming); err == nil { t.Fatal("expected mismatched transfer to fail") }
+}

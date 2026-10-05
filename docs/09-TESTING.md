@@ -1,30 +1,62 @@
 # Testing — Financial-D3v
 
-**Current status: FASE 2/3 DOMAIN AND PERSISTENCE DESIGN VALIDATED**
+**Status:** CURRENT VALIDATION BASELINE  
+**Last updated:** 2026-10-05  
+**Timezone:** America/Bogota (COT, UTC-05:00)
 
-## FASE 2
+## Validation layers
 
-Domain tests cover:
-1. currency mismatch;
-2. positive transaction amounts;
-3. financial-period boundaries;
-4. duplicate budget categories;
-5. savings progress cap;
-6. reproducible account balance;
-7. transfer conservation.
+Financial-D3v validates in this order:
 
-## FASE 3
+1. Automated tests.
+2. Production build.
+3. WASM build.
+4. Security source audit.
+5. Go tests/build.
+6. Runtime validation.
+7. Functional/security review.
 
-Persistence mapping tests cover:
-1. owner and money preservation for account documents;
-2. period and budget-item preservation.
+## Current automated coverage
 
-## Later levels
+The frontend runner executes:
 
-1. Domain tests.
-2. Application-service tests.
-3. Firestore repository tests.
-4. HTTP/API tests.
-5. End-to-end critical flows.
+- Financial Vault round trip;
+- incorrect password;
+- modified ciphertext;
+- unsupported version;
+- malformed input;
+- account balance/transfer derivation;
+- budget actuals;
+- savings progress;
+- debt principal-only reduction;
+- net worth including debt liabilities.
 
-Concrete Firestore integration tests require the adapter and Firebase configuration from FASE 4.
+Latest observed result: **10/10 frontend tests PASS**.
+
+Go validation:
+- `go test ./...⟧ PASS;
+- `go build ./...⟧ PASS.
+
+Frontend:
+- `npm ci⟧ PASS;
+- `npm run build⟧ PASS;
+- `npm run build:wasm⟧ PASS.
+
+## Security validation
+
+`scripts/security-audit.ps1⟧ validates the Vault source boundary for forbidden browser persistence/network APIs and checks key Vault lifecycle/crypto markers.
+
+## Runtime
+
+Long-running runtime checks are manual:
+
+`powershell
+cd frontend
+npm run preview
+`
+
+FASE 31 runtime validation included Vault creation/save/open, incorrect-password rejection, lock/unlock and recovery/import.
+
+## Testing rule
+
+A phase is not considered validated from code existence alone. Record the observed command output and runtime result.

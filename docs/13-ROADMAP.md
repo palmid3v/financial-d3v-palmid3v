@@ -7,7 +7,7 @@ This roadmap is the authoritative execution checklist. A phase is only **BUILT**
 
 ---
 
-## Product lifecycle
+## 🧭 Product lifecycle
 
 - [x] **PLATFORM — FASES 1–17**
 - [ ] **PRODUCT — FASES 18–24**
@@ -19,7 +19,7 @@ Core product loop:
 
 ---
 
-# PLATFORM — FASES 1–17
+# 🧱 PLATFORM — FASES 1–17
 
 ## FASE 1 — Product definition
 - [x] Private personal-finance product definition
@@ -205,7 +205,7 @@ Core product loop:
 
 ---
 
-# PRODUCT — FASES 18–24
+# 🧩 PRODUCT — FASES 18–24
 
 These phases turn the validated platform into the day-to-day personal-finance product. Existing backend capabilities are reused; frontend modules become fully functional one by one.
 
@@ -406,7 +406,7 @@ Potential future tracks:
 
 ---
 
-# Master execution rule
+# 🧭 Master execution rule
 
 For every phase:
 
@@ -420,7 +420,7 @@ For every phase:
 8. [ ] Mark the phase **APPROVED / BUILT**
 9. [ ] Only then start the next phase
 
-## Current checkpoint
+## 🧪 Current checkpoint
 
 **FASES 1–17: APPROVED / BUILT**
 

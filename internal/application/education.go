@@ -17,7 +17,7 @@ type EducationService struct {
 type EducationInsight struct {
 	Card domain.EducationCard
 	MetricKey string
-	MetricMinorUnits *int64
+	MetricValue float64
 	Currency string
 	ObservedAt time.Time
 }
@@ -46,16 +46,14 @@ func (s *EducationService) Insights(ctx context.Context, ownerID, budgetID, goal
 		summary, err := s.budgets.Summary(ctx, ownerID, budgetID)
 		if err != nil { return nil, err }
 		card := cardByID("budget-utilization")
-		minor := summary.TotalSpent.MinorUnits
-		insights = append(insights, EducationInsight{Card:card, MetricKey:"budget_utilization_percentage", MetricMinorUnits:&minor, Currency:summary.Currency, ObservedAt:asOf})
+		insights = append(insights, EducationInsight{Card:card, MetricKey:"budget_utilization_percentage", MetricValue:summary.OverallUtilizationPercentage, Currency:summary.Currency, ObservedAt:asOf})
 	}
 	if goalID != "" {
 		if s.savings == nil { return nil, fmt.Errorf("%w: savings education is unavailable", domain.ErrInvalidSavingsGoal) }
 		summary, err := s.savings.Summary(ctx, ownerID, goalID, asOf)
 		if err != nil { return nil, err }
 		card := cardByID("savings-progress")
-		minor := summary.TotalContributed.MinorUnits
-		insights = append(insights, EducationInsight{Card:card, MetricKey:"savings_contributed_minor_units", MetricMinorUnits:&minor, Currency:summary.TotalContributed.Currency, ObservedAt:asOf})
+		insights = append(insights, EducationInsight{Card:card, MetricKey:"savings_progress_percentage", MetricValue:summary.Progress.Percentage, Currency:summary.TotalContributed.Currency, ObservedAt:asOf})
 	}
 	return insights, nil
 }

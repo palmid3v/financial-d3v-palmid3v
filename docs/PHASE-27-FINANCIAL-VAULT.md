@@ -10,9 +10,9 @@ Replace the Google Cloud financial-data path with a local-first encrypted Financ
 
 ## Result
 
-The encrypted user-controlled `.fdv⟧ file is the persistent financial source of truth.
+The encrypted user-controlled `.fdv` file is the persistent financial source of truth.
 
-`text
+```text
 LOCKED
   ↓
 vault file + password
@@ -28,7 +28,7 @@ lock / 15-minute timeout
 clear active state
   ↓
 LOCKED
-`
+```
 
 ## Implemented
 

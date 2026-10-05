@@ -64,7 +64,7 @@ Local validation after FASE 13–15 and the local runtime hardening:
 ```text
 go test ./...   → PASS
 go build ./...  → PASS
-npm install      → PASS
+npm ci             → PASS
 npm run build    → PASS
 PWA generation   → PASS
 ```
@@ -99,7 +99,8 @@ Start with:
 6. `docs/PHASE-11-REPORTS-DASHBOARD.md`
 7. `docs/PHASE-12-AUTH-PRIVACY-AUDIT.md`
 8. `docs/PHASE-16-PRIVATE-DEPLOYMENT-OPERATIONS.md`
-9. `docs/OPERATIONS-RUNBOOK.md`
+9. `docs/PHASE-17-PRODUCTION-READINESS-UX.md`
+10. `docs/OPERATIONS-RUNBOOK.md`
 
 The repository is the source of truth.
 

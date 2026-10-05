@@ -1,41 +1,54 @@
-# Financial-D3v Visual Direction
+# Financial-D3v Design System Reference
 
-## Reference
+**Status:** APPROVED / BUILT / VALIDATED  
+**Last updated:** 2026-10-05  
+**Timezone:** America/Bogota (COT, UTC-05:00)
 
-This document records the approved visual direction for the Vault-backed Financial-D3v workspace.
+## Visual language
 
-The supplied reference mockups establish:
-
-- dark-first interface;
-- minimal, flat surfaces;
-- subtle borders instead of heavy shadows;
+- dark-first;
+- calm and information-first;
+- flat surfaces with subtle borders;
 - strong numeric hierarchy;
-- green as income/savings/primary action;
-- red as expense/debt;
-- blue as informational;
-- amber as warning;
-- violet as payroll/secondary category;
+- green = income/savings/primary action;
+- red = expense/debt;
+- blue = information;
+- amber = warning;
+- violet = secondary/payroll category;
 - desktop sidebar;
 - mobile bottom navigation;
 - compact cards and progress bars;
 - charts as first-class financial explanations.
 
-## Motion principle
+## Motion
 
-Motion must explain a state change, not decorate the interface.
+Motion communicates state changes:
+- short card/metric reveals;
+- progress/chart growth;
+- short button/surface transitions;
+- subtle dirty-state feedback;
+- reduced-motion support.
 
-Approved behaviors:
+## Tokens
 
-- cards enter with a short, subtle reveal;
-- numeric/progress values can animate into their final state;
-- chart bars grow from their baseline;
-- charts and visual summaries reveal once;
-- button/surface transitions remain short;
-- dirty state can pulse subtly;
-- reduced-motion users receive the same information without continuous animation.
+`frontend/src/styles/design-system.css⟧ centralizes:
+- surfaces;
+- borders;
+- semantic colors;
+- spacing;
+- radii;
+- motion durations/easing;
+- reduced-motion behavior.
 
-## Current implementation
+## PWA
 
-FASE 28 establishes the first production-oriented visual foundation in the Vault-backed workspace.
+FASE 30 established:
+- generated manifest;
+- standalone display;
+- Spanish-Colombia locale;
+- portrait-first orientation;
+- install icon metadata;
+- automatic service-worker update;
+- stale-cache cleanup.
 
-FASE 30 will refine the design system into reusable tokens/components and complete the motion language across all screens.
+**Current state:** APPROVED / BUILT / VALIDATED.

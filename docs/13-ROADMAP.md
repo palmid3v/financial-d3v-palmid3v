@@ -53,14 +53,14 @@ Debt obligations, balances, principal/interest/fees payment components, payment 
 Assets, generic liabilities, debt liabilities, account-position integration and net-worth calculation with explicit double-counting boundaries.
 
 ## FASE 11 — Reports and financial dashboard
-**PENDING**
+**APPROVED / BUILT**
 
-Cash flow, spending analysis, savings progress and explainable dashboard metrics.
+Period reports, cash flow, spending analysis, budget/savings/debt context and explainable dashboard metrics. See `docs/PHASE-11-REPORTS-DASHBOARD.md`.
 
 ## FASE 12 — Authentication, privacy and audit
-**PENDING**
+**APPROVED / BUILT**
 
-Firebase Auth, authorization, privacy controls and auditability.
+Firebase ID-token verification, owner authorization, privacy boundaries and owner-scoped audit events. See `docs/PHASE-12-AUTH-PRIVACY-AUDIT.md`.
 
 ## FASE 13 — Frontend product
 **PENDING**
@@ -89,7 +89,7 @@ Final readiness review against the private personal-finance product vision.
 
 ### Current checkpoint
 
-**FASES 1–10: APPROVED / BUILT**
+**FASES 1–12: APPROVED / BUILT**
 
 The backend learning path now covers:
 

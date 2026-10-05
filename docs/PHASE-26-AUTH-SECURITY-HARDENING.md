@@ -74,6 +74,28 @@ VITE_FIREBASE_PROJECT_ID=<firebase-project-id>
 
 The Firebase Web API key is client configuration, not a service-account secret. Service-account credentials must remain server-side and must never be committed.
 
+
+## 🔥 Firebase infrastructure under version control
+
+The Firebase project is now pinned to the repository and Firestore configuration is versioned locally:
+
+- `.firebaserc` → `financial-d3v-palmid3v`
+- `firebase.json` → Firestore rules and index configuration
+- `firebase/firestore.rules` → owner-scoped rules based on Firebase Auth UID
+- `firebase/firestore.indexes.json` → composite indexes required by the current Firestore repository queries
+
+The application data model is:
+
+`/users/{firebaseUid}/{collection}/{documentId}`
+
+The Go API uses Firebase Admin credentials and therefore bypasses Firestore Security Rules; the rules remain the direct-client protection boundary. Firebase documents that server client libraries bypass Firestore Security Rules and rely on server credentials/IAM instead. The repository keeps the rules and indexes versioned so the Firebase environment is reproducible rather than console-only.
+
+## 🧪 Local Firebase validation checkpoint
+
+The first local runtime reached Firestore successfully after enabling Firebase and creating the database. Firestore then reported a missing composite index for the transaction period query. That index, plus the other composite indexes required by the current repository queries, is now versioned in `firebase/firestore.indexes.json`.
+
+The next local validation should deploy the versioned Firestore rules/indexes and then repeat the authenticated frontend runtime check.
+
 ## 🧪 Validation required
 
 Before marking this phase **APPROVED / BUILT**:
@@ -92,6 +114,7 @@ Before marking this phase **APPROVED / BUILT**:
 9. A different `X-Owner-ID` cannot override the authenticated Firebase UID.
 10. Sign-out removes the browser authentication session.
 11. No credentials, tokens or private service-account material are committed.
+12. Firebase Rules and indexes are deployed from the repository configuration.
 
 ## ⏭️ Next phase
 

@@ -45,9 +45,9 @@ The owner runs the application when needed.
 
 It is not initially a public SaaS and does not automatically execute external financial operations.
 
-## Current checkpoint
+## 🧭 Current checkpoint
 
-### FASES 1–17 — APPROVED / BUILT\n\n### FASES 18–24 — IMPLEMENTED / VALIDATION PENDING\n\n### FASE 25 — SAVINGS + DEBT UX RESTORED / VALIDATION PENDING
+### ✅ FASES 1–17 — APPROVED / BUILT\n\n### 🧩 FASES 18–24 — IMPLEMENTED / VALIDATION PENDING\n\n### FASE 25 — SAVINGS + DEBT UX RESTORED / VALIDATION PENDING
 
 The platform foundation is complete through production-readiness UX.
 
@@ -57,7 +57,7 @@ The backend covers:
 
 The frontend now provides functional Transactions, Accounts, Budget, Savings, Debts, Net Worth and Education surfaces. Savings and Debt were restored on the repaired `main` without reintroducing the previous `App.jsx` corruption.
 
-## Full roadmap
+## 🗺️ Full roadmap
 
 ### PLATFORM
 
@@ -100,7 +100,7 @@ The frontend now provides functional Transactions, Accounts, Budget, Savings, De
 
 See `docs/13-ROADMAP.md` for the detailed checklist and `STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md` for the operational execution guide.
 
-## Validation checkpoint
+## 🧪 Validation checkpoint
 
 Previously validated baseline (FASE 17):
 
@@ -121,13 +121,13 @@ runtime         → PASS
 
 The next work is product completion, not arbitrary infrastructure expansion. The objective is to connect the existing financial backend capabilities to a fast, understandable, mobile-first daily workflow.
 
-## Documentation
+## 📚 Documentation
 
 Start with:
 
 1. `CONTEXT.md`
 2. `README.md`
-3. `STEP-BY-STEP-FINANCIAL-D3V-2026-10-05.md`
+3. `STEP-BY-STEP-FINANCIAL-D3V-2026-10-04.md`
 4. `docs/13-ROADMAP.md`
 5. `docs/PHASE-17-PRODUCTION-READINESS-UX.md`
 6. `docs/OPERATIONS-RUNBOOK.md`

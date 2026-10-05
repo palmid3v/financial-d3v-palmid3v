@@ -28,7 +28,7 @@ Go must not become a reason to reintroduce remote financial-data persistence.
 
 The active boundary is:
 
-⟦text
+`text
 Encrypted Vault
     ↓
 in-memory data
@@ -38,6 +38,6 @@ Go/WASM
 calculation result
     ↓
 React
-⟦
+`
 
 Experimental code must not define production architecture automatically.

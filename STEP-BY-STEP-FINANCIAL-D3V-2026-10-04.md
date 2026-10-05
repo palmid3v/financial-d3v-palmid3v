@@ -14,9 +14,9 @@ Payroll is intentionally a later specialized domain.
 
 ## Current checkpoint
 
-### FASES 1–12 — APPROVED / BUILT
+### FASES 1–15 — APPROVED / BUILT
 
-All phases from the current product baseline through authentication, privacy and audit are now implemented.
+All phases from the current product baseline through authentication, privacy, audit, the frontend product shell, testing hardening and the first specialized payroll foundation are now implemented.
 
 ### FASE 1 — Product definition
 **APPROVED / BUILT**
@@ -166,7 +166,7 @@ Implemented:
 
 The legacy `X-Owner-ID` mechanism remains only as a local/non-required-auth fallback.
 
-## Current backend flow
+### FASE 13 — Frontend product\n**APPROVED / BUILT**\n\nImplemented the mobile-first React/Vite/Tailwind/PWA product shell and dashboard connection.\n\n### FASE 14 — Testing hardening\n**APPROVED / BUILT**\n\nAdded payroll/domain tests and frontend build validation to CI.\n\n### FASE 15 — Payroll\n**APPROVED / BUILT**\n\nImplemented owner-scoped payroll employees and payroll periods with generic gross/deductions/net calculations. Colombian legal/tax compliance remains outside this foundation until separately verified.\n\n## Current backend flow
 
 `Account → Transaction → Balance → Budget → Planned vs Actual → Savings Goal → Contributions → Progress → Financial Education → Debt → Assets/Liabilities → Net Worth → Reports → Auth/Audit`
 
@@ -186,7 +186,7 @@ The validation was performed against the current repository state after the FASE
 
 ## Remaining phases
 
-There are **5 phases remaining**:
+There are **2 phases remaining**:
 
 ### FASE 13 — Frontend product
 **PENDING**

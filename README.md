@@ -37,7 +37,7 @@ The product is not currently a payroll application. Payroll is a later specializ
 | Backend | Go 1.27 |
 | API | REST/HTTP |
 | Database | Firebase Firestore |
-| Auth | Firebase Auth (later) |
+| Auth | Firebase Auth |
 | CI | GitHub Actions |
 | Docs | Markdown |
 

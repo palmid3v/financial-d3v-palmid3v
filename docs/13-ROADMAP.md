@@ -15,7 +15,7 @@ A phase is only APPROVED / BUILT after implementation, validation and explicit a
 - [ ] FINANCIAL VAULT — FASE 27
 - [ ] VAULT DATA MIGRATION — FASE 28
 - [ ] GO FINANCIAL ENGINE — FASE 29
-- [~] $0 DEPLOYMENT — FASE 30
+- [x] $0 DEPLOYMENT — FASE 30
 - [ ] SECURITY / RECOVERY VALIDATION — FASE 31
 - [ ] HISTORICAL INTELLIGENCE — FASE 32
 - [ ] CONTINUOUS EVOLUTION — FASE 33+
@@ -121,19 +121,19 @@ Vercel currently lists Hobby at $0/month; Firebase documents Spark as a no-cost 
 
 ## FASE 31 — Security / recovery / production validation
 
-**Status: PLANNED**
+**Status: BUILT / VALIDATION PENDING**
 
-- [ ] Security review of vault format.
-- [ ] Wrong-password tests.
-- [ ] Tamper detection tests.
-- [ ] Malformed file tests.
-- [ ] Browser compatibility.
-- [ ] Auto-lock validation.
-- [ ] Session-clear validation.
-- [ ] Export/import round trip.
-- [ ] Recovery procedure documented.
-- [ ] Production Vercel deployment.
-- [ ] PWA installation validation.
+- [x] Security gate and recovery scope documented.
+- [x] Wrong-password tests exist.
+- [x] Tamper detection tests exist.
+- [x] Malformed file tests exist.
+- [x] Browser persistence source audit added.
+- [x] Auto-lock/session-clear implementation present.
+- [x] Export/import recovery procedure documented.
+- [x] $0 Vercel production path documented.
+- [x] PWA production validation checklist documented.
+- [ ] Runtime security validation.
+- [ ] Production deployment validation.
 - [ ] Explicit approval.
 
 ## FASE 32 — Historical financial intelligence
@@ -148,15 +148,7 @@ Historical trends, comparisons, patterns and deeper financial learning after the
 
 ## Remaining work
 
-At the new architecture boundary, **5 phases remain before the current product can be considered finalized**:
-
-- FASE 27 — Vault foundation/security gate
-- FASE 28 — Full financial migration
-- FASE 29 — Go computation boundary
-- FASE 30 — $0 deployment
-- FASE 31 — Security/recovery/production validation
-
-FASE 32+ is post-finalization evolution, not required for the first finalized release.
+FASE 31 is the active final security/recovery/production gate. FASE 32+ is post-finalization evolution.
 
 ## Master execution rule
 

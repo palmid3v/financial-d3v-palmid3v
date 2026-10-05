@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useVault } from "./vault/VaultContext";
+import { calculateWithGoEngine } from "./vault/goEngine";
 import {
   accountBalance,
   budgetSummary,

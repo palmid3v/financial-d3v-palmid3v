@@ -6,7 +6,7 @@
 
 ## Active architecture
 
-`text
+```text
 GitHub main
     ↓
 Vercel Hobby
@@ -14,32 +14,32 @@ Vercel Hobby
 React + Vite PWA
     ↓
 encrypted Financial Vault
-`
+```
 
 The active deployment has no financial-data server.
 
 ## Vercel configuration
 
-The repository root `vercel.json⟧ defines:
+The repository root `vercel.json` defines:
 
-- install command: `cd frontend && npm ci⟧;
-- build command: `cd frontend && npm run build⟧;
-- output directory: `frontend/dist⟧.
+- install command: `cd frontend && npm ci`;
+- build command: `cd frontend && npm run build`;
+- output directory: `frontend/dist`.
 
 ## Local production-like verification
 
 From repository root:
 
-`powershell
+```powershell
 .\scripts\validate.ps1
-`
+```
 
 Then:
 
-`powershell
+```powershell
 cd frontend
 npm run preview
-`
+```
 
 Validate Vault creation, save/export, unlock, lock, recovery and PWA behavior.
 
@@ -54,7 +54,7 @@ Firebase may remain in the repository as historical infrastructure or as optiona
 ## Production validation
 
 A real Vercel deployment is validated separately by:
-1. deploying from `main⟧;
+1. deploying from `main`;
 2. opening the deployed application;
 3. creating/opening a test vault;
 4. validating lock/unlock/recovery;

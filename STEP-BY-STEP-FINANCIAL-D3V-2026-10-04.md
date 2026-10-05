@@ -2,15 +2,13 @@
 
 Operational development history for Financial-D3v.
 
-## IMPORTANT — Product reset
+## Product reset
 
 On October 4, 2026, the product vision was changed and approved again.
 
-The previous phases are retained historically, but **their completion status does not carry forward into the new product**.
+Previous phases remain historical. Their completion status does not carry forward.
 
-The official execution starts again at **FASE 1**.
-
-The application is now:
+The application is:
 
 > A private personal-finance application and financial learning workspace that helps its owner understand, plan and improve personal finances while learning software engineering and financial concepts.
 
@@ -33,149 +31,13 @@ The application is now:
 
 Record → Categorize → Understand → Plan → Save → Review → Learn → Adjust
 
-## Reset principle
-
-Previous code and documentation can be used as historical reference, but they cannot be used to mark a new phase as complete.
-
-Each new phase must be rebuilt, validated and approved against this vision.
-
 ---
 
 # FASE 1 — Product Definition
 
-## Status
+**Status: APPROVED / BUILT**
 
-**APPROVED / BUILT**
-
-## Objective
-
-Define exactly what Financial-D3v is before rebuilding its technical domain.
-
-## Product problem
-
-Personal financial information is easy to accumulate but difficult to understand.
-
-The product must help the owner move from:
-
-numbers → understanding → planning → action → learning.
-
-## Primary user
-
-The owner is the first and only target user.
-
-This is intentionally a personal product before it becomes a general-purpose product.
-
-## Core jobs
-
-### Daily
-
-Record money movement and understand its effect.
-
-### Weekly
-
-Review movement and identify anything requiring attention.
-
-### Monthly
-
-Review income, expenses, plans and savings progress.
-
-### Long term
-
-Become better at managing money by understanding the numbers.
-
-## MVP
-
-### Financial foundation
-
-- accounts;
-- transactions;
-- income;
-- expenses;
-- transfers;
-- categories;
-- balances;
-- history.
-
-### Planning
-
-- monthly budgets;
-- category limits;
-- planned vs actual;
-- savings goals;
-- contributions;
-- goal progress.
-
-### Understanding
-
-- cash flow;
-- income vs expenses;
-- spending by category;
-- savings progress;
-- contextual education.
-
-## Financial education
-
-Education follows:
-
-FACT → CALCULATION → INTERPRETATION → ACTION
-
-The system must never present an interpretation as a fact.
-
-## Savings
-
-Savings is a first-class product outcome.
-
-The system should explain:
-- target;
-- contributions;
-- progress;
-- remaining amount;
-- required pace;
-- plan versus actual.
-
-## Initial metrics
-
-- available balance;
-- period income;
-- period expenses;
-- net cash flow;
-- budget utilization;
-- savings contributions;
-- savings goal progress;
-- later: debt, assets, liabilities and net worth.
-
-Every derived metric must have a documented formula.
-
-## Product boundaries
-
-The initial product does not automatically execute external money operations, expose personal financial data publicly, invent legal/tax rules, or operate as a public SaaS.
-
-## UX principles
-
-1. Dark Mode first.
-2. Fast entry.
-3. Dashboard before administration.
-4. Numbers have context.
-5. Education appears where useful.
-6. Color is not the only state indicator.
-7. Mobile is first-class.
-8. Important numbers are explainable.
-9. Complexity is progressive.
-
-## FASE 1 acceptance
-
-- [x] Product purpose defined.
-- [x] Primary user defined.
-- [x] Financial jobs defined.
-- [x] Education goals defined.
-- [x] MVP defined.
-- [x] Savings objective defined.
-- [x] Initial metrics defined.
-- [x] Privacy boundaries defined.
-- [x] Product exclusions defined.
-- [x] Approved stack defined.
-- [x] Previous domain baseline neutralized.
-- [x] Roadmap restarted from FASE 1.
+Product purpose, primary user, financial jobs, education goals, MVP, savings objective, metrics, privacy boundaries and exclusions were defined.
 
 **FASE 1 EXIT: APPROVED**
 
@@ -183,65 +45,73 @@ The initial product does not automatically execute external money operations, ex
 
 # FASE 2 — Financial Domain Model v2
 
-## Status
+**Status: APPROVED / BUILT**
 
-**PENDING**
+Implemented from scratch:
+- Money with integer minor units and currency;
+- Account and AccountType;
+- Transaction and TransactionType;
+- Category and CategoryKind;
+- FinancialPeriod;
+- Budget and BudgetItem;
+- SavingsGoal and SavingsProgress;
+- EducationContext;
+- deterministic account balance calculation;
+- transfer conservation validation;
+- domain invariants and tests.
 
-Rebuild the domain from FASE 1.
+The old domain structs were not copied into the active model.
 
-Must define:
-- financial vocabulary;
-- Money;
-- Account;
-- Transaction;
-- Category;
-- Budget;
-- Savings Goal;
-- Financial Period;
-- education context;
-- invariants;
-- domain tests.
+Artifact: docs/PHASE-2-DOMAIN-SPEC.md
 
-Do not copy the previous domain model.
+**FASE 2 EXIT: APPROVED**
 
 ---
 
 # FASE 3 — Firestore Persistence Design
 
-**PENDING**
+**Status: APPROVED / BUILT**
 
-Define:
-- document model;
-- ownership paths;
-- indexes;
+Implemented:
+- owner-scoped Firestore collection design;
 - repository contracts;
-- serialization;
-- persistence tests.
+- Firestore persistence DTOs;
+- domain-to-document mapping;
+- query patterns;
+- composite index definition;
+- persistence mapping tests.
+
+Artifact: docs/PHASE-3-FIRESTORE-SPEC.md
+
+Firebase SDK wiring is intentionally deferred to FASE 4.
+
+**FASE 3 EXIT: APPROVED**
+
+---
+
+# FIX — Legacy Go archive
+
+The previous archive contained a Go file that referenced the removed legacy Money type. Because go build ./... compiles Go packages recursively, the archive caused the build to fail.
+
+The legacy Go model was removed from the compilable tree and preserved as a Markdown historical artifact.
+
+This keeps archive material available for traceability without allowing historical code to participate in the active module.
 
 ---
 
 # FASE 4 — Go Application Foundation
 
-**PENDING**
+**Status: PENDING**
 
-Define and implement:
-- configuration;
-- HTTP application;
-- errors;
-- validation;
-- logging;
-- Firestore adapter;
-- repository wiring;
-- health/readiness;
-- integration tests.
+Configuration, HTTP application, Firebase initialization, concrete repositories, errors, validation, logging, readiness and integration tests.
 
 ---
 
 # FASE 5 — Accounts and Transactions
 
-**PENDING**
+**Status: PENDING**
 
-First usable financial workflow:
+First usable workflow:
 
 Account → Transaction → Balance → Summary
 
@@ -249,90 +119,60 @@ Account → Transaction → Balance → Summary
 
 # FASE 6 — Budgeting
 
-**PENDING**
-
----
+**Status: PENDING**
 
 # FASE 7 — Savings and Financial Habits
 
-**PENDING**
-
----
+**Status: PENDING**
 
 # FASE 8 — Financial Education
 
-**PENDING**
-
----
+**Status: PENDING**
 
 # FASE 9 — Debts
 
-**PENDING**
-
----
+**Status: PENDING**
 
 # FASE 10 — Assets, Liabilities and Net Worth
 
-**PENDING**
-
----
+**Status: PENDING**
 
 # FASE 11 — Reports and Financial Dashboard
 
-**PENDING**
-
----
+**Status: PENDING**
 
 # FASE 12 — Authentication, Privacy and Audit
 
-**PENDING**
-
----
+**Status: PENDING**
 
 # FASE 13 — Frontend Product
 
-**PENDING**
-
-React + Vite + Tailwind + PWA + Dark Mode.
-
----
+**Status: PENDING**
 
 # FASE 14 — Testing Hardening
 
-**PENDING**
-
----
+**Status: PENDING**
 
 # FASE 15 — Payroll
 
-**PENDING**
-
-Payroll remains intentionally late.
-
----
+**Status: PENDING**
 
 # FASE 16 — Private Deployment and Operations
 
-**PENDING**
-
----
+**Status: PENDING**
 
 # FASE 17 — Production Readiness
 
-**PENDING**
+**Status: PENDING**
 
----
+## Current checkpoint
 
-# Current checkpoint
+**FASE 3 COMPLETE — DOMAIN AND FIRESTORE PERSISTENCE DESIGN APPROVED**
 
-**FASE 1 COMPLETE — NEW PRODUCT BASELINE APPROVED**
+Next execution target:
 
-The next implementation target is:
+**FASE 4 — Go Application Foundation**
 
-**FASE 2 — Financial Domain Model v2**
-
-No Firestore schema, broad frontend or payroll implementation should be treated as complete until the new domain is defined from this product specification.
-
----
+FASE 5 follows after FASE 4 validation.
 
 Financial-D3v · PALMI-D3V · October 4, 2026

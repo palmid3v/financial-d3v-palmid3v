@@ -1,42 +1,13 @@
-# API Design
+# API Design — New Baseline
 
-The HTTP API is the application boundary between the frontend and the financial domain.
+**Status: FASE 4 PENDING**
 
-## Initial HTTP surface
+The API contract will be derived after FASE 2 defines the domain and FASE 3 defines persistence boundaries.
 
-GET /health
+The API will use REST/HTTP and JSON.
 
-Returns a machine-readable service status.
+Initial product resources are expected to include accounts, transactions, budgets, savings goals and education context.
 
-## Future resource groups
+Do not freeze endpoint shapes before the new domain model exists.
 
-- /accounts
-- /transactions
-- /categories
-- /budgets
-- /savings-goals
-- /debts
-- /assets
-- /liabilities
-- /net-worth
-- /reports
-- /education
-- /payroll
-- /audit
-
-## API principles
-
-- JSON over HTTP.
-- Explicit request and response contracts.
-- Stable error structure.
-- Server-side validation.
-- Server-side authorization.
-- No direct UI access to persistence as the authoritative write path.
-- Financial mutations should be idempotent where operation semantics allow it.
-- Educational endpoints return explanations/insights based on explicit domain facts.
-
-## First useful vertical slice
-
-Account → Transaction → Balance → Dashboard summary → Educational explanation
-
-This gives the user both a working financial feature and a learning opportunity.
+The frontend consumes the API. It does not become the authoritative financial rules engine.

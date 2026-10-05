@@ -74,6 +74,7 @@ function VaultWorkspace({ fileName, vault, saveVault, lock }) {
         <div className="notice" style={{marginTop:20}}>
           <b>FASE 27 boundary</b>
           <span>Legacy API-backed financial screens are intentionally not mounted during this Vault validation.</span>
+          <span>Auto-lock: {Math.round(autoLockMs / 60000)} minutes after inactivity. Activity in this window resets the timer.</span>
           <span>FASE 28 will migrate the product modules to this in-memory Financial Vault.</span>
         </div>
 
@@ -89,7 +90,7 @@ function VaultWorkspace({ fileName, vault, saveVault, lock }) {
 }
 
 export default function VaultGate() {
-  const { locked, fileName, vault, createVault, unlockFile, saveVault, lock } = useVault();
+  const { locked, fileName, vault, createVault, unlockFile, saveVault, lock, autoLockMs } = useVault();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [mode, setMode] = useState("open");

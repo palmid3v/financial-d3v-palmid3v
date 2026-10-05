@@ -68,7 +68,7 @@ Design principles:
 - backend/domain values are authoritative;
 - frontend explains rather than silently replacing financial calculations.
 
-The user particularly liked the FASE 17 visual result and likes emojis in conversational responses. Use structured Markdown and a few appropriate emojis when communicating.
+The user particularly liked the FASE 17 visual result and likes emojis in conversational responses and Markdown project documentation. Use structured Markdown and a few appropriate emojis when communicating and updating docs.
 
 ---
 
@@ -308,11 +308,11 @@ Implementation must start from the **current `main`**, preserve the FASE 17 visu
 
 ---
 
-## 12. Proposed sequence after FASE 25
+## 12. Current phase and proposed sequence
 
-After Savings + Debt are complete and validated:
+FASE 25 is implemented and validated locally. Current active milestone:
 
-- **FASE 26:** Authentication / production security hardening
+- **FASE 26:** Authentication / production security hardening — implemented, validation pending
 - **FASE 27:** Private production deployment
 - **FASE 28:** Backup / recovery
 - **FASE 29:** Financial data integrity
@@ -371,7 +371,7 @@ Then continue directly with:
 
 Do not rebuild the project history from scratch.
 
-The backend is already available. The immediate job is to connect Savings and Debt to the repaired frontend, preserve the established UI/UX, validate the result, and update documentation using `America/Bogota`.
+The backend is already available. The immediate job is to validate FASE 26 authentication/security behavior, preserve the established UI/UX and owner boundaries, and update documentation using `America/Bogota`.
 
 ---
 

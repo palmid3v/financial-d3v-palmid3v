@@ -4,9 +4,9 @@ Operational execution guide and phase checklist for Financial-D3v.
 
 **Product identity:** Private personal-finance application + financial learning workspace.
 
-**Current checkpoint:** FASES 1–17 APPROVED / BUILT; FASES 18–20 IMPLEMENTED / VALIDATION PENDING.
+**Current checkpoint:** FASES 1–17 APPROVED / BUILT; FASES 18–22 IMPLEMENTED / VALIDATION PENDING.
 
-**Next validation target:** FASES 18–20 local build/runtime validation. After approval, continue with FASE 21 — Savings UX.
+**Next validation target:** FASES 20–22 local build/runtime validation. After approval, continue with FASE 23 — Net Worth UX.
 
 ---
 
@@ -325,7 +325,7 @@ Checklist:
 - [ ] Build
 - [ ] Documentation
 
-**Status: PLANNED**
+**Status: IMPLEMENTED / VALIDATION PENDING**
 
 ---
 
@@ -353,7 +353,7 @@ Checklist:
 - [ ] Build
 - [ ] Documentation
 
-**Status: PLANNED**
+**Status: IMPLEMENTED / VALIDATION PENDING**
 
 ---
 
@@ -515,9 +515,9 @@ Therefore:
 
 ---
 
-## 5. FASES 18–20 implementation checkpoint\n\nThe following product modules are implemented on the FASE 18–20 branch:\n\n- [x] FASE 18 — Transactions UX implementation\n- [x] FASE 19 — Accounts UX implementation\n- [x] FASE 20 — Budget UX implementation\n- [ ] Local frontend build after these changes\n- [ ] Runtime transaction creation/listing validation\n- [ ] Runtime account creation/balance validation\n- [ ] Runtime budget creation/summary validation\n- [ ] Mobile UX review\n- [ ] Explicit user approval of completion\n\nThese phases are **not yet marked APPROVED / BUILT** until validation is completed.\n\n---\n\n# 6. Current next step
+## 5. FASES 18–22 implementation checkpoint\n\nThe following product modules are implemented on the FASE 18–20 branch:\n\n- [x] FASE 18 — Transactions UX implementation\n- [x] FASE 19 — Accounts UX implementation\n- [x] FASE 20 — Budget UX implementation\n- [x] FASE 21 — Savings UX implementation\n- [x] FASE 22 — Debt UX implementation\n- [ ] Local frontend build after these changes\n- [ ] Runtime transaction creation/listing validation\n- [ ] Runtime account creation/balance validation\n- [ ] Runtime budget creation/summary validation\n- [ ] Runtime savings goal/contribution validation\n- [ ] Runtime debt/payment validation\n- [ ] Mobile UX review\n- [ ] Explicit user approval of completion\n\nThese phases are **not yet marked APPROVED / BUILT** until validation is completed.\n\n---\n\n# 6. Current next step
 
-**NEXT: Validate FASES 18–20, then FASE 21 — Savings UX**
+**NEXT: Validate FASES 20–22, then FASE 23 — Net Worth UX**
 
 Do not add another infrastructure phase before completing the core product experience unless a real technical requirement appears.
 

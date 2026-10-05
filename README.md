@@ -49,20 +49,21 @@ It is not initially a public SaaS and does not automatically execute external fi
 
 ## Current phase
 
-### FASE 8 — Financial education
+### FASE 10 — Assets, liabilities and net worth
 **APPROVED / BUILT**
 
-The backend now includes reusable financial education cards and contextual insights tied to budget and savings data.
+Financial-D3v now models debt, debt payments, assets, generic liabilities and explainable net worth.
 
 See:
 
-`docs/PHASE-8-FINANCIAL-EDUCATION.md`
+- `docs/PHASE-9-DEBTS.md`
+- `docs/PHASE-10-ASSETS-LIABILITIES-NET-WORTH.md`
 
 ### Next
 
-**FASE 9 — Debts**
+**FASE 11 — Reports and financial dashboard**
 
-Debt accounting remains intentionally separate from conceptual debt education.
+The next phase will turn the accumulated financial data into explainable reports and a dashboard.
 
 ## Documentation
 

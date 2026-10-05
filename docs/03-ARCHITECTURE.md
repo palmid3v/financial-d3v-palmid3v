@@ -1,56 +1,31 @@
-# Architecture
+# Architecture — New Product Baseline
 
-Financial-D3v is a private application with a Go API and Firebase Firestore persistence.
+**Status: FASE 3 PENDING**
 
-Target flow:
+## Approved direction
 
-React + Vite + Tailwind
-  ↓
-Go REST API
-  ↓
-Application Services
-  ↓
-Domain
-  ↙      ↘
-Repositories  Domain Services
-  ↓
+React + Vite + Tailwind + PWA
+↓
+Go REST/HTTP API
+↓
+Application layer
+↓
+Financial domain
+↓
+Repository layer
+↓
 Firebase Firestore
 
-Supporting concerns:
-- Firebase Authentication, introduced later.
-- Configuration.
-- Logging.
-- Validation.
-- Audit.
-- Observability.
+## Reset rule
 
-## Responsibilities
+The previous architecture was created before the personal-finance-first and educational vision was fully defined. It is not treated as a completed architecture baseline.
 
-### Frontend
-Owns presentation, navigation, form interaction, responsive behavior, educational explanations and visualization. It does not own authoritative financial rules.
+The new architecture must be derived from product jobs, user flows, financial invariants, privacy requirements, persistence needs and educational requirements.
 
-### Go API
-Owns use-case orchestration, validation, authorization, financial operations, domain coordination, repository access and API contracts.
+No abstraction should exist only for architectural appearance.
 
-### Domain
-Owns financial invariants, money behavior, account/transaction semantics, budget rules, savings rules, debt calculations, net-worth calculations and payroll rules.
+## Runtime
 
-### Repository layer
-Owns Firestore reads/writes, document mapping, query implementation and persistence-specific concerns.
+The owner starts the application when needed. The local runtime can contain the Go API and React/Vite application while Firestore provides persistence.
 
-### Firestore
-Stores private application data in collections/documents designed around domain and query access patterns.
-
-## Private-runtime principle
-
-The application is not required to run continuously. When the owner starts the application, the Go API and frontend become available and can access the private Firebase project using configured credentials. Stopping the local application stops the local runtime.
-
-## Architecture rules
-
-- Handlers coordinate; they do not own business rules.
-- Domain owns financial invariants.
-- Repositories own persistence.
-- UI consumes API contracts.
-- Financial calculations must be deterministic.
-- Educational explanations should be generated from explicit domain facts and documented rules.
-- No secret Firebase credentials in source control.
+The exact package boundaries are defined after FASE 2 and FASE 3.

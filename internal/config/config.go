@@ -12,10 +12,11 @@ type Config struct {
 	FirebaseEnabled bool
 	FirebaseProjectID string
 	FirebaseCredentials string
+	AuthRequired bool
 }
 
 func Load() (Config, error) {
-	cfg := Config{AppEnv: getenv("APP_ENV", "development"), HTTPAddr: getenv("HTTP_ADDR", ":8080"), FirebaseEnabled: getbool("FIREBASE_ENABLED", false), FirebaseProjectID: os.Getenv("FIREBASE_PROJECT_ID"), FirebaseCredentials: os.Getenv("FIREBASE_CREDENTIALS_FILE")}
+	cfg := Config{AppEnv: getenv("APP_ENV", "development"), HTTPAddr: getenv("HTTP_ADDR", ":8080"), FirebaseEnabled: getbool("FIREBASE_ENABLED", false), FirebaseProjectID: os.Getenv("FIREBASE_PROJECT_ID"), FirebaseCredentials: os.Getenv("FIREBASE_CREDENTIALS_FILE"), AuthRequired: getbool("AUTH_REQUIRED", getbool("FIREBASE_ENABLED", false))}
 	if cfg.HTTPAddr == "" { return Config{}, errors.New("HTTP_ADDR must not be empty") }
 	if cfg.FirebaseEnabled && cfg.FirebaseProjectID == "" { return Config{}, errors.New("FIREBASE_PROJECT_ID is required when FIREBASE_ENABLED=true") }
 	return cfg, nil

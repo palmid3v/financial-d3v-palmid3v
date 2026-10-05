@@ -39,7 +39,7 @@ The Vault-backed workspace represents:
 While unlocked:
 - decrypted state exists in active memory;
 - edits remain in memory until save;
-- save re-seals the vault and exports an encrypted `.fdv⟧ file;
+- save re-seals the vault and exports an encrypted `.fdv` file;
 - lock clears active state and password reference.
 
 No intentional financial plaintext persistence is used by the migrated workspace.

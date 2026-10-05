@@ -9,7 +9,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.svg", "robots.txt", "apple-touch-icon.png"],
+      includeAssets: ["favicon.svg", "robots.txt"],
       manifest: {
         id: "/",
         name: "Financial-D3v",
@@ -25,13 +25,13 @@ export default defineConfig({
         categories: ["finance", "productivity"],
         icons: [
           {
-            src: "/icon-192.png",
+            src: "/favicon.svg",
             sizes: "192x192",
             type: "image/png",
             purpose: "any maskable",
           },
           {
-            src: "/icon-512.png",
+            src: "/favicon.svg",
             sizes: "512x512",
             type: "image/png",
             purpose: "any maskable",

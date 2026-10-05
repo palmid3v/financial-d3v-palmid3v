@@ -82,16 +82,16 @@ Payroll is implemented as a specialized owner-scoped domain without changing the
 
 Environment safety gates, configurable CORS, provider-neutral container artifacts, CI reproducibility, health/readiness semantics, secrets boundaries, backup requirements and recovery procedures. See `docs/PHASE-16-PRIVATE-DEPLOYMENT-OPERATIONS.md` and `docs/OPERATIONS-RUNBOOK.md`.
 
-## FASE 17 — Production readiness
-**PENDING**
+## FASE 17 — Production readiness & product UX
+**APPROVED / BUILT**
 
-Final readiness review against the private personal-finance product vision, including security, privacy, UX, reliability, documentation and operational readiness.
+Final readiness review with a product-wide UI/UX pass, responsive navigation, dashboard information hierarchy, explainable financial states, education surfaces, loading/error states and private-workspace boundaries. See `docs/PHASE-17-PRODUCTION-READINESS-UX.md`.
 
 ### Current checkpoint
 
-**FASES 1–16: APPROVED / BUILT**
+**FASES 1–17: APPROVED / BUILT**
 
-**FASES RESTANTES: 1 — FASE 17**
+**FASES RESTANTES: 0**
 
 The backend learning path now covers:
 
@@ -105,7 +105,7 @@ The backend learning path now covers:
 | **14** | Testing hardening | APPROVED / BUILT |
 | **15** | Payroll | APPROVED / BUILT |
 | **16** | Private deployment & operations | APPROVED / BUILT |
-| **17** | Production readiness | PENDING |
+| **17** | Production readiness & product UX | APPROVED / BUILT |
 
 ### Rule
 

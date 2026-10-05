@@ -119,6 +119,10 @@ Do not describe the vault as formally audited or cryptographically equivalent to
 - base64 helpers
 - versioned envelope validation
 
+`frontend/src/vault/VaultContext.jsx` now establishes the encrypted file as the persistence boundary when a new vault is created: the empty vault is sealed immediately and exported as `financial-d3v.fdv`, while the decrypted state remains in memory.
+
+`frontend/src/vault/VaultGate.jsx` keeps the legacy API-backed application unmounted during FASE 27 validation. Once unlocked, the gate exposes only the Vault validation workspace with save/lock controls. FASE 28 will replace this temporary isolation with the migrated financial modules.
+
 The module intentionally has no network dependency.
 
 ## Migration strategy

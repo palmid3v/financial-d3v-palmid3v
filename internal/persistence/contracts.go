@@ -16,4 +16,6 @@ type DebtPaymentRepository interface { Create(context.Context,domain.DebtPayment
 type AssetRepository interface { Create(context.Context,domain.Asset) error; Get(context.Context,string,string)(domain.Asset,error); List(context.Context,string)([]domain.Asset,error) }
 type LiabilityRepository interface { Create(context.Context,domain.Liability) error; Get(context.Context,string,string)(domain.Liability,error); List(context.Context,string)([]domain.Liability,error) }
 
+type PayrollEmployeeRepository interface { Create(context.Context,domain.PayrollEmployee) error; Get(context.Context,string,string)(domain.PayrollEmployee,error); List(context.Context,string)([]domain.PayrollEmployee,error) }
+type PayrollPeriodRepository interface { Create(context.Context,domain.PayrollPeriod) error; ListByEmployee(context.Context,string,string)([]domain.PayrollPeriod,error) }
 type AuditRepository interface { Create(context.Context, domain.AuditEvent) error; List(context.Context,string)([]domain.AuditEvent,error) }

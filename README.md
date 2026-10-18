@@ -160,3 +160,20 @@ Older Cloud Run/Firebase production documents are historical traceability, not a
 8. Record evidence.
 9. Mark APPROVED / BUILT only after evidence exists.
 10. Move to the next phase.
+
+
+## Integrated 8-part build — 2026-10-18
+
+Approved scope: Dashboard, Accounts, Transactions, Budgets, Savings & Goals, Debts, Net Worth, and Education. The goal is one connected local-first finance workflow, not eight isolated screens.
+
+Current implementation work on `feat/financial-d3v-integrated-8-parts`:
+- Account currency selection uses a curated ISO-code list rather than requiring users to type a code.
+- Dashboard account balances are grouped by currency; the UI does not add COP and USD as if they were equivalent.
+- Dashboard category spending explicitly scopes to COP, matching the COP dashboard cash-flow and trend scope.
+- Empty months render zero-height bars instead of visually implying activity.
+- Transaction entry validates positive safe-integer minor units and rejects transfers with a missing, identical, or different-currency destination account.
+- Budgets, savings goals, debts, assets, and liabilities expose currency selection; asset/liability creation stores the selected currency.
+- Net-worth headline calculations remain explicitly COP-scoped; non-COP balances are not silently converted. Currency conversion and exchange-rate sourcing are not implemented.
+- Responsive currency totals can wrap on narrow screens.
+
+Validation status: implementation is in progress. These changes are not considered runtime-validated until the pull request CI, frontend tests/build, and desktop/mobile workflows pass. Test with synthetic amounts only, then verify save → lock → reopen on the encrypted `.fdv` file.

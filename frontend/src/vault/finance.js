@@ -71,7 +71,11 @@ export function normalizeVault(vault) {
 }
 
 export function makeAccount({ name, type = "bank", currency = "COP", openingMinorUnits = 0 }) {
-  return { id: uid("acc"), name, type, currency: currency.toUpperCase(), openingMinorUnits: Number(openingMinorUnits) || 0, createdAt: nowIso() };
+  const opening = Number(openingMinorUnits);
+  if (!String(name || "").trim() || !/^[A-Z]{3}$/i.test(String(currency || "")) || !Number.isSafeInteger(opening) || opening < 0) {
+    throw new Error("La cuenta requiere nombre, moneda de tres letras y saldo inicial entero no negativo.");
+  }
+  return { id: uid("acc"), name: String(name).trim(), type, currency: currency.toUpperCase(), openingMinorUnits: opening, createdAt: nowIso() };
 }
 
 export function makeTransaction(data) {

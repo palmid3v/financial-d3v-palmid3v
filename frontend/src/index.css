@@ -531,3 +531,23 @@ footer {
   .topbar { padding-inline: 12px; }
   .top-actions .button { min-width: 0; font-size: 9px; }
 }
+
+
+/* Integrated eight-part review: currency totals remain separate and readable. */
+.currency-totals {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px 14px;
+  min-width: 0;
+}
+.currency-totals b {
+  color: var(--text);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 720px) {
+  .panel-total { align-items: flex-start; gap: 8px; }
+  .currency-totals { justify-content: flex-start; }
+}

@@ -173,7 +173,7 @@ function Dashboard({ vault, setActive }) {
   const totals = jsTotals;
   const nw = jsNetWorth;
   const accountTotals = vault.accounts.reduce((totals, account) => { totals[account.currency] = (totals[account.currency] || 0) + accountBalance(account, vault.transactions, vault.debtPayments); return totals; }, {});
-  const savingsRate = totals.income > 0 ? ((totals.income - totals.expenses) / totals.income) * 100 : 0;
+  const savingsRate = totals.income > 0 ? (totals.netCashFlow / totals.income) * 100 : 0;
   const debt = nw.debtLiabilities;
   const series = monthSeries(vault.transactions, 6, new Date(), "COP", vault.debtPayments);
   const max = Math.max(...series.flatMap((row) => [row.income, row.expenses]), 1);
@@ -201,13 +201,13 @@ function Dashboard({ vault, setActive }) {
     <div className="metrics metrics-4">
       <Metric label="Patrimonio neto" value={money(nw.net)} detail="Activos − pasivos" tone="green" />
       <Metric label="Flujo de caja" value={`${totals.netCashFlow > 0 ? "+ " : totals.netCashFlow < 0 ? "− " : ""}${money(Math.abs(totals.netCashFlow))}`} detail="Este mes" tone="green" />
-      <Metric label="Ahorro del mes" value={`${Math.round(savingsRate)}%`} detail="Ingreso − gasto" tone="yellow" />
+      <Metric label="Ahorro del mes" value={`${Math.round(savingsRate)}%`} detail="Flujo neto / ingresos" tone="yellow" />
       <Metric label="Deuda pendiente" value={money(debt)} detail="Saldo de deudas" tone="blue" />
     </div>
 
     <div className="dashboard-grid">
       <Panel className="chart-panel reveal">
-        <div className="panel-head"><div><small>Últimos 6 meses</small><h3>Ingresos vs gastos</h3></div><div className="legend"><span><i className="green-dot" />Ingresos</span><span><i className="red-dot" />Gastos</span></div></div>
+        <div className="panel-head"><div><small>Últimos 6 meses</small><h3>Ingresos vs egresos de caja</h3></div><div className="legend"><span><i className="green-dot" />Ingresos</span><span><i className="red-dot" />Egresos</span></div></div>
         <div className="bar-chart">
           {series.map((row) => <div className="bar-group" key={row.label}>
             <div className="bar-pair">
@@ -714,12 +714,12 @@ function Education({ vault }) {
   const { start, end } = currentMonthRange();
   const flow = transactionTotals(vault.transactions, start, end, "COP", vault.debtPayments);
   const worth = netWorth(vault, "COP");
-  const monthlySavings = flow.income - flow.expenses;
+  const monthlySavings = flow.netCashFlow;
   const budget = vault.budgets.find((item) => new Date(item.startDate) <= start && new Date(item.endDate) >= end && item.currency === "COP");
   const budgetData = budget ? budgetSummary(budget, vault, new Date(budget.startDate), new Date(budget.endDate)) : null;
   return <Module title="Educación" eyebrow="Aprender → ajustar" description="Conecta conceptos financieros con tus cifras actuales. Las cifras de ejemplo se calculan localmente desde tu vault.">
     <div className="metrics metrics-4">
-      <Metric label="Flujo neto del mes" value={money(monthlySavings)} detail="Ingresos − gastos en COP" tone={monthlySavings >= 0 ? "green" : "red"} />
+      <Metric label="Flujo neto del mes" value={money(monthlySavings)} detail="Flujo neto tras gastos y abonos a capital" tone={monthlySavings >= 0 ? "green" : "red"} />
       <Metric label="Patrimonio en COP" value={money(worth.net)} detail="Activos − pasivos" tone="green" />
       <Metric label="Tasa de ahorro" value={flow.income > 0 ? Math.round((monthlySavings / flow.income) * 100) + "%" : "—"} detail="Flujo neto / ingresos" tone="yellow" />
       <Metric label="Presupuesto usado" value={budgetData ? Math.round(budgetData.percent) + "%" : "—"} detail={budget ? budget.name : "Sin presupuesto COP activo"} tone="blue" />

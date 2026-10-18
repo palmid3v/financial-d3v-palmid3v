@@ -456,6 +456,7 @@ function Budget({ vault, updateVault }) {
 function Savings({ vault, updateVault }) {
   const [goal, setGoal] = useState({ name: "", target: "", targetDate: "", currency: "COP" });
   const [contribution, setContribution] = useState({ goalId: "", amount: "", note: "" });
+  const [editingGoalId, setEditingGoalId] = useState("");
   const removeGoal = (item) => {
     if (vault.savingsContributions.some((entry) => entry.goalId === item.id)) {
       window.alert("Esta meta tiene aportes registrados. Conserva el historial y no se puede eliminar.");

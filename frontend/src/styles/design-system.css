@@ -1,20 +1,20 @@
 :root {
-  --fd-bg: #0b0d10;
-  --fd-sidebar: #0e1115;
-  --fd-surface: #12161b;
-  --fd-surface-raised: #151a20;
-  --fd-surface-hover: #1a2027;
-  --fd-border: #232a33;
-  --fd-border-strong: #303844;
-  --fd-text: #f2f4f7;
-  --fd-text-muted: #727c88;
-  --fd-text-subtle: #4e5864;
+  --fd-bg: #080d0b;
+  --fd-sidebar: #0b120f;
+  --fd-surface: #101814;
+  --fd-surface-raised: #142019;
+  --fd-surface-hover: #1a2a21;
+  --fd-border: #25372d;
+  --fd-border-strong: #385744;
+  --fd-text: #edf5ef;
+  --fd-text-muted: #9aafa2;
+  --fd-text-subtle: #718579;
 
-  --fd-income: #22c55e;
-  --fd-expense: #f0525b;
-  --fd-info: #3b82f6;
-  --fd-warning: #f5b700;
-  --fd-payroll: #a78bfa;
+  --fd-income: #34d399;
+  --fd-expense: #fb7185;
+  --fd-info: #7dd3fc;
+  --fd-warning: #fbbf24;
+  --fd-payroll: #c4b5fd;
 
   --fd-radius-sm: 8px;
   --fd-radius-md: 11px;

@@ -22,7 +22,8 @@
 4. **Debt UI safeguards.** The form explains mismatched totals and rejects principal above the outstanding balance. A blank principal is calculated as total minus entered interest and fees; explicit zero remains zero.
 5. **Transfer UI safeguard.** New transfers can only select a destination account in the same currency as the source.
 6. **Go/WASM currency isolation.** Savings goals and debts are filtered to the requested analysis currency before producing currency-specific results.
-7. **Regression tests.** Tests cover mixed-currency summaries/balances, payment reconciliation and Go/WASM currency isolation.
+7. **Local transaction time.** The new transaction form initializes its `datetime-local` field from local wall-clock time rather than slicing a UTC ISO string, avoiding a default timestamp shift by the user's timezone offset.
+8. **Regression tests.** Tests cover mixed-currency summaries/balances, payment reconciliation, legacy currency normalization and Go/WASM currency isolation.
 
 ## Open architectural decisions — do not silently change
 

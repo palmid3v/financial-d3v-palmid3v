@@ -103,3 +103,7 @@ temp/
 **/temp/
 *.tmp
 *.temp
+
+
+.archive/
+financial-d3v.fdv

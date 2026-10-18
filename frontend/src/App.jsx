@@ -102,7 +102,7 @@ function Sidebar({ active, setActive, onLock, dirty }) {
     <div className="side-bottom">
       <div className="privacy"><span /><div><b>Private workspace</b><small>Vault · encrypted</small></div></div>
       <button className="lock-link" onClick={onLock}>⌕ {dirty ? "Guardar y bloquear" : "Bloquear"}</button>
-      <small className="signature">PALMI-D3V · v0.1</small>
+      <small className="signature">by PalmiD3v · v0.1</small>
     </div>
   </aside>;
 }
@@ -454,7 +454,7 @@ export default function App() {
     <div className="main">
       <Topbar active={active} dirty={dirty} saveVault={saveVault} lock={guardedLock} />
       <main>{render()}</main>
-      <footer>PRIVATE BY DESIGN · FINANCIAL-D3V · ENCRYPTED VAULT</footer>
+      <footer>PRIVATE BY DESIGN · FINANCIAL-D3V · BY PALMID3V</footer>
     </div>
     <MobileNav active={active} setActive={setActive} moreOpen={moreOpen} setMoreOpen={setMoreOpen} />
   </div>;

@@ -166,21 +166,24 @@ function Dashboard({ vault, setActive }) {
     });
     return () => { cancelled = true; };
   }, [vault, start, end]);
-  const jsTotals = transactionTotals(vault.transactions, start, end, "COP");
+  const jsTotals = transactionTotals(vault.transactions, start, end, "COP", vault.debtPayments);
   const jsNetWorth = netWorth(vault);
-  const totals = goAnalysis?.cashFlow ?? jsTotals;
-  const nw = goAnalysis?.netWorth ? { net: goAnalysis.netWorth.net, debtLiabilities: goAnalysis.netWorth.debtLiabilities, assets: goAnalysis.netWorth.assets, liabilities: goAnalysis.netWorth.liabilities } : jsNetWorth;
-  const accountTotals = vault.accounts.reduce((totals, account) => { totals[account.currency] = (totals[account.currency] || 0) + accountBalance(account, vault.transactions); return totals; }, {});
-  const savingsRate = totals.income > 0 ? ((totals.income - totals.expenses) / totals.income) * 100 : 0;
+  // Account-linked debt payments are currently authoritative in the JS domain engine.
+  // Keep WASM available for parity checks, but don't let its older schema overwrite these totals.
+  const totals = jsTotals;
+  const nw = jsNetWorth;
+  const accountTotals = vault.accounts.filter((account) => account.type !== "credit").reduce((totals, account) => { totals[account.currency] = (totals[account.currency] || 0) + accountBalance(account, vault.transactions, vault.debtPayments); return totals; }, {});
+  const savingsRate = totals.income > 0 ? (totals.netCashFlow / totals.income) * 100 : 0;
   const debt = nw.debtLiabilities;
-  const series = monthSeries(vault.transactions, 6, new Date(), "COP");
+  const series = monthSeries(vault.transactions, 6, new Date(), "COP", vault.debtPayments);
   const max = Math.max(...series.flatMap((row) => [row.income, row.expenses]), 1);
   const expenseCategories = vault.categories.filter((item) => item.kind === "expense").map((category) => ({
     ...category,
-    value: vault.transactions.filter((tx) => tx.type === "expense" && (tx.currency || "COP") === "COP" && tx.categoryId === category.id && new Date(tx.occurredAt) >= start && new Date(tx.occurredAt) < end).reduce((sum, tx) => sum + tx.minorUnits, 0),
+    value: vault.transactions.filter((tx) => tx.type === "expense" && (tx.currency || "COP") === "COP" && tx.categoryId === category.id && new Date(tx.occurredAt) >= start && new Date(tx.occurredAt) < end).reduce((sum, tx) => sum + tx.minorUnits, 0)
+      + vault.debtPayments.filter((payment) => (payment.currency || "COP") === "COP" && (payment.categoryId || "cat-other") === category.id && new Date(payment.occurredAt) >= start && new Date(payment.occurredAt) < end).reduce((sum, payment) => sum + (Number(payment.interestMinorUnits) || 0) + (Number(payment.feesMinorUnits) || 0), 0),
   })).filter((item) => item.value > 0).sort((a, b) => b.value - a.value);
   const totalCategorySpend = expenseCategories.reduce((sum, item) => sum + item.value, 0);
-  const budget = vault.budgets.find((item) => new Date(item.startDate) <= start && new Date(item.endDate) >= end) || vault.budgets[0];
+  const budget = vault.budgets.find((item) => item.currency === "COP" && new Date(item.startDate) <= start && new Date(item.endDate) >= end) || vault.budgets.find((item) => item.currency === "COP");
   const budgetData = budget ? budgetSummary(budget, vault, new Date(budget.startDate), new Date(budget.endDate)) : null;
   const recent = [...vault.transactions].sort((a, b) => new Date(b.occurredAt) - new Date(a.occurredAt)).slice(0, 6);
 
@@ -192,19 +195,19 @@ function Dashboard({ vault, setActive }) {
 
     <Notice tone={goEngineStatus === "ready" ? "success" : ""}>
       <b>Go Financial Engine</b>
-      <span>{goEngineStatus === "ready" ? "WASM activo · cálculos locales" : goEngineStatus === "loading" ? "Inicializando motor local…" : "WASM no disponible · cálculo JS local"}</span>
+      <span>{goEngineStatus === "ready" ? "WASM disponible · dashboard usa reglas JS para integrar cuentas y pagos" : goEngineStatus === "loading" ? "Inicializando motor local…" : "WASM no disponible · cálculo JS local"}</span>
     </Notice>
 
     <div className="metrics metrics-4">
       <Metric label="Patrimonio neto" value={money(nw.net)} detail="Activos − pasivos" tone="green" />
-      <Metric label="Flujo de caja" value={`${totals.netCashFlow > 0 ? "+ " : totals.netCashFlow < 0 ? "− " : ""}${money(Math.abs(totals.netCashFlow))}`} detail="Este mes" tone="green" />
-      <Metric label="Ahorro del mes" value={`${Math.round(savingsRate)}%`} detail="Ingreso − gasto" tone="yellow" />
+      <Metric label="Flujo de caja" value={`${totals.netCashFlow > 0 ? "+ " : totals.netCashFlow < 0 ? "− " : ""}${money(Math.abs(totals.netCashFlow))}`} detail="Este mes · COP" tone="green" />
+      <Metric label="Ahorro del mes" value={`${Math.round(savingsRate)}%`} detail="Flujo neto / ingresos · COP" tone="yellow" />
       <Metric label="Deuda pendiente" value={money(debt)} detail="Saldo de deudas" tone="blue" />
     </div>
 
     <div className="dashboard-grid">
       <Panel className="chart-panel reveal">
-        <div className="panel-head"><div><small>Últimos 6 meses</small><h3>Ingresos vs gastos</h3></div><div className="legend"><span><i className="green-dot" />Ingresos</span><span><i className="red-dot" />Gastos</span></div></div>
+        <div className="panel-head"><div><small>Últimos 6 meses</small><h3>Ingresos vs egresos de caja</h3></div><div className="legend"><span><i className="green-dot" />Ingresos</span><span><i className="red-dot" />Egresos</span></div></div>
         <div className="bar-chart">
           {series.map((row) => <div className="bar-group" key={row.label}>
             <div className="bar-pair">
@@ -217,7 +220,7 @@ function Dashboard({ vault, setActive }) {
       </Panel>
 
       <Panel className="chart-panel reveal">
-        <div className="panel-head"><div><small>Este mes</small><h3>Gasto por categoría</h3></div></div>
+        <div className="panel-head"><div><small>Este mes · COP</small><h3>Gasto por categoría</h3></div></div>
         {totalCategorySpend === 0 ? <Empty title="Sin gastos todavía" text="Registra una transacción y aquí aparecerá la distribución." /> :
           <div className="donut-wrap">
             <div className="donut" style={{
@@ -236,8 +239,8 @@ function Dashboard({ vault, setActive }) {
     <div className="dashboard-bottom">
       <Panel className="reveal"><div className="panel-head"><div><small>Tu dinero</small><h3>Cuentas</h3></div><button onClick={() => setActive("accounts")} className="text-link">Ver todas</button></div>
         {vault.accounts.length === 0 ? <Empty title="Crea tu primera cuenta" text="Las cuentas son el punto de partida del ledger." action={<Button primary onClick={() => setActive("accounts")}>Agregar cuenta</Button>} /> :
-          <div className="stack-list">{vault.accounts.slice(0, 4).map((account) => <div className="stack-row" key={account.id}><span className="account-icon">{account.type === "credit" ? "▭" : "▣"}</span><div><b>{account.name}</b><small>{account.type} · {account.currency}</small></div><strong>{money(accountBalance(account, vault.transactions), account.currency)}</strong></div>)}</div>}
-        <div className="panel-total"><span>Saldo por moneda</span><div className="currency-totals">{Object.entries(accountTotals).sort(([a],[b]) => a.localeCompare(b)).map(([currency, total]) => <b key={currency}>{money(total, currency)}</b>)}</div></div>
+          <div className="stack-list">{vault.accounts.slice(0, 4).map((account) => <div className="stack-row" key={account.id}><span className="account-icon">{account.type === "credit" ? "▭" : "▣"}</span><div><b>{account.name}</b><small>{account.type} · {account.currency}</small></div><strong>{money(accountBalance(account, vault.transactions, vault.debtPayments), account.currency)}</strong></div>)}</div>}
+        <div className="panel-total"><span>Saldos de cuentas no crediticias por moneda</span><div className="currency-totals">{Object.entries(accountTotals).sort(([a],[b]) => a.localeCompare(b)).map(([currency, total]) => <b key={currency}>{money(total, currency)}</b>)}</div></div>
       </Panel>
 
       <Panel className="reveal"><div className="panel-head"><div><small>Presupuesto</small><h3>Presupuesto del mes</h3></div><button onClick={() => setActive("budget")} className="text-link">Ver todo</button></div>
@@ -247,7 +250,7 @@ function Dashboard({ vault, setActive }) {
 
       <Panel className="reveal"><div className="panel-head"><div><small>Ledger</small><h3>Movimientos recientes</h3></div><button onClick={() => setActive("transactions")} className="text-link">Ver todos</button></div>
         {recent.length === 0 ? <Empty title="Tu ledger está vacío" text="Registra el primer movimiento para empezar." /> :
-          <div className="stack-list">{recent.map((tx) => <div className="stack-row" key={tx.id}><span className={`movement-icon ${tx.type}`}>{tx.type === "income" ? "↗" : tx.type === "expense" ? "↘" : "⇄"}</span><div><b>{tx.description || "Movimiento"}</b><small>{tx.type} · {new Date(tx.occurredAt).toLocaleDateString("es-CO")}</small></div><strong className={tx.type === "expense" ? "negative" : tx.type === "income" ? "positive" : ""}>{tx.type === "expense" ? "−" : tx.type === "income" ? "+" : ""}{money(tx.minorUnits, tx.currency)}</strong></div>)}</div>}
+          <div className="stack-list">{recent.map((tx) => <div className="stack-row" key={tx.id}><span className={`movement-icon ${tx.type}`}>{tx.type === "income" ? "↗" : tx.type === "expense" ? "↘" : "⇄"}</span><div><b>{tx.description || "Movimiento"}</b><small>{tx.type} · {vault.accounts.find((account) => account.id === tx.accountId)?.name || "Cuenta"}{tx.type === "transfer" ? " → " + (vault.accounts.find((account) => account.id === tx.toAccountId)?.name || "Destino") : ""} · {new Date(tx.occurredAt).toLocaleDateString("es-CO")}</small></div><strong className={tx.type === "expense" ? "negative" : tx.type === "income" ? "positive" : ""}>{tx.type === "expense" ? "−" : tx.type === "income" ? "+" : ""}{money(tx.minorUnits, tx.currency)}</strong></div>)}</div>}
       </Panel>
     </div>
   </div>;
@@ -260,6 +263,10 @@ function Transactions({ vault, updateVault }) {
   const [editingId, setEditingId] = useState("");
   const categories = vault.categories.filter((item) => item.kind === form.type);
   const removeTransaction = (transaction) => {
+    if (transaction.linkedContributionId || vault.savingsContributions.some((item) => item.transactionId === transaction.id)) {
+      window.alert("Esta transferencia está vinculada a una meta. Edítala o elimínala desde Ahorro y metas para mantener los saldos sincronizados.");
+      return;
+    }
     if (!window.confirm("¿Eliminar este movimiento del ledger? Esta acción se guardará cuando guardes el Vault.")) return;
     updateVault((current) => ({ ...current, transactions: current.transactions.filter((item) => item.id !== transaction.id) }));
     setMessageTone("success");
@@ -271,8 +278,9 @@ function Transactions({ vault, updateVault }) {
     if (!account || !form.amount) { setMessageTone("error"); setMessage("Selecciona una cuenta e ingresa un monto."); return; }
     const destination = vault.accounts.find((item) => item.id === form.toAccountId);
     const amountMinorUnits = numberValue(form.amount);
+    if (!form.occurredAt || Number.isNaN(new Date(form.occurredAt).getTime())) { setMessageTone("error"); setMessage("Selecciona una fecha válida para el movimiento."); return; }
     if (!Number.isSafeInteger(amountMinorUnits) || amountMinorUnits <= 0) { setMessageTone("error"); setMessage("El monto debe ser mayor que cero y estar dentro del rango permitido."); return; }
-    if (form.type === "transfer" && (!destination || destination.id === account.id || destination.currency !== account.currency)) { setMessageTone("error"); setMessage("Selecciona una cuenta destino distinta y con la misma moneda."); return; }
+    if (form.type === "transfer" && (account.type === "credit" || !destination || destination.type === "credit" || destination.id === account.id || destination.currency !== account.currency)) { setMessageTone("error"); setMessage("Selecciona dos cuentas distintas, no crediticias y con la misma moneda."); return; }
     const transaction = makeTransaction({
       accountId: form.accountId,
       toAccountId: form.type === "transfer" ? form.toAccountId : "",
@@ -295,6 +303,10 @@ function Transactions({ vault, updateVault }) {
     setForm((current) => ({ ...current, amount: "", description: "" }));
   };
   const editTransaction = (tx) => {
+    if (tx.linkedContributionId || vault.savingsContributions.some((item) => item.transactionId === tx.id)) {
+      window.alert("Esta transferencia está vinculada a una meta. Edítala desde Ahorro y metas para mantener los saldos sincronizados.");
+      return;
+    }
     setEditingId(tx.id);
     setForm({
       type: tx.type,
@@ -320,8 +332,8 @@ function Transactions({ vault, updateVault }) {
         <form onSubmit={save} className="form-grid">
           <div className="segmented full"><button type="button" className={form.type === "expense" ? "active" : ""} onClick={() => setForm({ ...form, type: "expense", categoryId: "cat-food" })}>Gasto</button><button type="button" className={form.type === "income" ? "active" : ""} onClick={() => setForm({ ...form, type: "income", categoryId: "cat-salary" })}>Ingreso</button><button type="button" className={form.type === "transfer" ? "active" : ""} onClick={() => setForm({ ...form, type: "transfer", categoryId: "" })}>Transfer.</button></div>
           <Field label="Monto" type="number" min="0.01" step="0.01" required value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
-          <Select label="Cuenta" required value={form.accountId} onChange={(e) => { const selected = vault.accounts.find((item) => item.id === e.target.value); const destination = vault.accounts.find((item) => item.id === form.toAccountId); setForm({ ...form, accountId: e.target.value, toAccountId: destination && destination.currency === selected?.currency ? destination.id : "" }); }}><option value="">Selecciona cuenta</option>{vault.accounts.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select>
-          {form.type === "transfer" ? <Select label="Cuenta destino" required value={form.toAccountId} onChange={(e) => setForm({ ...form, toAccountId: e.target.value })}><option value="">Selecciona destino</option>{vault.accounts.filter((item) => item.id !== form.accountId && item.currency === vault.accounts.find((account) => account.id === form.accountId)?.currency).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select> :
+          <Select label="Cuenta" required value={form.accountId} onChange={(e) => { const selected = vault.accounts.find((item) => item.id === e.target.value); const destination = vault.accounts.find((item) => item.id === form.toAccountId); setForm({ ...form, accountId: e.target.value, toAccountId: destination && destination.currency === selected?.currency ? destination.id : "" }); }}><option value="">Selecciona cuenta</option>{vault.accounts.filter((item) => form.type !== "transfer" || item.type !== "credit").map((item) => <option key={item.id} value={item.id}>{item.name} · {item.currency}</option>)}</Select>
+          {form.type === "transfer" ? <Select label="Cuenta destino" required value={form.toAccountId} onChange={(e) => setForm({ ...form, toAccountId: e.target.value })}><option value="">Selecciona destino</option>{vault.accounts.filter((item) => item.type !== "credit" && item.id !== form.accountId && item.currency === vault.accounts.find((account) => account.id === form.accountId)?.currency).map((item) => <option key={item.id} value={item.id}>{item.name} · {item.currency}</option>)}</Select> :
             <Select label="Categoría" value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })}>{categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select>}
           <Field label="Fecha" type="datetime-local" value={form.occurredAt} onChange={(e) => setForm({ ...form, occurredAt: e.target.value })} />
           <Field label="Descripción" placeholder="Opcional" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
@@ -331,7 +343,7 @@ function Transactions({ vault, updateVault }) {
       </Panel>
       <Panel><div className="panel-head"><div><small>Ledger privado</small><h3>Movimientos</h3></div><span>{items.length} registros</span></div>
         {items.length === 0 ? <Empty title="Sin movimientos" text="El ledger está listo. Registra tu primer ingreso, gasto o transferencia." /> :
-          <div className="stack-list">{items.map((tx) => <div className="stack-row" key={tx.id}><span className={`movement-icon ${tx.type}`}>{tx.type === "income" ? "↗" : tx.type === "expense" ? "↘" : "⇄"}</span><div><b>{tx.description}</b><small>{tx.type} · {new Date(tx.occurredAt).toLocaleString("es-CO")}</small></div><strong className={tx.type === "expense" ? "negative" : tx.type === "income" ? "positive" : ""}>{tx.type === "expense" ? "−" : tx.type === "income" ? "+" : ""}{money(tx.minorUnits, tx.currency)}</strong><Button onClick={() => editTransaction(tx)}>Editar</Button><Button className="danger-button" onClick={() => removeTransaction(tx)}>Eliminar</Button></div>)}</div>}
+          <div className="stack-list">{items.map((tx) => <div className="stack-row" key={tx.id}><span className={`movement-icon ${tx.type}`}>{tx.type === "income" ? "↗" : tx.type === "expense" ? "↘" : "⇄"}</span><div><b>{tx.description}</b><small>{tx.type} · {vault.accounts.find((account) => account.id === tx.accountId)?.name || "Cuenta"}{tx.type === "transfer" ? " → " + (vault.accounts.find((account) => account.id === tx.toAccountId)?.name || "Destino") : ""} · {new Date(tx.occurredAt).toLocaleString("es-CO")}</small></div><strong className={tx.type === "expense" ? "negative" : tx.type === "income" ? "positive" : ""}>{tx.type === "expense" ? "−" : tx.type === "income" ? "+" : ""}{money(tx.minorUnits, tx.currency)}</strong>{tx.linkedContributionId || vault.savingsContributions.some((entry) => entry.transactionId === tx.id) ? <small>Transferencia vinculada a meta · gestionar desde Ahorro y metas</small> : <><Button onClick={() => editTransaction(tx)}>Editar</Button><Button className="danger-button" onClick={() => removeTransaction(tx)}>Eliminar</Button></>}</div>)}</div>}
       </Panel>
     </div>
   </Module>;
@@ -346,8 +358,10 @@ function Accounts({ vault, updateVault }) {
     event.preventDefault();
     const name = form.name.trim();
     const currency = form.currency.trim().toUpperCase();
+    const openingMinorUnits = form.opening.trim() ? numberValue(form.opening) : 0;
     if (!name || !/^[A-Z]{3}$/.test(currency)) { setNotice("Ingresa un nombre y un código de moneda de 3 letras."); return; }
-    updateVault((current) => ({ ...current, accounts: [...current.accounts, makeAccount({ name, type: form.type, currency, openingMinorUnits: numberValue(form.opening) })] }));
+    if (!Number.isSafeInteger(openingMinorUnits) || openingMinorUnits < 0) { setNotice("Ingresa un saldo inicial entero no negativo."); return; }
+    updateVault((current) => ({ ...current, accounts: [...current.accounts, makeAccount({ name, type: form.type, currency, openingMinorUnits })] }));
     setForm({ name: "", type: "bank", currency: "COP", opening: "" });
     setNotice("Cuenta creada. Guarda el vault para conservar los cambios en el archivo.");
   };
@@ -364,14 +378,20 @@ function Accounts({ vault, updateVault }) {
     if (!name || !/^[A-Z]{3}$/.test(currency)) { setNotice("Ingresa un nombre y un código de moneda de 3 letras."); return; }
     if (!editForm.opening.trim() || !Number.isSafeInteger(openingMinorUnits) || openingMinorUnits < 0) { setNotice("Ingresa un saldo inicial válido, igual o mayor que cero."); return; }
     const hasTransactions = vault.transactions.some((tx) => tx.accountId === account.id || tx.toAccountId === account.id);
-    if (currency !== account.currency && hasTransactions) { setNotice("No puedes cambiar la moneda de una cuenta con movimientos asociados."); return; }
+    const hasDebtPayments = vault.debtPayments.some((payment) => payment.accountId === account.id);
+    const hasBudget = vault.budgets.some((budget) => budget.accountId === account.id);
+    const hasGoalContribution = vault.savingsContributions.some((item) => item.accountId === account.id || item.fromAccountId === account.id || item.toAccountId === account.id);
+    if (currency !== account.currency && (hasTransactions || hasDebtPayments || hasBudget || hasGoalContribution)) { setNotice("No puedes cambiar la moneda de una cuenta con movimientos, pagos, aportes o presupuestos asociados."); return; }
     updateVault((current) => ({ ...current, accounts: current.accounts.map((item) => item.id === account.id ? { ...item, name, type: editForm.type, currency, openingMinorUnits } : item) }));
     setEditingId("");
     setNotice("Cuenta actualizada. Guarda el vault para conservar los cambios en el archivo.");
   };
   const remove = (account) => {
-    const linked = vault.transactions.some((tx) => tx.accountId === account.id || tx.toAccountId === account.id);
-    if (linked) { setNotice("No se puede eliminar esta cuenta porque tiene movimientos asociados. Conservamos el historial contable."); return; }
+    const linked = vault.transactions.some((tx) => tx.accountId === account.id || tx.toAccountId === account.id)
+      || vault.debtPayments.some((payment) => payment.accountId === account.id)
+      || vault.budgets.some((budget) => budget.accountId === account.id)
+      || vault.savingsContributions.some((item) => item.accountId === account.id || item.fromAccountId === account.id || item.toAccountId === account.id);
+    if (linked) { setNotice("No se puede eliminar esta cuenta porque tiene movimientos, pagos, aportes o presupuestos asociados. Conservamos el historial contable."); return; }
     if (!window.confirm("¿Eliminar la cuenta " + account.name + "? Esta acción no se puede deshacer después de guardar.")) return;
     updateVault((current) => ({ ...current, accounts: current.accounts.filter((item) => item.id !== account.id) }));
     setNotice("Cuenta eliminada. Guarda el vault para conservar los cambios en el archivo.");
@@ -394,11 +414,11 @@ function Accounts({ vault, updateVault }) {
               <Select label="Tipo" value={editForm.type} onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}><option value="cash">Efectivo</option><option value="bank">Banco</option><option value="credit">Crédito</option><option value="investment">Inversión</option><option value="other">Otro</option></Select>
               <Select label="Moneda" required value={editForm.currency} onChange={(e) => setEditForm({ ...editForm, currency: e.target.value })}><CurrencyOptions /></Select>
               <Field label={"Saldo inicial (" + editForm.currency + ")"} type="number" min="0" step="0.01" required value={editForm.opening} onChange={(e) => setEditForm({ ...editForm, opening: e.target.value })} />
-              <Notice>El saldo actual se calcula con este saldo inicial más los movimientos registrados: {money(accountBalance(account, vault.transactions), account.currency)}.</Notice>
+              <Notice>El saldo actual se calcula con este saldo inicial más los movimientos registrados: {money(accountBalance(account, vault.transactions, vault.debtPayments), account.currency)}.</Notice>
               <div className="form-actions"><Button primary type="submit">Guardar edición</Button><Button onClick={() => setEditingId("")}>Cancelar</Button></div>
             </form> : <>
               <div><span className="badge">{account.type}</span><small>{account.currency}</small></div><h3>{account.name}</h3>
-              <strong>{money(accountBalance(account, vault.transactions), account.currency)}</strong><p>Saldo inicial {money(account.openingMinorUnits, account.currency)}</p>
+              <strong>{money(accountBalance(account, vault.transactions, vault.debtPayments), account.currency)}</strong><p>Saldo inicial {money(account.openingMinorUnits, account.currency)}</p>
               <div className="account-actions"><Button onClick={() => edit(account)}>Editar</Button><Button onClick={() => remove(account)}>Eliminar</Button></div>
             </>}
           </article>)}</div>}
@@ -410,6 +430,7 @@ function Budget({ vault, updateVault }) {
   const { start, end } = currentMonthRange();
   const [name, setName] = useState("Presupuesto mensual");
   const [currency, setCurrency] = useState("COP");
+  const [accountId, setAccountId] = useState("all");
   const [rows, setRows] = useState([{ categoryId: "cat-housing", limit: "" }, { categoryId: "cat-food", limit: "" }, { categoryId: "cat-transport", limit: "" }]);
   const [editingBudgetId, setEditingBudgetId] = useState("");
   const expenseCategories = vault.categories.filter((item) => item.kind === "expense");
@@ -418,6 +439,7 @@ function Budget({ vault, updateVault }) {
     setEditingBudgetId(budget.id);
     setName(budget.name);
     setCurrency(budget.currency || "COP");
+    setAccountId(budget.accountId || "all");
     setRows(budget.items.map((item) => ({ categoryId: item.categoryId, limit: String((Number(item.limitMinorUnits) || 0) / 100) })));
   };
   const removeBudget = (budget) => {
@@ -427,27 +449,32 @@ function Budget({ vault, updateVault }) {
   };
   const save = (event) => {
     event.preventDefault();
-    const items = rows.filter((row) => row.categoryId && Number(row.limit) > 0).map((row) => ({ categoryId: row.categoryId, limitMinorUnits: numberValue(row.limit) }));
+    const groupedLimits = rows.filter((row) => row.categoryId && Number(row.limit) > 0).reduce((grouped, row) => { const amount = numberValue(row.limit); if (!Number.isSafeInteger(amount) || amount <= 0) return grouped; grouped.set(row.categoryId, (grouped.get(row.categoryId) || 0) + amount); return grouped; }, new Map());
+    const items = [...groupedLimits].map(([categoryId, limitMinorUnits]) => ({ categoryId, limitMinorUnits }));
     if (!name.trim() || !items.length || items.some((item) => !Number.isSafeInteger(item.limitMinorUnits) || item.limitMinorUnits <= 0)) return;
     if (editingBudgetId) {
-      updateVault((current) => ({ ...current, budgets: current.budgets.map((budget) => budget.id === editingBudgetId ? { ...budget, name: name.trim(), currency, items } : budget) }));
+      updateVault((current) => ({ ...current, budgets: current.budgets.map((budget) => budget.id === editingBudgetId ? { ...budget, name: name.trim(), currency, accountId, items } : budget) }));
       setEditingBudgetId("");
     } else {
-      updateVault((current) => ({ ...current, budgets: [...current.budgets, makeBudget({ name: name.trim(), currency, startDate: start.toISOString(), endDate: end.toISOString(), items })] }));
+      updateVault((current) => ({ ...current, budgets: [...current.budgets, makeBudget({ name: name.trim(), currency, accountId, startDate: start.toISOString(), endDate: end.toISOString(), items })] }));
     }
     setName("Presupuesto mensual");
+    setAccountId("all");
+    setCurrency("COP");
     setRows([{ categoryId: "cat-housing", limit: "" }]);
   };
   return <Module title="Presupuestos" eyebrow="Plan → Entender" description="Define límites y compara el plan contra el gasto real del ledger. Los actuals siempre salen de las transacciones.">
     <div className="two-col">
       <Panel><div className="panel-head"><div><small>Plan mensual</small><h3>{editingBudgetId ? "Editar presupuesto" : "Crear presupuesto"}</h3></div></div><form onSubmit={save} className="form-grid">
-        <Field label="Nombre" value={name} onChange={(e) => setName(e.target.value)} /><Select label="Moneda" value={currency} onChange={(e) => setCurrency(e.target.value)}><CurrencyOptions /></Select>
+        <Field label="Nombre" value={name} onChange={(e) => setName(e.target.value)} />
+        <Select label="Cuenta para el presupuesto" value={accountId} onChange={(e) => { const selectedId = e.target.value; setAccountId(selectedId); const selected = vault.accounts.find((item) => item.id === selectedId); if (selected) setCurrency(selected.currency); }}><option value="all">Todas las cuentas · misma moneda</option>{vault.accounts.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.currency}</option>)}</Select>
+        <Select label="Moneda" value={currency} onChange={(e) => setCurrency(e.target.value)} disabled={accountId !== "all"}><CurrencyOptions /></Select>
         <div className="budget-inputs">{rows.map((row, index) => <div className="budget-input-row" key={index}><Select label={`Categoría ${index + 1}`} value={row.categoryId} onChange={(e) => setRows(rows.map((item, i) => i === index ? { ...item, categoryId: e.target.value } : item))}>{expenseCategories.map((cat) => <option key={cat.id} value={cat.id}>{cat.name}</option>)}</Select><Field label="Límite" type="number" min="0.01" step="0.01" value={row.limit} onChange={(e) => setRows(rows.map((item, i) => i === index ? { ...item, limit: e.target.value } : item))} /></div>)}<Button onClick={() => setRows([...rows, { categoryId: "cat-other", limit: "" }])}>＋ Agregar categoría</Button></div>
-        <div className="form-actions"><Button primary type="submit">{editingBudgetId ? "Guardar cambios" : "Crear presupuesto"}</Button>{editingBudgetId && <Button onClick={() => { setEditingBudgetId(""); setName("Presupuesto mensual"); setCurrency("COP"); setRows([{ categoryId: "cat-housing", limit: "" }]); }}>Cancelar</Button>}</div>
+        <div className="form-actions"><Button primary type="submit">{editingBudgetId ? "Guardar cambios" : "Crear presupuesto"}</Button>{editingBudgetId && <Button onClick={() => { setEditingBudgetId(""); setName("Presupuesto mensual"); setCurrency("COP"); setAccountId("all"); setRows([{ categoryId: "cat-housing", limit: "" }]); }}>Cancelar</Button>}</div>
       </form></Panel>
       <Panel><div className="panel-head"><div><small>Plan vs realidad</small><h3>Presupuestos</h3></div></div>
         {budgets.length === 0 ? <Empty title="Sin presupuesto" text="Crea un presupuesto y dale un trabajo concreto a cada peso." /> :
-          <div className="budget-list">{budgets.map((budget) => { const data = budgetSummary(budget, vault, new Date(budget.startDate), new Date(budget.endDate)); return <article className="budget-card reveal" key={budget.id}><div className="budget-card-head"><div><b>{budget.name}</b><small>{new Date(budget.startDate).toLocaleDateString("es-CO")} — {new Date(budget.endDate).toLocaleDateString("es-CO")}</small></div><strong>{Math.round(data.percent)}%</strong></div>{data.lines.map((line) => <div className="budget-line" key={line.categoryId}><div><b>{line.categoryName}</b><span>{money(line.spent, budget.currency)} / {money(line.limitMinorUnits, budget.currency)}</span></div><Progress value={line.percent} tone={line.percent >= 100 ? "red" : line.percent >= 80 ? "yellow" : "green"} /></div>)}<div className="form-actions"><Button onClick={() => editBudget(budget)}>Editar</Button><Button onClick={() => removeBudget(budget)}>Eliminar presupuesto</Button></div></article>; })}</div>}
+          <div className="budget-list">{budgets.map((budget) => { const data = budgetSummary(budget, vault, new Date(budget.startDate), new Date(budget.endDate)); return <article className="budget-card reveal" key={budget.id}><div className="budget-card-head"><div><b>{budget.name}</b><small>{budget.accountId && budget.accountId !== "all" ? (vault.accounts.find((account) => account.id === budget.accountId)?.name || "Cuenta vinculada") : "Todas las cuentas"} · {budget.currency} · {new Date(budget.startDate).toLocaleDateString("es-CO")} — {new Date(budget.endDate).toLocaleDateString("es-CO")}</small></div><strong>{Math.round(data.percent)}%</strong></div>{data.lines.map((line) => <div className="budget-line" key={line.categoryId}><div><b>{line.categoryName}</b><span>{money(line.spent, budget.currency)} / {money(line.limitMinorUnits, budget.currency)}</span></div><Progress value={line.percent} tone={line.percent >= 100 ? "red" : line.percent >= 80 ? "yellow" : "green"} /></div>)}<div className="form-actions"><Button onClick={() => editBudget(budget)}>Editar</Button><Button onClick={() => removeBudget(budget)}>Eliminar presupuesto</Button></div></article>; })}</div>}
       </Panel>
     </div>
   </Module>;
@@ -455,7 +482,7 @@ function Budget({ vault, updateVault }) {
 
 function Savings({ vault, updateVault }) {
   const [goal, setGoal] = useState({ name: "", target: "", targetDate: "", currency: "COP" });
-  const [contribution, setContribution] = useState({ goalId: "", amount: "", note: "" });
+  const [contribution, setContribution] = useState({ goalId: "", amount: "", note: "", fromAccountId: "", toAccountId: "" });
   const [editingGoalId, setEditingGoalId] = useState("");
   const [editingContributionId, setEditingContributionId] = useState("");
   const editGoal = (item) => { setEditingGoalId(item.id); setGoal({ name: item.name, target: String((Number(item.targetMinorUnits) || 0) / 100), targetDate: item.targetDate || "", currency: item.currency || "COP" }); };
@@ -467,10 +494,58 @@ function Savings({ vault, updateVault }) {
     if (!window.confirm("¿Eliminar la meta " + item.name + "?")) return;
     updateVault((current) => ({ ...current, savingsGoals: current.savingsGoals.filter((entry) => entry.id !== item.id) }));
   };
-  const saveGoal = (event) => { event.preventDefault(); if (!goal.name.trim() || !goal.target.trim() || !Number.isSafeInteger(numberValue(goal.target)) || numberValue(goal.target) <= 0) return; if (editingGoalId) { updateVault((current) => ({ ...current, savingsGoals: current.savingsGoals.map((item) => item.id === editingGoalId ? { ...item, name: goal.name.trim(), targetMinorUnits: numberValue(goal.target), targetDate: goal.targetDate, currency: goal.currency } : item) })); setEditingGoalId(""); } else { updateVault((current) => ({ ...current, savingsGoals: [...current.savingsGoals, makeSavingsGoal({ name: goal.name.trim(), targetMinorUnits: numberValue(goal.target), targetDate: goal.targetDate, currency: goal.currency })] })); } setGoal({ name: "", target: "", targetDate: "", currency: goal.currency }); };
-  const saveContribution = (event) => { event.preventDefault(); const amountMinorUnits = numberValue(contribution.amount); if (!contribution.goalId || !contribution.amount.trim() || !Number.isSafeInteger(amountMinorUnits) || amountMinorUnits <= 0) return; if (editingContributionId) { const previous = vault.savingsContributions.find((item) => item.id === editingContributionId); const oldGoal = vault.savingsGoals.find((item) => item.id === previous?.goalId); const nextGoal = vault.savingsGoals.find((item) => item.id === contribution.goalId); if (oldGoal && nextGoal && oldGoal.currency !== nextGoal.currency) { window.alert("No puedes mover un aporte entre metas de monedas distintas."); return; } updateVault((current) => ({ ...current, savingsContributions: current.savingsContributions.map((item) => item.id === editingContributionId ? { ...item, goalId: contribution.goalId, amountMinorUnits, note: contribution.note } : item) })); setEditingContributionId(""); } else { updateVault((current) => ({ ...current, savingsContributions: [...current.savingsContributions, makeSavingsContribution({ goalId: contribution.goalId, amountMinorUnits, note: contribution.note })] })); } setContribution({ goalId: "", amount: "", note: "" }); };
-  const editContribution = (entry) => { setEditingContributionId(entry.id); setContribution({ goalId: entry.goalId, amount: String((Number(entry.amountMinorUnits) || 0) / 100), note: entry.note || "" }); };
-  const removeContribution = (entry) => { if (!window.confirm("¿Eliminar este aporte de la meta?")) return; if (editingContributionId === entry.id) setEditingContributionId(""); updateVault((current) => ({ ...current, savingsContributions: current.savingsContributions.filter((item) => item.id !== entry.id) })); };
+  const saveGoal = (event) => { event.preventDefault(); if (!goal.name.trim() || !goal.target.trim() || !Number.isSafeInteger(numberValue(goal.target)) || numberValue(goal.target) <= 0) return; if (editingGoalId) { const existingGoal = vault.savingsGoals.find((item) => item.id === editingGoalId); if (existingGoal && existingGoal.currency !== goal.currency && vault.savingsContributions.some((entry) => entry.goalId === editingGoalId)) { window.alert("No puedes cambiar la moneda de una meta que ya tiene aportes registrados."); return; } updateVault((current) => ({ ...current, savingsGoals: current.savingsGoals.map((item) => item.id === editingGoalId ? { ...item, name: goal.name.trim(), targetMinorUnits: numberValue(goal.target), targetDate: goal.targetDate, currency: goal.currency } : item) })); setEditingGoalId(""); } else { updateVault((current) => ({ ...current, savingsGoals: [...current.savingsGoals, makeSavingsGoal({ name: goal.name.trim(), targetMinorUnits: numberValue(goal.target), targetDate: goal.targetDate, currency: goal.currency })] })); } setGoal({ name: "", target: "", targetDate: "", currency: goal.currency }); };
+  const saveContribution = (event) => {
+    event.preventDefault();
+    const amountMinorUnits = numberValue(contribution.amount);
+    const goal = vault.savingsGoals.find((item) => item.id === contribution.goalId);
+    const source = vault.accounts.find((item) => item.id === contribution.fromAccountId);
+    const destination = vault.accounts.find((item) => item.id === contribution.toAccountId);
+    if (!goal || !source || !destination || !contribution.amount.trim() || !Number.isSafeInteger(amountMinorUnits) || amountMinorUnits <= 0) return;
+    if (source.id === destination.id || source.currency !== destination.currency || source.currency !== goal.currency) {
+      window.alert("Elige dos cuentas distintas con la misma moneda de la meta.");
+      return;
+    }
+    const previous = editingContributionId ? vault.savingsContributions.find((item) => item.id === editingContributionId) : null;
+    const previousGoal = vault.savingsGoals.find((item) => item.id === previous?.goalId);
+    if (previousGoal && previousGoal.currency !== goal.currency) {
+      window.alert("No puedes cambiar la moneda de un aporte ya registrado.");
+      return;
+    }
+    const contributionRecord = previous
+      ? { ...previous, goalId: goal.id, amountMinorUnits, note: contribution.note, accountId: source.id, fromAccountId: source.id, toAccountId: destination.id, currency: goal.currency }
+      : makeSavingsContribution({ goalId: goal.id, amountMinorUnits, note: contribution.note, accountId: source.id, fromAccountId: source.id, toAccountId: destination.id, currency: goal.currency });
+    const existingTransfer = previous?.transactionId
+      ? vault.transactions.find((item) => item.id === previous.transactionId)
+      : vault.transactions.find((item) => item.linkedContributionId === previous?.id);
+    const transfer = existingTransfer
+      ? { ...existingTransfer, accountId: source.id, toAccountId: destination.id, type: "transfer", minorUnits: amountMinorUnits, currency: goal.currency, categoryId: "", description: "Aporte a meta: " + goal.name }
+      : makeTransaction({ accountId: source.id, toAccountId: destination.id, type: "transfer", minorUnits: amountMinorUnits, currency: goal.currency, categoryId: "", description: "Aporte a meta: " + goal.name, occurredAt: contributionRecord.occurredAt, linkedContributionId: contributionRecord.id });
+    contributionRecord.transactionId = transfer.id;
+    updateVault((current) => ({
+      ...current,
+      savingsContributions: previous
+        ? current.savingsContributions.map((item) => item.id === previous.id ? contributionRecord : item)
+        : [...current.savingsContributions, contributionRecord],
+      transactions: existingTransfer
+        ? current.transactions.map((item) => item.id === existingTransfer.id ? transfer : item)
+        : [...current.transactions, transfer],
+    }));
+    setEditingContributionId("");
+    setContribution({ goalId: "", amount: "", note: "", fromAccountId: "", toAccountId: "" });
+  };
+  const editContribution = (entry) => { setEditingContributionId(entry.id); setContribution({ goalId: entry.goalId, amount: String((Number(entry.amountMinorUnits) || 0) / 100), note: entry.note || "", fromAccountId: entry.fromAccountId || entry.accountId || "", toAccountId: entry.toAccountId || "" }); };
+  const removeContribution = (entry) => {
+    if (!window.confirm("¿Eliminar este aporte? También se eliminará la transferencia vinculada para devolver el saldo a la cuenta de origen.")) return;
+    if (editingContributionId === entry.id) setEditingContributionId("");
+    updateVault((current) => ({
+      ...current,
+      savingsContributions: current.savingsContributions.filter((item) => item.id !== entry.id),
+      transactions: current.transactions.filter((item) => item.id !== entry.transactionId && item.linkedContributionId !== entry.id),
+    }));
+  };
+  const selectedContributionGoal = vault.savingsGoals.find((item) => item.id === contribution.goalId);
+  const contributionAccounts = vault.accounts.filter((item) => item.type !== "credit" && (!selectedContributionGoal || item.currency === selectedContributionGoal.currency));
   return <Module title="Ahorro y metas" eyebrow="Planeación" description="Las contribuciones son registros de progreso de una meta, no gastos del presupuesto.">
     <div className="two-col">
       <Panel><div className="panel-head"><div><small>{editingGoalId ? "Editar meta" : "Nueva meta"}</small><h3>{editingGoalId ? "Actualizar objetivo" : "Define qué estás construyendo"}</h3></div></div><form onSubmit={saveGoal} className="form-grid">
@@ -479,20 +554,22 @@ function Savings({ vault, updateVault }) {
         <Field label="Fecha objetivo" type="date" value={goal.targetDate} onChange={(e) => setGoal({ ...goal, targetDate: e.target.value })} /><Select label="Moneda" value={goal.currency} onChange={(e) => setGoal({ ...goal, currency: e.target.value })}><CurrencyOptions /></Select>
         <div className="form-actions"><Button primary type="submit">{editingGoalId ? "Guardar cambios" : "Crear meta"}</Button>{editingGoalId && <Button onClick={() => { setEditingGoalId(""); setGoal({ name: "", target: "", targetDate: "", currency: "COP" }); }}>Cancelar</Button>}</div>
       </form></Panel>
-      <Panel><div className="panel-head"><div><small>{editingContributionId ? "Editar aporte" : "Progreso"}</small><h3>{editingContributionId ? "Actualizar aporte" : "Contribuir"}</h3></div></div><form onSubmit={saveContribution} className="form-grid">
-        <Select label="Meta" required value={contribution.goalId} onChange={(e) => setContribution({ ...contribution, goalId: e.target.value })}><option value="">Selecciona meta</option>{vault.savingsGoals.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select>
+      <Panel><div className="panel-head"><div><small>{editingContributionId ? "Editar aporte" : "Progreso"}</small><h3>{editingContributionId ? "Actualizar aporte" : "Contribuir"}</h3></div></div><Notice>Un aporte mueve dinero entre dos cuentas de la misma moneda. Si aún no tienes una cuenta de ahorro destino, créala primero en Cuentas. La transferencia no se cuenta como gasto.</Notice><form onSubmit={saveContribution} className="form-grid">
+        <Select label="Meta" required value={contribution.goalId} onChange={(e) => { const selected = vault.savingsGoals.find((item) => item.id === e.target.value); setContribution({ ...contribution, goalId: e.target.value, fromAccountId: "", toAccountId: "" }); }}><option value="">Selecciona meta</option>{vault.savingsGoals.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.currency}</option>)}</Select>
+        <Select label="Cuenta de origen" required value={contribution.fromAccountId} onChange={(e) => setContribution({ ...contribution, fromAccountId: e.target.value, toAccountId: contribution.toAccountId === e.target.value ? "" : contribution.toAccountId })}><option value="">Selecciona cuenta origen</option>{contributionAccounts.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.currency}</option>)}</Select>
+        <Select label="Cuenta de destino / ahorro" required value={contribution.toAccountId} onChange={(e) => setContribution({ ...contribution, toAccountId: e.target.value })}><option value="">Selecciona cuenta destino</option>{contributionAccounts.filter((item) => item.id !== contribution.fromAccountId).map((item) => <option key={item.id} value={item.id}>{item.name} · {item.currency}</option>)}</Select>
         <Field label="Monto" type="number" min="0.01" step="0.01" required value={contribution.amount} onChange={(e) => setContribution({ ...contribution, amount: e.target.value })} />
         <Field label="Nota" placeholder="Opcional" value={contribution.note} onChange={(e) => setContribution({ ...contribution, note: e.target.value })} />
-        <div className="form-actions"><Button primary type="submit" disabled={!vault.savingsGoals.length}>{editingContributionId ? "Guardar cambios" : "Registrar aporte"}</Button>{editingContributionId && <Button onClick={() => { setEditingContributionId(""); setContribution({ goalId: "", amount: "", note: "" }); }}>Cancelar</Button>}</div>
+        <div className="form-actions"><Button primary type="submit" disabled={!vault.savingsGoals.length}>{editingContributionId ? "Guardar cambios" : "Registrar aporte"}</Button>{editingContributionId && <Button onClick={() => { setEditingContributionId(""); setContribution({ goalId: "", amount: "", note: "", fromAccountId: "", toAccountId: "" }); }}>Cancelar</Button>}</div>
       </form></Panel>
     </div>
-    <div className="goal-grid">{vault.savingsGoals.map((item) => { const data = savingsProgress(item, vault.savingsContributions); return <Panel className="goal-card reveal" key={item.id}><div className="goal-head"><div><span className="badge">Meta</span><h3>{item.name}</h3></div><strong>{Math.round(data.percent)}%</strong></div><Progress value={data.percent} tone="green" /><div className="goal-values"><span>{money(data.saved, item.currency)}</span><span>{money(data.target, item.currency)}</span></div>{item.targetDate && <small>Objetivo · {new Date(item.targetDate).toLocaleDateString("es-CO")}</small>}{vault.savingsContributions.filter((entry) => entry.goalId === item.id).length > 0 && <div className="stack-list compact">{vault.savingsContributions.filter((entry) => entry.goalId === item.id).map((entry) => <div className="stack-row" key={entry.id}><div><b>{money(entry.amountMinorUnits, item.currency)}</b><small>{entry.note || "Aporte"} · {new Date(entry.occurredAt).toLocaleDateString("es-CO")}</small></div><Button onClick={() => editContribution(entry)}>Editar</Button><Button onClick={() => removeContribution(entry)}>Eliminar aporte</Button></div>)}</div>}<div className="form-actions"><Button onClick={() => editGoal(item)}>Editar</Button><Button onClick={() => removeGoal(item)}>Eliminar meta</Button></div></Panel>; })}</div>
+    <div className="goal-grid">{vault.savingsGoals.map((item) => { const data = savingsProgress(item, vault.savingsContributions); return <Panel className="goal-card reveal" key={item.id}><div className="goal-head"><div><span className="badge">Meta</span><h3>{item.name}</h3></div><strong>{Math.round(data.percent)}%</strong></div><Progress value={data.percent} tone="green" /><div className="goal-values"><span>{money(data.saved, item.currency)}</span><span>{money(data.target, item.currency)}</span></div>{item.targetDate && <small>Objetivo · {new Date(item.targetDate).toLocaleDateString("es-CO")}</small>}{vault.savingsContributions.filter((entry) => entry.goalId === item.id).length > 0 && <div className="stack-list compact">{vault.savingsContributions.filter((entry) => entry.goalId === item.id).map((entry) => <div className="stack-row" key={entry.id}><div><b>{money(entry.amountMinorUnits, item.currency)}</b><small>{vault.accounts.find((account) => account.id === (entry.fromAccountId || entry.accountId))?.name || "Origen sin asignar"} → {vault.accounts.find((account) => account.id === entry.toAccountId)?.name || "Destino sin asignar"} · {entry.note || "Aporte"} · {new Date(entry.occurredAt).toLocaleDateString("es-CO")}</small></div><Button onClick={() => editContribution(entry)}>Editar</Button><Button onClick={() => removeContribution(entry)}>Eliminar aporte</Button></div>)}</div>}<div className="form-actions"><Button onClick={() => editGoal(item)}>Editar</Button><Button onClick={() => removeGoal(item)}>Eliminar meta</Button></div></Panel>; })}</div>
   </Module>;
 }
 
 function Debts({ vault, updateVault }) {
   const [debt, setDebt] = useState({ name: "", amount: "", dueDate: "", currency: "COP" });
-  const [payment, setPayment] = useState({ debtId: "", amount: "", principal: "", interest: "", fees: "" });
+  const [payment, setPayment] = useState({ debtId: "", accountId: "", categoryId: "cat-other", amount: "", principal: "", interest: "", fees: "" });
   const [editingDebtId, setEditingDebtId] = useState("");
   const [editingPaymentId, setEditingPaymentId] = useState("");
   const [paymentError, setPaymentError] = useState("");
@@ -506,7 +583,7 @@ function Debts({ vault, updateVault }) {
     updateVault((current) => ({ ...current, debts: current.debts.filter((entry) => entry.id !== item.id) }));
   };
   const saveDebt = (event) => { event.preventDefault(); const originalMinorUnits = numberValue(debt.amount); if (!debt.name.trim() || !debt.amount.trim() || !Number.isSafeInteger(originalMinorUnits) || originalMinorUnits <= 0) return; if (editingDebtId) { const existing = vault.debts.find((item) => item.id === editingDebtId); const principalPaid = vault.debtPayments.filter((item) => item.debtId === editingDebtId).reduce((sum, item) => sum + (Number(item.principalMinorUnits) || 0), 0); if (originalMinorUnits < principalPaid) { window.alert("El saldo inicial no puede ser menor que el principal ya pagado."); return; } if (existing && existing.currency !== debt.currency && vault.debtPayments.some((item) => item.debtId === editingDebtId)) { window.alert("No puedes cambiar la moneda de una deuda con pagos registrados."); return; } updateVault((current) => ({ ...current, debts: current.debts.map((item) => item.id === editingDebtId ? { ...item, name: debt.name.trim(), originalMinorUnits, dueDate: debt.dueDate, currency: debt.currency } : item) })); setEditingDebtId(""); } else { updateVault((current) => ({ ...current, debts: [...current.debts, makeDebt({ name: debt.name.trim(), originalMinorUnits, dueDate: debt.dueDate, currency: debt.currency })] })); } setDebt({ name: "", amount: "", dueDate: "", currency: debt.currency }); };
-  const editDebtPayment = (entry) => { setEditingPaymentId(entry.id); setPayment({ debtId: entry.debtId, amount: String((Number(entry.amountMinorUnits) || 0) / 100), principal: String((Number(entry.principalMinorUnits) || 0) / 100), interest: String((Number(entry.interestMinorUnits) || 0) / 100), fees: String((Number(entry.feesMinorUnits) || 0) / 100) }); setPaymentError(""); };
+  const editDebtPayment = (entry) => { setEditingPaymentId(entry.id); setPayment({ debtId: entry.debtId, accountId: entry.accountId || "", categoryId: entry.categoryId || "cat-other", amount: String((Number(entry.amountMinorUnits) || 0) / 100), principal: String((Number(entry.principalMinorUnits) || 0) / 100), interest: String((Number(entry.interestMinorUnits) || 0) / 100), fees: String((Number(entry.feesMinorUnits) || 0) / 100) }); setPaymentError(""); };
   const removeDebtPayment = (entry) => { if (!window.confirm("¿Eliminar este pago? El saldo de la deuda se recalculará.")) return; if (editingPaymentId === entry.id) setEditingPaymentId(""); updateVault((current) => ({ ...current, debtPayments: current.debtPayments.filter((item) => item.id !== entry.id) })); };
   const savePayment = (event) => {
     event.preventDefault();
@@ -514,7 +591,9 @@ function Debts({ vault, updateVault }) {
     if (!payment.debtId || payment.amount === "") return;
 
     const selectedDebt = vault.debts.find((item) => item.id === payment.debtId);
+    const paymentAccount = vault.accounts.find((item) => item.id === payment.accountId);
     if (!selectedDebt) { setPaymentError("Selecciona una deuda válida."); return; }
+    if (!paymentAccount || paymentAccount.currency !== selectedDebt.currency) { setPaymentError("Selecciona una cuenta existente en la misma moneda de la deuda."); return; }
 
     const amountMinorUnits = numberValue(payment.amount);
     const interestMinorUnits = numberValue(payment.interest);
@@ -544,6 +623,9 @@ function Debts({ vault, updateVault }) {
     try {
       const newPayment = makeDebtPayment({
         debtId: payment.debtId,
+        accountId: payment.accountId,
+        currency: selectedDebt.currency,
+        categoryId: payment.categoryId || "cat-other",
         amountMinorUnits,
         principalMinorUnits,
         interestMinorUnits,
@@ -555,7 +637,7 @@ function Debts({ vault, updateVault }) {
       } else {
         updateVault((current) => ({ ...current, debtPayments: [...current.debtPayments, newPayment] }));
       }
-      setPayment({ debtId: payment.debtId, amount: "", principal: "", interest: "", fees: "" });
+      setPayment({ debtId: payment.debtId, accountId: "", categoryId: "cat-other", amount: "", principal: "", interest: "", fees: "" });
     } catch (error) {
       setPaymentError(error instanceof Error ? error.message : "No se pudo validar el pago.");
     }
@@ -569,15 +651,17 @@ function Debts({ vault, updateVault }) {
         <div className="form-actions"><Button primary type="submit">{editingDebtId ? "Guardar cambios" : "Agregar deuda"}</Button>{editingDebtId && <Button onClick={() => { setEditingDebtId(""); setDebt({ name: "", amount: "", dueDate: "", currency: "COP" }); }}>Cancelar</Button>}</div>
       </form></Panel>
       <Panel><div className="panel-head"><div><small>{editingPaymentId ? "Editar pago" : "Pago"}</small><h3>{editingPaymentId ? "Actualizar pago" : "Registrar pago"}</h3></div></div><form onSubmit={savePayment} className="form-grid">
-        <Select label="Deuda" required value={payment.debtId} onChange={(e) => setPayment({ ...payment, debtId: e.target.value })}><option value="">Selecciona deuda</option>{vault.debts.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select>
+        <Select label="Deuda" required value={payment.debtId} onChange={(e) => { const selected = vault.debts.find((item) => item.id === e.target.value); setPayment({ ...payment, debtId: e.target.value, accountId: "", categoryId: "cat-other" }); }}><option value="">Selecciona deuda</option>{vault.debts.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.currency}</option>)}</Select>
+        <Select label="Cuenta desde la que pagas" required value={payment.accountId} onChange={(e) => setPayment({ ...payment, accountId: e.target.value })}><option value="">Selecciona cuenta</option>{vault.accounts.filter((account) => account.type !== "credit" && (!payment.debtId || account.currency === vault.debts.find((item) => item.id === payment.debtId)?.currency)).map((account) => <option key={account.id} value={account.id}>{account.name} · {account.currency}</option>)}</Select>
+        <Select label="Categoría de intereses y cargos" value={payment.categoryId} onChange={(e) => setPayment({ ...payment, categoryId: e.target.value })}>{vault.categories.filter((item) => item.kind === "expense").map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select>
         <Field label="Pago total" type="number" min="0.01" step="0.01" required value={payment.amount} onChange={(e) => setPayment({ ...payment, amount: e.target.value })} />
         <Field label="Principal" type="number" min="0" step="0.01" value={payment.principal} onChange={(e) => setPayment({ ...payment, principal: e.target.value })} />
         <Field label="Intereses" type="number" min="0" step="0.01" value={payment.interest} onChange={(e) => setPayment({ ...payment, interest: e.target.value })} />
         <Field label="Cargos" type="number" min="0" step="0.01" value={payment.fees} onChange={(e) => setPayment({ ...payment, fees: e.target.value })} />
-        <div className="form-actions"><Button primary type="submit" disabled={!vault.debts.length}>{editingPaymentId ? "Guardar cambios" : "Registrar pago"}</Button>{editingPaymentId && <Button onClick={() => { setEditingPaymentId(""); setPayment({ debtId: "", amount: "", principal: "", interest: "", fees: "" }); }}>Cancelar</Button>}</div>
-      </form>{paymentError && <Notice tone="error"><b>Pago no registrado.</b><span>{paymentError}</span></Notice>}</Panel>
+        <div className="form-actions"><Button primary type="submit" disabled={!vault.debts.length}>{editingPaymentId ? "Guardar cambios" : "Registrar pago"}</Button>{editingPaymentId && <Button onClick={() => { setEditingPaymentId(""); setPayment({ debtId: "", accountId: "", categoryId: "cat-other", amount: "", principal: "", interest: "", fees: "" }); }}>Cancelar</Button>}</div>
+      </form><Notice>El pago completo descuenta la cuenta seleccionada; solo el principal reduce la deuda. Intereses y cargos cuentan como gastos del período.</Notice>{paymentError && <Notice tone="error"><b>Pago no registrado.</b><span>{paymentError}</span></Notice>}</Panel>
     </div>
-    <div className="debt-grid">{vault.debts.map((item) => { const balance = debtBalance(item, vault.debtPayments); return <Panel className="debt-card reveal" key={item.id}><div className="goal-head"><div><span className="badge">Deuda</span><h3>{item.name}</h3></div><strong className="negative">{money(balance, item.currency)}</strong></div><Progress value={item.originalMinorUnits ? ((item.originalMinorUnits - balance) / item.originalMinorUnits) * 100 : 0} tone="red" /><div className="goal-values"><span>Pagado {money(item.originalMinorUnits - balance, item.currency)}</span><span>Inicial {money(item.originalMinorUnits, item.currency)}</span></div>{vault.debtPayments.filter((entry) => entry.debtId === item.id).length > 0 && <div className="stack-list compact">{vault.debtPayments.filter((entry) => entry.debtId === item.id).map((entry) => <div className="stack-row" key={entry.id}><div><b>Pago {money(entry.amountMinorUnits, item.currency)}</b><small>Principal {money(entry.principalMinorUnits, item.currency)} · Intereses {money(entry.interestMinorUnits, item.currency)} · Cargos {money(entry.feesMinorUnits, item.currency)}</small></div><Button onClick={() => editDebtPayment(entry)}>Editar</Button><Button onClick={() => removeDebtPayment(entry)}>Eliminar pago</Button></div>)}</div>}<div className="form-actions"><Button onClick={() => editDebt(item)}>Editar</Button><Button onClick={() => removeDebt(item)}>Eliminar deuda</Button></div></Panel>; })}</div>
+    <div className="debt-grid">{vault.debts.map((item) => { const balance = debtBalance(item, vault.debtPayments); return <Panel className="debt-card reveal" key={item.id}><div className="goal-head"><div><span className="badge">Deuda</span><h3>{item.name}</h3></div><strong className="negative">{money(balance, item.currency)}</strong></div><Progress value={item.originalMinorUnits ? ((item.originalMinorUnits - balance) / item.originalMinorUnits) * 100 : 0} tone="red" /><div className="goal-values"><span>Pagado {money(item.originalMinorUnits - balance, item.currency)}</span><span>Inicial {money(item.originalMinorUnits, item.currency)}</span></div>{vault.debtPayments.filter((entry) => entry.debtId === item.id).length > 0 && <div className="stack-list compact">{vault.debtPayments.filter((entry) => entry.debtId === item.id).map((entry) => <div className="stack-row" key={entry.id}><div><b>Pago {money(entry.amountMinorUnits, item.currency)}</b><small>Desde {vault.accounts.find((account) => account.id === entry.accountId)?.name || "Cuenta no asignada"} · Principal {money(entry.principalMinorUnits, item.currency)} · Intereses {money(entry.interestMinorUnits, item.currency)} · Cargos {money(entry.feesMinorUnits, item.currency)}</small></div><Button onClick={() => editDebtPayment(entry)}>Editar</Button><Button onClick={() => removeDebtPayment(entry)}>Eliminar pago</Button></div>)}</div>}<div className="form-actions"><Button onClick={() => editDebt(item)}>Editar</Button><Button onClick={() => removeDebt(item)}>Eliminar deuda</Button></div></Panel>; })}</div>
   </Module>;
 }
 
@@ -587,7 +671,7 @@ function NetWorth({ vault, updateVault }) {
   const [editingAssetId, setEditingAssetId] = useState("");
   const [editingLiabilityId, setEditingLiabilityId] = useState("");
   const data = netWorth(vault, "COP");
-  const otherCurrencies = [...new Set([...vault.assets, ...vault.liabilities, ...vault.debts].map((item) => item.currency || "COP"))].filter((currency) => currency !== "COP");
+  const otherCurrencies = [...new Set([...vault.accounts, ...vault.assets, ...vault.liabilities, ...vault.debts].map((item) => item.currency || "COP"))].filter((currency) => currency !== "COP");
   const addAsset = (event) => {
     event.preventDefault();
     if (!asset.name.trim() || !asset.amount.trim() || !Number.isSafeInteger(numberValue(asset.amount)) || numberValue(asset.amount) <= 0) return;
@@ -620,10 +704,10 @@ function NetWorth({ vault, updateVault }) {
     if (!window.confirm("¿Eliminar el pasivo " + item.name + "?")) return;
     updateVault((current) => ({ ...current, liabilities: current.liabilities.filter((entry) => entry.id !== item.id) }));
   };
-  return <Module title="Patrimonio neto" eyebrow="Activos − pasivos" description="Una vista patrimonial: activos menos todos los pasivos. Los saldos de deuda se incluyen como pasivos.">
-    <div className="metrics metrics-4"><Metric label="Patrimonio neto" value={money(data.net)} detail="Activos − pasivos" tone="green" /><Metric label="Activos" value={money(data.assets)} detail="Activos registrados" tone="green" /><Metric label="Pasivos" value={money(data.liabilities)} detail="Incluye deudas" tone="red" /><Metric label="Deuda" value={money(data.debtLiabilities)} detail="Saldo pendiente" tone="blue" /></div>{otherCurrencies.length > 0 && <Notice>Patrimonio mostrado en COP. Otras monedas ({otherCurrencies.join(", ")}) se mantienen separadas; no se convierten automáticamente.</Notice>}
+  return <Module title="Patrimonio neto" eyebrow="Activos − pasivos" description="Una vista patrimonial: los saldos de cuentas y otros activos menos los pasivos. Los movimientos y pagos vinculados actualizan el patrimonio sin convertir monedas.">
+    <div className="metrics metrics-4"><Metric label="Patrimonio neto" value={money(data.net)} detail="Activos − pasivos" tone="green" /><Metric label="Activos" value={money(data.assets)} detail="Saldos de cuentas + otros activos" tone="green" /><Metric label="Pasivos" value={money(data.liabilities)} detail="Incluye deudas" tone="red" /><Metric label="Deuda" value={money(data.debtLiabilities)} detail="Saldo pendiente" tone="blue" /></div>{otherCurrencies.length > 0 && <Notice>Patrimonio mostrado en COP. Otras monedas ({otherCurrencies.join(", ")}) se mantienen separadas; no se convierten automáticamente.</Notice>}{vault.accounts.some((account) => account.type === "credit") && <Notice>Las cuentas tipo crédito se muestran en Cuentas, pero no se suman al patrimonio para evitar duplicar una obligación. Registra el saldo adeudado en la pestaña Deudas.</Notice>}
     <div className="two-col">
-      <Panel><div className="panel-head"><div><small>Patrimonio</small><h3>Activos</h3></div></div><form onSubmit={addAsset} className="form-grid"><Field label="Nombre" placeholder="Apartamento" required value={asset.name} onChange={(e) => setAsset({ ...asset, name: e.target.value })} /><Field label="Valor" type="number" min="0" step="0.01" required value={asset.amount} onChange={(e) => setAsset({ ...asset, amount: e.target.value })} /><Select label="Moneda" value={asset.currency} onChange={(e) => setAsset({ ...asset, currency: e.target.value })}><CurrencyOptions /></Select><div className="form-actions"><Button primary type="submit">{editingAssetId ? "Guardar cambios" : "Agregar activo"}</Button>{editingAssetId && <Button onClick={() => { setEditingAssetId(""); setAsset({ name: "", amount: "", currency: "COP" }); }}>Cancelar</Button>}</div></form><div className="stack-list compact">{vault.assets.map((item) => <div className="stack-row" key={item.id}><div><b>{item.name}</b><small>Activo · {item.currency}</small></div><strong>{money(item.minorUnits, item.currency)}</strong><Button onClick={() => editAsset(item)}>Editar</Button><Button onClick={() => removeAsset(item)}>Eliminar</Button></div>)}</div></Panel>
+      <Panel><div className="panel-head"><div><small>Patrimonio</small><h3>Cuentas y otros activos</h3></div></div><form onSubmit={addAsset} className="form-grid"><Field label="Nombre del otro activo" placeholder="Apartamento" required value={asset.name} onChange={(e) => setAsset({ ...asset, name: e.target.value })} /><Field label="Valor" type="number" min="0" step="0.01" required value={asset.amount} onChange={(e) => setAsset({ ...asset, amount: e.target.value })} /><Select label="Moneda" value={asset.currency} onChange={(e) => setAsset({ ...asset, currency: e.target.value })}><CurrencyOptions /></Select><div className="form-actions"><Button primary type="submit">{editingAssetId ? "Guardar cambios" : "Agregar activo"}</Button>{editingAssetId && <Button onClick={() => { setEditingAssetId(""); setAsset({ name: "", amount: "", currency: "COP" }); }}>Cancelar</Button>}</div></form><div className="stack-list compact">{vault.accounts.filter((account) => account.type !== "credit").map((account) => <div className="stack-row" key={"account-" + account.id}><div><b>{account.name}</b><small>Cuenta · {account.currency}</small></div><strong>{money(accountBalance(account, vault.transactions, vault.debtPayments), account.currency)}</strong></div>)}{vault.assets.map((item) => <div className="stack-row" key={item.id}><div><b>{item.name}</b><small>Activo · {item.currency}</small></div><strong>{money(item.minorUnits, item.currency)}</strong><Button onClick={() => editAsset(item)}>Editar</Button><Button onClick={() => removeAsset(item)}>Eliminar</Button></div>)}</div></Panel>
       <Panel><div className="panel-head"><div><small>Patrimonio</small><h3>Pasivos</h3></div></div><form onSubmit={addLiability} className="form-grid"><Field label="Nombre" placeholder="Obligación" required value={liability.name} onChange={(e) => setLiability({ ...liability, name: e.target.value })} /><Field label="Valor" type="number" min="0" step="0.01" required value={liability.amount} onChange={(e) => setLiability({ ...liability, amount: e.target.value })} /><Select label="Moneda" value={liability.currency} onChange={(e) => setLiability({ ...liability, currency: e.target.value })}><CurrencyOptions /></Select><div className="form-actions"><Button primary type="submit">{editingLiabilityId ? "Guardar cambios" : "Agregar pasivo"}</Button>{editingLiabilityId && <Button onClick={() => { setEditingLiabilityId(""); setLiability({ name: "", amount: "", currency: "COP" }); }}>Cancelar</Button>}</div></form><div className="stack-list compact">{vault.liabilities.map((item) => <div className="stack-row" key={item.id}><div><b>{item.name}</b><small>Pasivo · {item.currency}</small></div><strong className="negative">{money(item.minorUnits, item.currency)}</strong><Button onClick={() => editLiability(item)}>Editar</Button><Button onClick={() => removeLiability(item)}>Eliminar</Button></div>)}{vault.debts.map((item) => <div className="stack-row" key={`debt-${item.id}`}><div><b>{item.name}</b><small>Deuda</small></div><strong className="negative">{money(debtBalance(item, vault.debtPayments), item.currency)}</strong></div>)}</div></Panel>
     </div>
   </Module>;
@@ -631,14 +715,14 @@ function NetWorth({ vault, updateVault }) {
 
 function Education({ vault }) {
   const { start, end } = currentMonthRange();
-  const flow = transactionTotals(vault.transactions, start, end, "COP");
+  const flow = transactionTotals(vault.transactions, start, end, "COP", vault.debtPayments);
   const worth = netWorth(vault, "COP");
-  const monthlySavings = flow.income - flow.expenses;
+  const monthlySavings = flow.netCashFlow;
   const budget = vault.budgets.find((item) => new Date(item.startDate) <= start && new Date(item.endDate) >= end && item.currency === "COP");
   const budgetData = budget ? budgetSummary(budget, vault, new Date(budget.startDate), new Date(budget.endDate)) : null;
   return <Module title="Educación" eyebrow="Aprender → ajustar" description="Conecta conceptos financieros con tus cifras actuales. Las cifras de ejemplo se calculan localmente desde tu vault.">
     <div className="metrics metrics-4">
-      <Metric label="Flujo neto del mes" value={money(monthlySavings)} detail="Ingresos − gastos en COP" tone={monthlySavings >= 0 ? "green" : "red"} />
+      <Metric label="Flujo neto del mes" value={money(monthlySavings)} detail="Flujo neto tras gastos y abonos a capital" tone={monthlySavings >= 0 ? "green" : "red"} />
       <Metric label="Patrimonio en COP" value={money(worth.net)} detail="Activos − pasivos" tone="green" />
       <Metric label="Tasa de ahorro" value={flow.income > 0 ? Math.round((monthlySavings / flow.income) * 100) + "%" : "—"} detail="Flujo neto / ingresos" tone="yellow" />
       <Metric label="Presupuesto usado" value={budgetData ? Math.round(budgetData.percent) + "%" : "—"} detail={budget ? budget.name : "Sin presupuesto COP activo"} tone="blue" />

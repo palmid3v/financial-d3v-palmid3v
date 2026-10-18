@@ -248,3 +248,10 @@ Canonical Step-by-Step file:
 The filename and `Last updated` date use the actual Colombia documentation date.
 
 **Financial-D3v · PALMI-D3V · 2026-10-05 · America/Bogota**
+
+
+## Documentation checkpoint — 2026-10-18
+
+README.md actualizado y se registra el desbloqueo probado en despliegue HTTPS de Vercel desde teléfono. La dirección HTTP local mediante --host no ofrece un contexto seguro fiable para Web Crypto en móvil. Pendiente: ciclo de guardar → bloquear → reabrir y reconciliación de cambios de cuentas/ledger con tests. La bóveda .fdv sigue siendo fuente de persistencia; los datos descifrados se mantienen en memoria.
+
+Status labels describe the latest documented evidence, not a guarantee that every workflow is complete. Update this checkpoint when new validation results arrive.

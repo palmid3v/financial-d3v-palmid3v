@@ -457,6 +457,7 @@ function Savings({ vault, updateVault }) {
   const [goal, setGoal] = useState({ name: "", target: "", targetDate: "", currency: "COP" });
   const [contribution, setContribution] = useState({ goalId: "", amount: "", note: "" });
   const [editingGoalId, setEditingGoalId] = useState("");
+  const editGoal = (item) => { setEditingGoalId(item.id); setGoal({ name: item.name, target: String((Number(item.targetMinorUnits) || 0) / 100), targetDate: item.targetDate || "", currency: item.currency || "COP" }); };
   const removeGoal = (item) => {
     if (vault.savingsContributions.some((entry) => entry.goalId === item.id)) {
       window.alert("Esta meta tiene aportes registrados. Conserva el historial y no se puede eliminar.");
@@ -469,11 +470,11 @@ function Savings({ vault, updateVault }) {
   const saveContribution = (event) => { event.preventDefault(); if (!contribution.goalId || !contribution.amount) return; updateVault((current) => ({ ...current, savingsContributions: [...current.savingsContributions, makeSavingsContribution({ goalId: contribution.goalId, amountMinorUnits: numberValue(contribution.amount), note: contribution.note })] })); setContribution({ goalId: contribution.goalId, amount: "", note: "" }); };
   return <Module title="Ahorro y metas" eyebrow="Planeación" description="Las contribuciones son registros de progreso de una meta, no gastos del presupuesto.">
     <div className="two-col">
-      <Panel><div className="panel-head"><div><small>Nueva meta</small><h3>Define qué estás construyendo</h3></div></div><form onSubmit={saveGoal} className="form-grid">
+      <Panel><div className="panel-head"><div><small>{editingGoalId ? "Editar meta" : "Nueva meta"}</small><h3>{editingGoalId ? "Actualizar objetivo" : "Define qué estás construyendo"}</h3></div></div><form onSubmit={saveGoal} className="form-grid">
         <Field label="Nombre" placeholder="Fondo de emergencia" required value={goal.name} onChange={(e) => setGoal({ ...goal, name: e.target.value })} />
         <Field label="Objetivo" type="number" min="0.01" step="0.01" required value={goal.target} onChange={(e) => setGoal({ ...goal, target: e.target.value })} />
         <Field label="Fecha objetivo" type="date" value={goal.targetDate} onChange={(e) => setGoal({ ...goal, targetDate: e.target.value })} /><Select label="Moneda" value={goal.currency} onChange={(e) => setGoal({ ...goal, currency: e.target.value })}><CurrencyOptions /></Select>
-        <div className="form-actions"><Button primary type="submit">Crear meta</Button></div>
+        <div className="form-actions"><Button primary type="submit">{editingGoalId ? "Guardar cambios" : "Crear meta"}</Button>{editingGoalId && <Button onClick={() => { setEditingGoalId(""); setGoal({ name: "", target: "", targetDate: "", currency: "COP" }); }}>Cancelar</Button>}</div>
       </form></Panel>
       <Panel><div className="panel-head"><div><small>Progreso</small><h3>Contribuir</h3></div></div><form onSubmit={saveContribution} className="form-grid">
         <Select label="Meta" required value={contribution.goalId} onChange={(e) => setContribution({ ...contribution, goalId: e.target.value })}><option value="">Selecciona meta</option>{vault.savingsGoals.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select>
@@ -482,7 +483,7 @@ function Savings({ vault, updateVault }) {
         <div className="form-actions"><Button primary type="submit" disabled={!vault.savingsGoals.length}>Registrar aporte</Button></div>
       </form></Panel>
     </div>
-    <div className="goal-grid">{vault.savingsGoals.map((item) => { const data = savingsProgress(item, vault.savingsContributions); return <Panel className="goal-card reveal" key={item.id}><div className="goal-head"><div><span className="badge">Meta</span><h3>{item.name}</h3></div><strong>{Math.round(data.percent)}%</strong></div><Progress value={data.percent} tone="green" /><div className="goal-values"><span>{money(data.saved, item.currency)}</span><span>{money(data.target, item.currency)}</span></div>{item.targetDate && <small>Objetivo · {new Date(item.targetDate).toLocaleDateString("es-CO")}</small>}<div className="form-actions"><Button onClick={() => removeGoal(item)}>Eliminar meta</Button></div></Panel>; })}</div>
+    <div className="goal-grid">{vault.savingsGoals.map((item) => { const data = savingsProgress(item, vault.savingsContributions); return <Panel className="goal-card reveal" key={item.id}><div className="goal-head"><div><span className="badge">Meta</span><h3>{item.name}</h3></div><strong>{Math.round(data.percent)}%</strong></div><Progress value={data.percent} tone="green" /><div className="goal-values"><span>{money(data.saved, item.currency)}</span><span>{money(data.target, item.currency)}</span></div>{item.targetDate && <small>Objetivo · {new Date(item.targetDate).toLocaleDateString("es-CO")}</small>}<div className="form-actions"><Button onClick={() => editGoal(item)}>Editar</Button><Button onClick={() => removeGoal(item)}>Eliminar meta</Button></div></Panel>; })}</div>
   </Module>;
 }
 

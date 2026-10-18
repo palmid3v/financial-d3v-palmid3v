@@ -30,9 +30,10 @@ const money = (minorUnits = 0, currency = "COP") =>
   }).format((Number(minorUnits) || 0) / 100);
 
 const numberValue = (value) => Math.round((Number(value) || 0) * 100);
-const todayInput = () => new Date().toISOString().slice(0, 10);
-const monthInput = (date) => new Date(date.getFullYear(), date.getMonth(), 1).toISOString().slice(0, 10);
-const nextMonthInput = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString().slice(0, 10);
+const localDateTimeInput = (date = new Date()) => {
+  const pad = (value) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
 
 const navGroups = [
   { label: "Finanzas", items: [["dashboard", "Dashboard", "⌂"], ["accounts", "Cuentas", "▣"], ["transactions", "Transacciones", "↕"], ["budget", "Presupuestos", "◫"]] },
@@ -163,14 +164,14 @@ function Dashboard({ vault, setActive }) {
     });
     return () => { cancelled = true; };
   }, [vault, start, end]);
-  const jsTotals = transactionTotals(vault.transactions, start, end);
+  const jsTotals = transactionTotals(vault.transactions, start, end, "COP");
   const jsNetWorth = netWorth(vault);
   const totals = goAnalysis?.cashFlow ?? jsTotals;
   const nw = goAnalysis?.netWorth ? { net: goAnalysis.netWorth.net, debtLiabilities: goAnalysis.netWorth.debtLiabilities, assets: goAnalysis.netWorth.assets, liabilities: goAnalysis.netWorth.liabilities } : jsNetWorth;
   const accountsTotal = vault.accounts.reduce((sum, account) => sum + accountBalance(account, vault.transactions), 0);
   const savingsRate = totals.income ? (totals.income > 0 ? (Math.max(0, totals.income - totals.expenses) / totals.income) * 100 : 0) : 0;
   const debt = nw.debtLiabilities;
-  const series = monthSeries(vault.transactions, 6);
+  const series = monthSeries(vault.transactions, 6, new Date(), "COP");
   const max = Math.max(...series.flatMap((row) => [row.income, row.expenses]), 1);
   const expenseCategories = vault.categories.filter((item) => item.kind === "expense").map((category) => ({
     ...category,
@@ -251,7 +252,7 @@ function Dashboard({ vault, setActive }) {
 }
 
 function Transactions({ vault, updateVault }) {
-  const [form, setForm] = useState({ type: "expense", amount: "", accountId: "", toAccountId: "", categoryId: "cat-food", description: "", occurredAt: new Date().toISOString().slice(0, 16) });
+  const [form, setForm] = useState({ type: "expense", amount: "", accountId: "", toAccountId: "", categoryId: "cat-food", description: "", occurredAt: localDateTimeInput() });
   const [message, setMessage] = useState("");
   const categories = vault.categories.filter((item) => item.kind === form.type);
   const save = (event) => {
@@ -280,8 +281,8 @@ function Transactions({ vault, updateVault }) {
         <form onSubmit={save} className="form-grid">
           <div className="segmented full"><button type="button" className={form.type === "expense" ? "active" : ""} onClick={() => setForm({ ...form, type: "expense", categoryId: "cat-food" })}>Gasto</button><button type="button" className={form.type === "income" ? "active" : ""} onClick={() => setForm({ ...form, type: "income", categoryId: "cat-salary" })}>Ingreso</button><button type="button" className={form.type === "transfer" ? "active" : ""} onClick={() => setForm({ ...form, type: "transfer", categoryId: "" })}>Transfer.</button></div>
           <Field label="Monto" type="number" min="0.01" step="0.01" required value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
-          <Select label="Cuenta" required value={form.accountId} onChange={(e) => setForm({ ...form, accountId: e.target.value })}><option value="">Selecciona cuenta</option>{vault.accounts.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select>
-          {form.type === "transfer" ? <Select label="Cuenta destino" required value={form.toAccountId} onChange={(e) => setForm({ ...form, toAccountId: e.target.value })}><option value="">Selecciona destino</option>{vault.accounts.filter((item) => item.id !== form.accountId).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select> :
+          <Select label="Cuenta" required value={form.accountId} onChange={(e) => { const selected = vault.accounts.find((item) => item.id === e.target.value); const destination = vault.accounts.find((item) => item.id === form.toAccountId); setForm({ ...form, accountId: e.target.value, toAccountId: destination && destination.currency === selected?.currency ? destination.id : "" }); }}><option value="">Selecciona cuenta</option>{vault.accounts.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select>
+          {form.type === "transfer" ? <Select label="Cuenta destino" required value={form.toAccountId} onChange={(e) => setForm({ ...form, toAccountId: e.target.value })}><option value="">Selecciona destino</option>{vault.accounts.filter((item) => item.id !== form.accountId && item.currency === vault.accounts.find((account) => account.id === form.accountId)?.currency).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select> :
             <Select label="Categoría" value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })}>{categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select>}
           <Field label="Fecha" type="datetime-local" value={form.occurredAt} onChange={(e) => setForm({ ...form, occurredAt: e.target.value })} />
           <Field label="Descripción" placeholder="Opcional" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
@@ -377,8 +378,52 @@ function Savings({ vault, updateVault }) {
 function Debts({ vault, updateVault }) {
   const [debt, setDebt] = useState({ name: "", amount: "", dueDate: "" });
   const [payment, setPayment] = useState({ debtId: "", amount: "", principal: "", interest: "", fees: "" });
+  const [paymentError, setPaymentError] = useState("");
   const saveDebt = (event) => { event.preventDefault(); if (!debt.name || !debt.amount) return; updateVault((current) => ({ ...current, debts: [...current.debts, makeDebt({ name: debt.name, originalMinorUnits: numberValue(debt.amount), dueDate: debt.dueDate })] })); setDebt({ name: "", amount: "", dueDate: "" }); };
-  const savePayment = (event) => { event.preventDefault(); if (!payment.debtId || !payment.amount) return; updateVault((current) => ({ ...current, debtPayments: [...current.debtPayments, makeDebtPayment({ debtId: payment.debtId, amountMinorUnits: numberValue(payment.amount), principalMinorUnits: numberValue(payment.principal || payment.amount), interestMinorUnits: numberValue(payment.interest), feesMinorUnits: numberValue(payment.fees) })] })); setPayment({ ...payment, amount: "", principal: "", interest: "", fees: "" }); };
+  const savePayment = (event) => {
+    event.preventDefault();
+    setPaymentError("");
+    if (!payment.debtId || payment.amount === "") return;
+
+    const selectedDebt = vault.debts.find((item) => item.id === payment.debtId);
+    if (!selectedDebt) { setPaymentError("Selecciona una deuda válida."); return; }
+
+    const amountMinorUnits = numberValue(payment.amount);
+    const interestMinorUnits = numberValue(payment.interest);
+    const feesMinorUnits = numberValue(payment.fees);
+    const principalMinorUnits = payment.principal === ""
+      ? amountMinorUnits - interestMinorUnits - feesMinorUnits
+      : numberValue(payment.principal);
+    const outstanding = debtBalance(selectedDebt, vault.debtPayments);
+
+    if (![amountMinorUnits, principalMinorUnits, interestMinorUnits, feesMinorUnits].every(Number.isSafeInteger)
+      || amountMinorUnits <= 0 || principalMinorUnits < 0 || interestMinorUnits < 0 || feesMinorUnits < 0) {
+      setPaymentError("Ingresa importes válidos y no negativos.");
+      return;
+    }
+    if (principalMinorUnits + interestMinorUnits + feesMinorUnits !== amountMinorUnits) {
+      setPaymentError("El pago total debe coincidir con principal + intereses + cargos.");
+      return;
+    }
+    if (principalMinorUnits > outstanding) {
+      setPaymentError("El principal no puede superar el saldo pendiente de la deuda.");
+      return;
+    }
+
+    try {
+      const newPayment = makeDebtPayment({
+        debtId: payment.debtId,
+        amountMinorUnits,
+        principalMinorUnits,
+        interestMinorUnits,
+        feesMinorUnits,
+      });
+      updateVault((current) => ({ ...current, debtPayments: [...current.debtPayments, newPayment] }));
+      setPayment({ debtId: payment.debtId, amount: "", principal: "", interest: "", fees: "" });
+    } catch (error) {
+      setPaymentError(error instanceof Error ? error.message : "No se pudo validar el pago.");
+    }
+  };
   return <Module title="Deudas" eyebrow="Planeación" description="Los pagos separan principal, intereses y cargos. Solo el principal reduce el saldo de la deuda.">
     <div className="two-col">
       <Panel><div className="panel-head"><div><small>Nueva deuda</small><h3>Registrar obligación</h3></div></div><form onSubmit={saveDebt} className="form-grid">
@@ -394,7 +439,7 @@ function Debts({ vault, updateVault }) {
         <Field label="Intereses" type="number" min="0" step="0.01" value={payment.interest} onChange={(e) => setPayment({ ...payment, interest: e.target.value })} />
         <Field label="Cargos" type="number" min="0" step="0.01" value={payment.fees} onChange={(e) => setPayment({ ...payment, fees: e.target.value })} />
         <div className="form-actions"><Button primary type="submit" disabled={!vault.debts.length}>Registrar pago</Button></div>
-      </form></Panel>
+      </form>{paymentError && <Notice tone="error"><b>Pago no registrado.</b><span>{paymentError}</span></Notice>}</Panel>
     </div>
     <div className="debt-grid">{vault.debts.map((item) => { const balance = debtBalance(item, vault.debtPayments); return <Panel className="debt-card reveal" key={item.id}><div className="goal-head"><div><span className="badge">Deuda</span><h3>{item.name}</h3></div><strong className="negative">{money(balance)}</strong></div><Progress value={item.originalMinorUnits ? ((item.originalMinorUnits - balance) / item.originalMinorUnits) * 100 : 0} tone="red" /><div className="goal-values"><span>Pagado {money(item.originalMinorUnits - balance)}</span><span>Inicial {money(item.originalMinorUnits)}</span></div></Panel>; })}</div>
   </Module>;

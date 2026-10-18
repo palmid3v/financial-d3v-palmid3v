@@ -49,16 +49,23 @@ export function seedCategories(categories = []) {
 
 export function normalizeVault(vault) {
   const next = { ...vault };
-  next.accounts = Array.isArray(next.accounts) ? next.accounts : [];
+  next.accounts = (Array.isArray(next.accounts) ? next.accounts : []).map((account) => ({
+    ...account,
+    currency: String(account.currency || "COP").toUpperCase(),
+  }));
   next.categories = seedCategories(Array.isArray(next.categories) ? next.categories : []);
-  next.transactions = Array.isArray(next.transactions) ? next.transactions : [];
-  next.budgets = Array.isArray(next.budgets) ? next.budgets : [];
-  next.savingsGoals = Array.isArray(next.savingsGoals) ? next.savingsGoals : [];
+  const accountsById = new Map(next.accounts.map((account) => [account.id, account]));
+  next.transactions = (Array.isArray(next.transactions) ? next.transactions : []).map((transaction) => ({
+    ...transaction,
+    currency: String(transaction.currency || accountsById.get(transaction.accountId)?.currency || "COP").toUpperCase(),
+  }));
+  next.budgets = (Array.isArray(next.budgets) ? next.budgets : []).map((item) => ({ ...item, currency: String(item.currency || "COP").toUpperCase() }));
+  next.savingsGoals = (Array.isArray(next.savingsGoals) ? next.savingsGoals : []).map((item) => ({ ...item, currency: String(item.currency || "COP").toUpperCase() }));
   next.savingsContributions = Array.isArray(next.savingsContributions) ? next.savingsContributions : [];
-  next.debts = Array.isArray(next.debts) ? next.debts : [];
+  next.debts = (Array.isArray(next.debts) ? next.debts : []).map((item) => ({ ...item, currency: String(item.currency || "COP").toUpperCase() }));
   next.debtPayments = Array.isArray(next.debtPayments) ? next.debtPayments : [];
-  next.assets = Array.isArray(next.assets) ? next.assets : [];
-  next.liabilities = Array.isArray(next.liabilities) ? next.liabilities : [];
+  next.assets = (Array.isArray(next.assets) ? next.assets : []).map((item) => ({ ...item, currency: String(item.currency || "COP").toUpperCase() }));
+  next.liabilities = (Array.isArray(next.liabilities) ? next.liabilities : []).map((item) => ({ ...item, currency: String(item.currency || "COP").toUpperCase() }));
   next.education = Array.isArray(next.education) && next.education.length ? next.education : EDUCATION;
   return next;
 }
@@ -88,10 +95,19 @@ export function makeDebt({ name, originalMinorUnits, currency = "COP", dueDate =
 }
 
 export function makeDebtPayment(data) {
-  const amount = Math.abs(Number(data.amountMinorUnits) || 0);
-  const principal = Math.min(Math.abs(Number(data.principalMinorUnits) || 0), amount);
-  const interest = Math.abs(Number(data.interestMinorUnits) || 0);
-  const fees = Math.abs(Number(data.feesMinorUnits) || 0);
+  const amount = Number(data.amountMinorUnits);
+  const principal = Number(data.principalMinorUnits);
+  const interest = Number(data.interestMinorUnits);
+  const fees = Number(data.feesMinorUnits);
+  const parts = [amount, principal, interest, fees];
+
+  if (!parts.every(Number.isSafeInteger) || amount <= 0 || principal < 0 || interest < 0 || fees < 0) {
+    throw new Error("El pago y sus componentes deben ser importes enteros válidos en unidades menores.");
+  }
+  if (principal + interest + fees !== amount) {
+    throw new Error("El pago total debe ser igual a principal + intereses + cargos.");
+  }
+
   return { id: uid("debt-payment"), occurredAt: nowIso(), ...data, amountMinorUnits: amount, principalMinorUnits: principal, interestMinorUnits: interest, feesMinorUnits: fees };
 }
 
@@ -120,8 +136,8 @@ export function transactionSignedMinor(transaction) {
   return type === "income" ? transaction.minorUnits : type === "expense" ? -transaction.minorUnits : 0;
 }
 
-export function transactionTotals(transactions, start, end) {
-  const scoped = transactions.filter((item) => inRange(item.occurredAt, start, end));
+export function transactionTotals(transactions, start, end, currency = "COP") {
+  const scoped = transactions.filter((item) => inRange(item.occurredAt, start, end) && (item.currency || currency) === currency);
   const income = scoped.filter((item) => item.type === "income").reduce((sum, item) => sum + item.minorUnits, 0);
   const expenses = scoped.filter((item) => item.type === "expense").reduce((sum, item) => sum + item.minorUnits, 0);
   return { income, expenses, netCashFlow: income - expenses, transactions: scoped };
@@ -130,6 +146,8 @@ export function transactionTotals(transactions, start, end) {
 export function accountBalance(account, transactions) {
   const opening = Number(account.openingMinorUnits) || 0;
   return transactions.reduce((balance, item) => {
+    if ((item.currency || account.currency) !== account.currency) return balance;
+
     if (item.type === "income" && item.accountId === account.id) {
       return balance + item.minorUnits;
     }
@@ -173,7 +191,7 @@ export function budgetSummary(budget, vault, start = new Date(budget.startDate),
   const lines = budget.items.map((item) => {
     const category = vault.categories.find((candidate) => candidate.id === item.categoryId);
     const spent = vault.transactions
-      .filter((tx) => tx.type === "expense" && tx.categoryId === item.categoryId && inRange(tx.occurredAt, start, end))
+      .filter((tx) => tx.type === "expense" && (tx.currency || budget.currency) === budget.currency && tx.categoryId === item.categoryId && inRange(tx.occurredAt, start, end))
       .reduce((sum, tx) => sum + tx.minorUnits, 0);
     const limit = Number(item.limitMinorUnits) || 0;
     return { ...item, categoryName: category?.name || "Category", spent, remaining: limit - spent, percent: limit ? (spent / limit) * 100 : 0 };
@@ -187,12 +205,12 @@ export function monthLabel(date) {
   return new Intl.DateTimeFormat("es-CO", { month: "short" }).format(date).replace(".", "");
 }
 
-export function monthSeries(transactions, months = 6, reference = new Date()) {
+export function monthSeries(transactions, months = 6, reference = new Date(), currency = "COP") {
   const rows = [];
   for (let i = months - 1; i >= 0; i -= 1) {
     const date = new Date(reference.getFullYear(), reference.getMonth() - i, 1);
     const { start, end } = currentMonthRange(date);
-    const totals = transactionTotals(transactions, start, end);
+    const totals = transactionTotals(transactions, start, end, currency);
     rows.push({ label: monthLabel(date), income: totals.income, expenses: totals.expenses });
   }
   return rows;

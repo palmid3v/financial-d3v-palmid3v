@@ -410,6 +410,7 @@ function Budget({ vault, updateVault }) {
   const { start, end } = currentMonthRange();
   const [name, setName] = useState("Presupuesto mensual");
   const [currency, setCurrency] = useState("COP");
+  const [accountId, setAccountId] = useState("all");
   const [rows, setRows] = useState([{ categoryId: "cat-housing", limit: "" }, { categoryId: "cat-food", limit: "" }, { categoryId: "cat-transport", limit: "" }]);
   const [editingBudgetId, setEditingBudgetId] = useState("");
   const expenseCategories = vault.categories.filter((item) => item.kind === "expense");
@@ -418,6 +419,7 @@ function Budget({ vault, updateVault }) {
     setEditingBudgetId(budget.id);
     setName(budget.name);
     setCurrency(budget.currency || "COP");
+    setAccountId(budget.accountId || "all");
     setRows(budget.items.map((item) => ({ categoryId: item.categoryId, limit: String((Number(item.limitMinorUnits) || 0) / 100) })));
   };
   const removeBudget = (budget) => {
@@ -430,20 +432,24 @@ function Budget({ vault, updateVault }) {
     const items = rows.filter((row) => row.categoryId && Number(row.limit) > 0).map((row) => ({ categoryId: row.categoryId, limitMinorUnits: numberValue(row.limit) }));
     if (!name.trim() || !items.length || items.some((item) => !Number.isSafeInteger(item.limitMinorUnits) || item.limitMinorUnits <= 0)) return;
     if (editingBudgetId) {
-      updateVault((current) => ({ ...current, budgets: current.budgets.map((budget) => budget.id === editingBudgetId ? { ...budget, name: name.trim(), currency, items } : budget) }));
+      updateVault((current) => ({ ...current, budgets: current.budgets.map((budget) => budget.id === editingBudgetId ? { ...budget, name: name.trim(), currency, accountId, items } : budget) }));
       setEditingBudgetId("");
     } else {
-      updateVault((current) => ({ ...current, budgets: [...current.budgets, makeBudget({ name: name.trim(), currency, startDate: start.toISOString(), endDate: end.toISOString(), items })] }));
+      updateVault((current) => ({ ...current, budgets: [...current.budgets, makeBudget({ name: name.trim(), currency, accountId, startDate: start.toISOString(), endDate: end.toISOString(), items })] }));
     }
     setName("Presupuesto mensual");
+    setAccountId("all");
+    setCurrency("COP");
     setRows([{ categoryId: "cat-housing", limit: "" }]);
   };
   return <Module title="Presupuestos" eyebrow="Plan → Entender" description="Define límites y compara el plan contra el gasto real del ledger. Los actuals siempre salen de las transacciones.">
     <div className="two-col">
       <Panel><div className="panel-head"><div><small>Plan mensual</small><h3>{editingBudgetId ? "Editar presupuesto" : "Crear presupuesto"}</h3></div></div><form onSubmit={save} className="form-grid">
-        <Field label="Nombre" value={name} onChange={(e) => setName(e.target.value)} /><Select label="Moneda" value={currency} onChange={(e) => setCurrency(e.target.value)}><CurrencyOptions /></Select>
+        <Field label="Nombre" value={name} onChange={(e) => setName(e.target.value)} />
+        <Select label="Cuenta para el presupuesto" value={accountId} onChange={(e) => { const selectedId = e.target.value; setAccountId(selectedId); const selected = vault.accounts.find((item) => item.id === selectedId); if (selected) setCurrency(selected.currency); }}><option value="all">Todas las cuentas · misma moneda</option>{vault.accounts.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.currency}</option>)}</Select>
+        <Select label="Moneda" value={currency} onChange={(e) => setCurrency(e.target.value)} disabled={accountId !== "all"}><CurrencyOptions /></Select>
         <div className="budget-inputs">{rows.map((row, index) => <div className="budget-input-row" key={index}><Select label={`Categoría ${index + 1}`} value={row.categoryId} onChange={(e) => setRows(rows.map((item, i) => i === index ? { ...item, categoryId: e.target.value } : item))}>{expenseCategories.map((cat) => <option key={cat.id} value={cat.id}>{cat.name}</option>)}</Select><Field label="Límite" type="number" min="0.01" step="0.01" value={row.limit} onChange={(e) => setRows(rows.map((item, i) => i === index ? { ...item, limit: e.target.value } : item))} /></div>)}<Button onClick={() => setRows([...rows, { categoryId: "cat-other", limit: "" }])}>＋ Agregar categoría</Button></div>
-        <div className="form-actions"><Button primary type="submit">{editingBudgetId ? "Guardar cambios" : "Crear presupuesto"}</Button>{editingBudgetId && <Button onClick={() => { setEditingBudgetId(""); setName("Presupuesto mensual"); setCurrency("COP"); setRows([{ categoryId: "cat-housing", limit: "" }]); }}>Cancelar</Button>}</div>
+        <div className="form-actions"><Button primary type="submit">{editingBudgetId ? "Guardar cambios" : "Crear presupuesto"}</Button>{editingBudgetId && <Button onClick={() => { setEditingBudgetId(""); setName("Presupuesto mensual"); setCurrency("COP"); setAccountId("all"); setRows([{ categoryId: "cat-housing", limit: "" }]); }}>Cancelar</Button>}</div>
       </form></Panel>
       <Panel><div className="panel-head"><div><small>Plan vs realidad</small><h3>Presupuestos</h3></div></div>
         {budgets.length === 0 ? <Empty title="Sin presupuesto" text="Crea un presupuesto y dale un trabajo concreto a cada peso." /> :

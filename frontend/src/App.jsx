@@ -494,6 +494,7 @@ function Debts({ vault, updateVault }) {
   const [debt, setDebt] = useState({ name: "", amount: "", dueDate: "", currency: "COP" });
   const [payment, setPayment] = useState({ debtId: "", amount: "", principal: "", interest: "", fees: "" });
   const [editingDebtId, setEditingDebtId] = useState("");
+  const [editingPaymentId, setEditingPaymentId] = useState("");
   const [paymentError, setPaymentError] = useState("");
   const editDebt = (item) => { setEditingDebtId(item.id); setDebt({ name: item.name, amount: String((Number(item.originalMinorUnits) || 0) / 100), dueDate: item.dueDate || "", currency: item.currency || "COP" }); };
   const removeDebt = (item) => {

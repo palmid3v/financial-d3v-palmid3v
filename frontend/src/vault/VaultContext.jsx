@@ -135,6 +135,7 @@ export function VaultProvider({ children }) {
     vault,
     locked: !vault,
     fileName,
+    saveMode: fileHandle && typeof fileHandle.createWritable === "function" ? "same-file" : "download",
     createVault,
     unlockFile,
     saveVault,
@@ -142,7 +143,7 @@ export function VaultProvider({ children }) {
     dirty,
     lock,
     autoLockMs: VAULT_AUTO_LOCK_MS,
-  }), [createVault, dirty, fileName, lock, saveVault, unlockFile, updateVault, vault]);
+  }), [createVault, dirty, fileHandle, fileName, lock, saveVault, unlockFile, updateVault, vault]);
 
   return <VaultContext.Provider value={value}>{children}</VaultContext.Provider>;
 }

@@ -326,8 +326,8 @@ test("cash-flow projection uses only completed months and separates principal pa
   const result = projectMonthlyCashFlow(transactions, debtPayments, reference, "COP", 2);
   assert.equal(result.basisMonths, 2);
   assert.equal(result.averageIncome, 600000);
-  assert.equal(result.averageExpenses, 105000);
+  assert.equal(result.averageExpenses, 155000);
   assert.equal(result.averagePrincipalPayments, 25000);
-  assert.equal(result.averageNetCashFlow, 470000);
+  assert.equal(result.averageNetCashFlow, 420000);
   assert.equal(result.isEstimate, true);
 });

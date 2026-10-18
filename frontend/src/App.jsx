@@ -492,6 +492,7 @@ function Debts({ vault, updateVault }) {
   const [payment, setPayment] = useState({ debtId: "", amount: "", principal: "", interest: "", fees: "" });
   const [editingDebtId, setEditingDebtId] = useState("");
   const [paymentError, setPaymentError] = useState("");
+  const editDebt = (item) => { setEditingDebtId(item.id); setDebt({ name: item.name, amount: String((Number(item.originalMinorUnits) || 0) / 100), dueDate: item.dueDate || "", currency: item.currency || "COP" }); };
   const removeDebt = (item) => {
     if (vault.debtPayments.some((entry) => entry.debtId === item.id)) {
       window.alert("Esta deuda tiene pagos registrados. Conserva el historial y no se puede eliminar.");
@@ -547,11 +548,11 @@ function Debts({ vault, updateVault }) {
   };
   return <Module title="Deudas" eyebrow="Planeación" description="Los pagos separan principal, intereses y cargos. Solo el principal reduce el saldo de la deuda.">
     <div className="two-col">
-      <Panel><div className="panel-head"><div><small>Nueva deuda</small><h3>Registrar obligación</h3></div></div><form onSubmit={saveDebt} className="form-grid">
+      <Panel><div className="panel-head"><div><small>{editingDebtId ? "Editar deuda" : "Nueva deuda"}</small><h3>{editingDebtId ? "Actualizar obligación" : "Registrar obligación"}</h3></div></div><form onSubmit={saveDebt} className="form-grid">
         <Field label="Nombre" placeholder="Crédito de consumo" required value={debt.name} onChange={(e) => setDebt({ ...debt, name: e.target.value })} />
         <Field label="Saldo inicial" type="number" min="0.01" step="0.01" required value={debt.amount} onChange={(e) => setDebt({ ...debt, amount: e.target.value })} />
         <Field label="Fecha objetivo" type="date" value={debt.dueDate} onChange={(e) => setDebt({ ...debt, dueDate: e.target.value })} /><Select label="Moneda" value={debt.currency} onChange={(e) => setDebt({ ...debt, currency: e.target.value })}><CurrencyOptions /></Select>
-        <div className="form-actions"><Button primary type="submit">Agregar deuda</Button></div>
+        <div className="form-actions"><Button primary type="submit">{editingDebtId ? "Guardar cambios" : "Agregar deuda"}</Button>{editingDebtId && <Button onClick={() => { setEditingDebtId(""); setDebt({ name: "", amount: "", dueDate: "", currency: "COP" }); }}>Cancelar</Button>}</div>
       </form></Panel>
       <Panel><div className="panel-head"><div><small>Pago</small><h3>Registrar pago</h3></div></div><form onSubmit={savePayment} className="form-grid">
         <Select label="Deuda" required value={payment.debtId} onChange={(e) => setPayment({ ...payment, debtId: e.target.value })}><option value="">Selecciona deuda</option>{vault.debts.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select>
@@ -562,7 +563,7 @@ function Debts({ vault, updateVault }) {
         <div className="form-actions"><Button primary type="submit" disabled={!vault.debts.length}>Registrar pago</Button></div>
       </form>{paymentError && <Notice tone="error"><b>Pago no registrado.</b><span>{paymentError}</span></Notice>}</Panel>
     </div>
-    <div className="debt-grid">{vault.debts.map((item) => { const balance = debtBalance(item, vault.debtPayments); return <Panel className="debt-card reveal" key={item.id}><div className="goal-head"><div><span className="badge">Deuda</span><h3>{item.name}</h3></div><strong className="negative">{money(balance, item.currency)}</strong></div><Progress value={item.originalMinorUnits ? ((item.originalMinorUnits - balance) / item.originalMinorUnits) * 100 : 0} tone="red" /><div className="goal-values"><span>Pagado {money(item.originalMinorUnits - balance, item.currency)}</span><span>Inicial {money(item.originalMinorUnits, item.currency)}</span></div><div className="form-actions"><Button onClick={() => removeDebt(item)}>Eliminar deuda</Button></div></Panel>; })}</div>
+    <div className="debt-grid">{vault.debts.map((item) => { const balance = debtBalance(item, vault.debtPayments); return <Panel className="debt-card reveal" key={item.id}><div className="goal-head"><div><span className="badge">Deuda</span><h3>{item.name}</h3></div><strong className="negative">{money(balance, item.currency)}</strong></div><Progress value={item.originalMinorUnits ? ((item.originalMinorUnits - balance) / item.originalMinorUnits) * 100 : 0} tone="red" /><div className="goal-values"><span>Pagado {money(item.originalMinorUnits - balance, item.currency)}</span><span>Inicial {money(item.originalMinorUnits, item.currency)}</span></div><div className="form-actions"><Button onClick={() => editDebt(item)}>Editar</Button><Button onClick={() => removeDebt(item)}>Eliminar deuda</Button></div></Panel>; })}</div>
   </Module>;
 }
 

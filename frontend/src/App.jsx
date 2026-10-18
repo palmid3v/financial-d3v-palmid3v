@@ -256,15 +256,22 @@ function Dashboard({ vault, setActive }) {
 function Transactions({ vault, updateVault }) {
   const [form, setForm] = useState({ type: "expense", amount: "", accountId: "", toAccountId: "", categoryId: "cat-food", description: "", occurredAt: localDateTimeInput() });
   const [message, setMessage] = useState("");
+  const [messageTone, setMessageTone] = useState("success");
   const categories = vault.categories.filter((item) => item.kind === form.type);
+  const removeTransaction = (transaction) => {
+    if (!window.confirm("¿Eliminar este movimiento del ledger? Esta acción se guardará cuando guardes el Vault.")) return;
+    updateVault((current) => ({ ...current, transactions: current.transactions.filter((item) => item.id !== transaction.id) }));
+    setMessageTone("success");
+    setMessage("Movimiento eliminado del Vault en memoria. Guarda el Vault para persistir el cambio.");
+  };
   const save = (event) => {
     event.preventDefault();
     const account = vault.accounts.find((item) => item.id === form.accountId);
-    if (!account || !form.amount) { setMessage("Selecciona una cuenta e ingresa un monto."); return; }
+    if (!account || !form.amount) { setMessageTone("error"); setMessage("Selecciona una cuenta e ingresa un monto."); return; }
     const destination = vault.accounts.find((item) => item.id === form.toAccountId);
     const amountMinorUnits = numberValue(form.amount);
-    if (!Number.isSafeInteger(amountMinorUnits) || amountMinorUnits <= 0) { setMessage("El monto debe ser mayor que cero y estar dentro del rango permitido."); return; }
-    if (form.type === "transfer" && (!destination || destination.id === account.id || destination.currency !== account.currency)) { setMessage("Selecciona una cuenta destino distinta y con la misma moneda."); return; }
+    if (!Number.isSafeInteger(amountMinorUnits) || amountMinorUnits <= 0) { setMessageTone("error"); setMessage("El monto debe ser mayor que cero y estar dentro del rango permitido."); return; }
+    if (form.type === "transfer" && (!destination || destination.id === account.id || destination.currency !== account.currency)) { setMessageTone("error"); setMessage("Selecciona una cuenta destino distinta y con la misma moneda."); return; }
     const transaction = makeTransaction({
       accountId: form.accountId,
       toAccountId: form.type === "transfer" ? form.toAccountId : "",
@@ -276,7 +283,8 @@ function Transactions({ vault, updateVault }) {
       occurredAt: new Date(form.occurredAt).toISOString(),
     });
     updateVault((current) => ({ ...current, transactions: [...current.transactions, transaction] }));
-    setMessage("Movimiento guardado en memoria. Guarda el Vault para persistirlo cifrado.");
+    setMessageTone("success");
+    setMessage("Movimiento registrado en el Vault en memoria. Usa Guardar vault para persistirlo cifrado.");
     setForm((current) => ({ ...current, amount: "", description: "" }));
   };
   const items = [...vault.transactions].sort((a, b) => new Date(b.occurredAt) - new Date(a.occurredAt));
@@ -294,11 +302,11 @@ function Transactions({ vault, updateVault }) {
           <Field label="Descripción" placeholder="Opcional" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           <div className="form-actions"><Button primary type="submit">Guardar movimiento</Button></div>
         </form>
-        {message && <Notice tone="success"><b>Guardado.</b><span>{message}</span></Notice>}
+        {message && <Notice tone={messageTone}><b>{messageTone === "error" ? "No se registró el movimiento." : "Ledger actualizado."}</b><span>{message}</span></Notice>}
       </Panel>
       <Panel><div className="panel-head"><div><small>Ledger privado</small><h3>Movimientos</h3></div><span>{items.length} registros</span></div>
         {items.length === 0 ? <Empty title="Sin movimientos" text="El ledger está listo. Registra tu primer ingreso, gasto o transferencia." /> :
-          <div className="stack-list">{items.map((tx) => <div className="stack-row" key={tx.id}><span className={`movement-icon ${tx.type}`}>{tx.type === "income" ? "↗" : tx.type === "expense" ? "↘" : "⇄"}</span><div><b>{tx.description}</b><small>{tx.type} · {new Date(tx.occurredAt).toLocaleString("es-CO")}</small></div><strong className={tx.type === "expense" ? "negative" : tx.type === "income" ? "positive" : ""}>{tx.type === "expense" ? "−" : tx.type === "income" ? "+" : ""}{money(tx.minorUnits, tx.currency)}</strong></div>)}</div>}
+          <div className="stack-list">{items.map((tx) => <div className="stack-row" key={tx.id}><span className={`movement-icon ${tx.type}`}>{tx.type === "income" ? "↗" : tx.type === "expense" ? "↘" : "⇄"}</span><div><b>{tx.description}</b><small>{tx.type} · {new Date(tx.occurredAt).toLocaleString("es-CO")}</small></div><strong className={tx.type === "expense" ? "negative" : tx.type === "income" ? "positive" : ""}>{tx.type === "expense" ? "−" : tx.type === "income" ? "+" : ""}{money(tx.minorUnits, tx.currency)}</strong><Button className="danger-button" onClick={() => removeTransaction(tx)}>Eliminar</Button></div>)}</div>}
       </Panel>
     </div>
   </Module>;

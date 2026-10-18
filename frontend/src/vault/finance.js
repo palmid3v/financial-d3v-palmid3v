@@ -98,7 +98,11 @@ export function makeSavingsGoal({ name, targetMinorUnits, currency = "COP", targ
 }
 
 export function makeSavingsContribution(data) {
-  return { id: uid("contrib"), occurredAt: nowIso(), ...data, amountMinorUnits: Math.abs(Number(data.amountMinorUnits) || 0) };
+  const amount = Number(data.amountMinorUnits);
+  if (!data.goalId || !Number.isSafeInteger(amount) || amount <= 0) {
+    throw new Error("El aporte requiere una meta y un importe positivo válido en unidades menores.");
+  }
+  return { id: uid("contrib"), occurredAt: nowIso(), ...data, amountMinorUnits: amount };
 }
 
 export function makeDebt({ name, originalMinorUnits, currency = "COP", dueDate = "" }) {

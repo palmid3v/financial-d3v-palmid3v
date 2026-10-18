@@ -315,7 +315,7 @@ function Transactions({ vault, updateVault }) {
 function Accounts({ vault, updateVault }) {
   const [form, setForm] = useState({ name: "", type: "bank", currency: "COP", opening: "" });
   const [editingId, setEditingId] = useState("");
-  const [editForm, setEditForm] = useState({ name: "", type: "bank", currency: "COP" });
+  const [editForm, setEditForm] = useState({ name: "", type: "bank", currency: "COP", opening: "" });
   const [notice, setNotice] = useState("");
   const save = (event) => {
     event.preventDefault();
@@ -328,17 +328,19 @@ function Accounts({ vault, updateVault }) {
   };
   const edit = (account) => {
     setEditingId(account.id);
-    setEditForm({ name: account.name, type: account.type, currency: account.currency });
+    setEditForm({ name: account.name, type: account.type, currency: account.currency, opening: String((Number(account.openingMinorUnits) || 0) / 100) });
     setNotice("");
   };
   const saveEdit = (event, account) => {
     event.preventDefault();
     const name = editForm.name.trim();
     const currency = editForm.currency.trim().toUpperCase();
+    const openingMinorUnits = numberValue(editForm.opening);
     if (!name || !/^[A-Z]{3}$/.test(currency)) { setNotice("Ingresa un nombre y un código de moneda de 3 letras."); return; }
+    if (!editForm.opening.trim() || !Number.isSafeInteger(openingMinorUnits) || openingMinorUnits < 0) { setNotice("Ingresa un saldo inicial válido, igual o mayor que cero."); return; }
     const hasTransactions = vault.transactions.some((tx) => tx.accountId === account.id || tx.toAccountId === account.id);
     if (currency !== account.currency && hasTransactions) { setNotice("No puedes cambiar la moneda de una cuenta con movimientos asociados."); return; }
-    updateVault((current) => ({ ...current, accounts: current.accounts.map((item) => item.id === account.id ? { ...item, name, type: editForm.type, currency } : item) }));
+    updateVault((current) => ({ ...current, accounts: current.accounts.map((item) => item.id === account.id ? { ...item, name, type: editForm.type, currency, openingMinorUnits } : item) }));
     setEditingId("");
     setNotice("Cuenta actualizada. Guarda el vault para conservar los cambios en el archivo.");
   };
@@ -366,6 +368,8 @@ function Accounts({ vault, updateVault }) {
               <Field label="Nombre" required value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
               <Select label="Tipo" value={editForm.type} onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}><option value="cash">Efectivo</option><option value="bank">Banco</option><option value="credit">Crédito</option><option value="investment">Inversión</option><option value="other">Otro</option></Select>
               <Select label="Moneda" required value={editForm.currency} onChange={(e) => setEditForm({ ...editForm, currency: e.target.value })}><CurrencyOptions /></Select>
+              <Field label={"Saldo inicial (" + editForm.currency + ")"} type="number" min="0" step="0.01" required value={editForm.opening} onChange={(e) => setEditForm({ ...editForm, opening: e.target.value })} />
+              <Notice>El saldo actual se calcula con este saldo inicial más los movimientos registrados: {money(accountBalance(account, vault.transactions), account.currency)}.</Notice>
               <div className="form-actions"><Button primary type="submit">Guardar edición</Button><Button onClick={() => setEditingId("")}>Cancelar</Button></div>
             </form> : <>
               <div><span className="badge">{account.type}</span><small>{account.currency}</small></div><h3>{account.name}</h3>

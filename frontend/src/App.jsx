@@ -30,9 +30,10 @@ const money = (minorUnits = 0, currency = "COP") =>
   }).format((Number(minorUnits) || 0) / 100);
 
 const numberValue = (value) => Math.round((Number(value) || 0) * 100);
-const todayInput = () => new Date().toISOString().slice(0, 10);
-const monthInput = (date) => new Date(date.getFullYear(), date.getMonth(), 1).toISOString().slice(0, 10);
-const nextMonthInput = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString().slice(0, 10);
+const localDateTimeInput = (date = new Date()) => {
+  const pad = (value) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
 
 const navGroups = [
   { label: "Finanzas", items: [["dashboard", "Dashboard", "⌂"], ["accounts", "Cuentas", "▣"], ["transactions", "Transacciones", "↕"], ["budget", "Presupuestos", "◫"]] },
@@ -251,7 +252,7 @@ function Dashboard({ vault, setActive }) {
 }
 
 function Transactions({ vault, updateVault }) {
-  const [form, setForm] = useState({ type: "expense", amount: "", accountId: "", toAccountId: "", categoryId: "cat-food", description: "", occurredAt: new Date().toISOString().slice(0, 16) });
+  const [form, setForm] = useState({ type: "expense", amount: "", accountId: "", toAccountId: "", categoryId: "cat-food", description: "", occurredAt: localDateTimeInput() });
   const [message, setMessage] = useState("");
   const categories = vault.categories.filter((item) => item.kind === form.type);
   const save = (event) => {

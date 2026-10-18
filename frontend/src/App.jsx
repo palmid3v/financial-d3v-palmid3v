@@ -493,12 +493,12 @@ function Debts({ vault, updateVault }) {
 }
 
 function NetWorth({ vault, updateVault }) {
-  const [asset, setAsset] = useState({ name: "", amount: "" });
-  const [liability, setLiability] = useState({ name: "", amount: "" });
+  const [asset, setAsset] = useState({ name: "", amount: "", currency: "COP" });
+  const [liability, setLiability] = useState({ name: "", amount: "", currency: "COP" });
   const data = netWorth(vault, "COP");
   const otherCurrencies = [...new Set([...vault.assets, ...vault.liabilities, ...vault.debts].map((item) => item.currency || "COP"))].filter((currency) => currency !== "COP");
-  const addAsset = (event) => { event.preventDefault(); if (!asset.name || !asset.amount) return; updateVault((current) => ({ ...current, assets: [...current.assets, makeAsset({ name: asset.name, minorUnits: numberValue(asset.amount) })] })); setAsset({ name: "", amount: "" }); };
-  const addLiability = (event) => { event.preventDefault(); if (!liability.name || !liability.amount) return; updateVault((current) => ({ ...current, liabilities: [...current.liabilities, makeLiability({ name: liability.name, minorUnits: numberValue(liability.amount) })] })); setLiability({ name: "", amount: "" }); };
+  const addAsset = (event) => { event.preventDefault(); if (!asset.name || !asset.amount) return; updateVault((current) => ({ ...current, assets: [...current.assets, makeAsset({ name: asset.name, minorUnits: numberValue(asset.amount), currency: asset.currency })] })); setAsset({ name: "", amount: "", currency: asset.currency }); };
+  const addLiability = (event) => { event.preventDefault(); if (!liability.name || !liability.amount) return; updateVault((current) => ({ ...current, liabilities: [...current.liabilities, makeLiability({ name: liability.name, minorUnits: numberValue(liability.amount), currency: liability.currency })] })); setLiability({ name: "", amount: "", currency: liability.currency }); };
   return <Module title="Patrimonio neto" eyebrow="Activos − pasivos" description="Una vista patrimonial: activos menos todos los pasivos. Los saldos de deuda se incluyen como pasivos.">
     <div className="metrics metrics-4"><Metric label="Patrimonio neto" value={money(data.net)} detail="Activos − pasivos" tone="green" /><Metric label="Activos" value={money(data.assets)} detail="Activos registrados" tone="green" /><Metric label="Pasivos" value={money(data.liabilities)} detail="Incluye deudas" tone="red" /><Metric label="Deuda" value={money(data.debtLiabilities)} detail="Saldo pendiente" tone="blue" /></div>{otherCurrencies.length > 0 && <Notice>Patrimonio mostrado en COP. Otras monedas ({otherCurrencies.join(", ")}) se mantienen separadas; no se convierten automáticamente.</Notice>}
     <div className="two-col">

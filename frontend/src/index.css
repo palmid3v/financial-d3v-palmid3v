@@ -591,3 +591,12 @@ footer {
   .top-actions .button { min-height: 38px; padding-inline: 8px; font-size: 10px; }
   .mobile-nav { left: 5px; right: 5px; bottom: max(5px, env(safe-area-inset-bottom)); }
 }
+
+
+.projection-panel { margin-bottom: 18px; }
+.projection-panel > p { color: var(--muted); font-size: 12px; line-height: 1.55; }
+.projection-values { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+.projection-values > div { display: grid; gap: 6px; min-width: 0; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: rgb(5 12 8 / 35%); }
+.projection-values small { color: var(--muted); font-size: 11px; }
+.projection-values strong { font-size: clamp(13px, 2vw, 19px); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+@media (max-width: 720px) { .projection-values { grid-template-columns: 1fr; gap: 8px; } .projection-values > div { grid-template-columns: 1fr auto; align-items: center; } .projection-values strong { text-align: right; } }

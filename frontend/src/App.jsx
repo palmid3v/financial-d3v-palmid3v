@@ -566,6 +566,8 @@ function Debts({ vault, updateVault }) {
 function NetWorth({ vault, updateVault }) {
   const [asset, setAsset] = useState({ name: "", amount: "", currency: "COP" });
   const [liability, setLiability] = useState({ name: "", amount: "", currency: "COP" });
+  const [editingAssetId, setEditingAssetId] = useState("");
+  const [editingLiabilityId, setEditingLiabilityId] = useState("");
   const data = netWorth(vault, "COP");
   const otherCurrencies = [...new Set([...vault.assets, ...vault.liabilities, ...vault.debts].map((item) => item.currency || "COP"))].filter((currency) => currency !== "COP");
   const addAsset = (event) => { event.preventDefault(); if (!asset.name || !asset.amount) return; updateVault((current) => ({ ...current, assets: [...current.assets, makeAsset({ name: asset.name, minorUnits: numberValue(asset.amount), currency: asset.currency })] })); setAsset({ name: "", amount: "", currency: asset.currency }); };

@@ -237,12 +237,12 @@ export function monthLabel(date) {
   return new Intl.DateTimeFormat("es-CO", { month: "short" }).format(date).replace(".", "");
 }
 
-export function monthSeries(transactions, months = 6, reference = new Date(), currency = "COP") {
+export function monthSeries(transactions, months = 6, reference = new Date(), currency = "COP", debtPayments = []) {
   const rows = [];
   for (let i = months - 1; i >= 0; i -= 1) {
     const date = new Date(reference.getFullYear(), reference.getMonth() - i, 1);
     const { start, end } = currentMonthRange(date);
-    const totals = transactionTotals(transactions, start, end, currency);
+    const totals = transactionTotals(transactions, start, end, currency, debtPayments);
     rows.push({ label: monthLabel(date), income: totals.income, expenses: totals.expenses });
   }
   return rows;

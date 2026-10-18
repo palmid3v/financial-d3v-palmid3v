@@ -181,7 +181,7 @@ Implemented in current `main` history:
 
 Known limitations / verification still required:
 - Currency conversion and exchange-rate sourcing are not implemented. Cross-currency totals must remain separate.
-- Education content remains a static learning set, not a fully contextual, data-driven coach.
+- Education concepts remain a curated static learning set; current COP cash-flow, savings-rate, net-worth and budget metrics are shown contextually, but there is no personalized recommendation engine.
 - Latest changes have not been run through local frontend tests/build or full desktop/mobile runtime workflows from this environment. Do not treat the integrated scope as complete until the checks below pass.
 
 Required local verification from repository root:

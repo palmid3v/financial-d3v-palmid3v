@@ -457,6 +457,7 @@ function Savings({ vault, updateVault }) {
   const [goal, setGoal] = useState({ name: "", target: "", targetDate: "", currency: "COP" });
   const [contribution, setContribution] = useState({ goalId: "", amount: "", note: "" });
   const [editingGoalId, setEditingGoalId] = useState("");
+  const [editingContributionId, setEditingContributionId] = useState("");
   const editGoal = (item) => { setEditingGoalId(item.id); setGoal({ name: item.name, target: String((Number(item.targetMinorUnits) || 0) / 100), targetDate: item.targetDate || "", currency: item.currency || "COP" }); };
   const removeGoal = (item) => {
     if (vault.savingsContributions.some((entry) => entry.goalId === item.id)) {

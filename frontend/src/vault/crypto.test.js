@@ -10,6 +10,7 @@ const sampleVault = {
   ...createEmptyVault(),
   accounts: [{ id: "account-1", name: "Checking", currency: "COP" }],
   transactions: [{ id: "tx-1", minorUnits: 125000, currency: "COP" }],
+  savingsProducts: [{ id: "product-1", goalId: "goal-home", name: "Nevera LG", url: "https://www.exito.com/producto", priceMinorUnits: 336500000, currency: "COP", imageDataUrl: "data:image/png;base64,c2FtcGxlLWltYWdl" }],
 };
 
 test("Financial Vault round trip preserves domain data", async () => {
@@ -17,6 +18,8 @@ test("Financial Vault round trip preserves domain data", async () => {
   const opened = await openVault(serialized, password);
 
   assert.deepEqual(opened, sampleVault);
+  assert.equal(serialized.includes("Nevera LG"), false);
+  assert.equal(serialized.includes("c2FtcGxlLWltYWdl"), false);
 });
 
 test("Financial Vault rejects an incorrect password", async () => {

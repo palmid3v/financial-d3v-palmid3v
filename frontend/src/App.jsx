@@ -300,29 +300,69 @@ function Transactions({ vault, updateVault }) {
 
 function Accounts({ vault, updateVault }) {
   const [form, setForm] = useState({ name: "", type: "bank", currency: "COP", opening: "" });
+  const [editingId, setEditingId] = useState("");
+  const [editForm, setEditForm] = useState({ name: "", type: "bank", currency: "COP" });
+  const [notice, setNotice] = useState("");
   const save = (event) => {
     event.preventDefault();
-    if (!form.name) return;
-    updateVault((current) => ({ ...current, accounts: [...current.accounts, makeAccount({ name: form.name, type: form.type, currency: form.currency, openingMinorUnits: numberValue(form.opening) })] }));
+    const name = form.name.trim();
+    const currency = form.currency.trim().toUpperCase();
+    if (!name || !/^[A-Z]{3}$/.test(currency)) { setNotice("Ingresa un nombre y un código de moneda de 3 letras."); return; }
+    updateVault((current) => ({ ...current, accounts: [...current.accounts, makeAccount({ name, type: form.type, currency, openingMinorUnits: numberValue(form.opening) })] }));
     setForm({ name: "", type: "bank", currency: "COP", opening: "" });
+    setNotice("Cuenta creada. Guarda el vault para conservar los cambios en el archivo.");
   };
-  return <Module title="Cuentas" eyebrow="Dónde vive tu dinero" description="Los saldos se derivan del opening balance y del ledger. No hay un balance paralelo que pueda contradecir las transacciones.">
+  const edit = (account) => {
+    setEditingId(account.id);
+    setEditForm({ name: account.name, type: account.type, currency: account.currency });
+    setNotice("");
+  };
+  const saveEdit = (event, account) => {
+    event.preventDefault();
+    const name = editForm.name.trim();
+    const currency = editForm.currency.trim().toUpperCase();
+    if (!name || !/^[A-Z]{3}$/.test(currency)) { setNotice("Ingresa un nombre y un código de moneda de 3 letras."); return; }
+    const hasTransactions = vault.transactions.some((tx) => tx.accountId === account.id || tx.toAccountId === account.id);
+    if (currency !== account.currency && hasTransactions) { setNotice("No puedes cambiar la moneda de una cuenta con movimientos asociados."); return; }
+    updateVault((current) => ({ ...current, accounts: current.accounts.map((item) => item.id === account.id ? { ...item, name, type: editForm.type, currency } : item) }));
+    setEditingId("");
+    setNotice("Cuenta actualizada. Guarda el vault para conservar los cambios en el archivo.");
+  };
+  const remove = (account) => {
+    const linked = vault.transactions.some((tx) => tx.accountId === account.id || tx.toAccountId === account.id);
+    if (linked) { setNotice("No se puede eliminar esta cuenta porque tiene movimientos asociados. Conservamos el historial contable."); return; }
+    if (!window.confirm("¿Eliminar la cuenta " + account.name + "? Esta acción no se puede deshacer después de guardar.")) return;
+    updateVault((current) => ({ ...current, accounts: current.accounts.filter((item) => item.id !== account.id) }));
+    setNotice("Cuenta eliminada. Guarda el vault para conservar los cambios en el archivo.");
+  };
+  return <Module title="Cuentas" eyebrow="Dónde vive tu dinero" description="Administra tus cuentas. Los saldos se calculan desde el saldo inicial y el libro de movimientos.">
+    {notice && <Notice>{notice}</Notice>}
     <div className="two-col">
       <Panel><div className="panel-head"><div><small>Nueva cuenta</small><h3>Agregar cuenta</h3></div></div><form onSubmit={save} className="form-grid">
         <Field label="Nombre" placeholder="Cuenta de ahorros" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         <Select label="Tipo" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}><option value="cash">Efectivo</option><option value="bank">Banco</option><option value="credit">Crédito</option><option value="investment">Inversión</option><option value="other">Otro</option></Select>
-        <Field label="Moneda" maxLength="3" value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value.toUpperCase() })} />
-        <Field label="Saldo inicial" type="number" step="0.01" value={form.opening} onChange={(e) => setForm({ ...form, opening: e.target.value })} />
+        <Field label="Moneda (ISO)" maxLength={3} required value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value.toUpperCase() })} />
+        <Field label="Saldo inicial" type="number" min="0" step="0.01" value={form.opening} onChange={(e) => setForm({ ...form, opening: e.target.value })} />
         <div className="form-actions"><Button primary type="submit">Crear cuenta</Button></div>
       </form></Panel>
-      <Panel><div className="panel-head"><div><small>Tu dinero</small><h3>Cuentas</h3></div></div>
+      <Panel><div className="panel-head"><div><small>Tu dinero</small><h3>Cuentas ({vault.accounts.length})</h3></div></div>
         {vault.accounts.length === 0 ? <Empty title="Todavía no hay cuentas" text="Crea la primera cuenta para empezar a registrar movimientos." /> :
-          <div className="account-grid">{vault.accounts.map((account) => <article className="account-card reveal" key={account.id}><div><span className="badge">{account.type}</span><small>{account.currency}</small></div><h3>{account.name}</h3><strong>{money(accountBalance(account, vault.transactions), account.currency)}</strong><p>Saldo inicial {money(account.openingMinorUnits, account.currency)}</p></article>)}</div>}
+          <div className="account-grid">{vault.accounts.map((account) => <article className="account-card reveal" key={account.id}>
+            {editingId === account.id ? <form className="form-grid" onSubmit={(event) => saveEdit(event, account)}>
+              <Field label="Nombre" required value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
+              <Select label="Tipo" value={editForm.type} onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}><option value="cash">Efectivo</option><option value="bank">Banco</option><option value="credit">Crédito</option><option value="investment">Inversión</option><option value="other">Otro</option></Select>
+              <Field label="Moneda" maxLength={3} required value={editForm.currency} onChange={(e) => setEditForm({ ...editForm, currency: e.target.value.toUpperCase() })} />
+              <div className="form-actions"><Button primary type="submit">Guardar edición</Button><Button onClick={() => setEditingId("")}>Cancelar</Button></div>
+            </form> : <>
+              <div><span className="badge">{account.type}</span><small>{account.currency}</small></div><h3>{account.name}</h3>
+              <strong>{money(accountBalance(account, vault.transactions), account.currency)}</strong><p>Saldo inicial {money(account.openingMinorUnits, account.currency)}</p>
+              <div className="account-actions"><Button onClick={() => edit(account)}>Editar</Button><Button onClick={() => remove(account)}>Eliminar</Button></div>
+            </>}
+          </article>)}</div>}
       </Panel>
     </div>
   </Module>;
 }
-
 function Budget({ vault, updateVault }) {
   const { start, end } = currentMonthRange();
   const [name, setName] = useState("Presupuesto de octubre");

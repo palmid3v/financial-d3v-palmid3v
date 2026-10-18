@@ -19,19 +19,19 @@ $forbiddenPatterns = @(
   "localStorage",
   "sessionStorage",
   "indexedDB",
-  "navigator\.sendBeacon",
+  "navigator[.]sendBeacon",
   "XMLHttpRequest",
-  "\bfetch\s*\("
+  "fetch *[(]"
 )
 
 $violations = @()
 foreach ($file in $files) {
   $content = Get-Content -Raw -LiteralPath $file.FullName
 
-  # The Go/WASM engine is intentionally fetched as a same-origin static asset.
-  # Allow only that exact fetch call; any additional fetch remains forbidden.
+  # The Go/WASM engine intentionally fetches one same-origin static asset.
+  # Permit only that exact call; any other fetch remains forbidden.
   if ($file.Name -eq "goEngine.js") {
-    $content = $content -replace 'fetch\("/wasm/financial-engine\.wasm"\)', ""
+    $content = $content.Replace('fetch("/wasm/financial-engine.wasm")', "")
   }
 
   foreach ($pattern in $forbiddenPatterns) {
@@ -54,8 +54,8 @@ $context = Get-Content -Raw -LiteralPath $contextPath
 $crypto = Get-Content -Raw -LiteralPath $cryptoPath
 
 $requiredContextPatterns = @(
-  "passwordRef\.current = null",
-  "setVault\(null\)",
+  "passwordRef[.]current = null",
+  "setVault[(]null[)]",
   "VAULT_AUTO_LOCK_MS"
 )
 foreach ($pattern in $requiredContextPatterns) {
@@ -66,7 +66,7 @@ $requiredCryptoPatterns = @(
   "PBKDF2",
   "AES-GCM",
   "600000",
-  "crypto\.getRandomValues",
+  "crypto[.]getRandomValues",
   "tagLength: TAG_BITS"
 )
 foreach ($pattern in $requiredCryptoPatterns) {

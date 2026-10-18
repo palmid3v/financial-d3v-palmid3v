@@ -414,8 +414,15 @@ function Budget({ vault, updateVault }) {
   const [editingBudgetId, setEditingBudgetId] = useState("");
   const expenseCategories = vault.categories.filter((item) => item.kind === "expense");
   const budgets = vault.budgets;
+  const editBudget = (budget) => {
+    setEditingBudgetId(budget.id);
+    setName(budget.name);
+    setCurrency(budget.currency || "COP");
+    setRows(budget.items.map((item) => ({ categoryId: item.categoryId, limit: String((Number(item.limitMinorUnits) || 0) / 100) })));
+  };
   const removeBudget = (budget) => {
     if (!window.confirm("¿Eliminar el presupuesto " + budget.name + "?")) return;
+    if (editingBudgetId === budget.id) setEditingBudgetId("");
     updateVault((current) => ({ ...current, budgets: current.budgets.filter((item) => item.id !== budget.id) }));
   };
   const save = (event) => {

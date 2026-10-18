@@ -104,7 +104,7 @@ function Sidebar({ active, setActive, onLock, dirty }) {
     </div>)}
     <div className="side-bottom">
       <div className="privacy"><span /><div><b>Private workspace</b><small>Vault · encrypted</small></div></div>
-      <button className="lock-link" onClick={onLock}>⌕ {dirty ? "Guardar y bloquear" : "Bloquear"}</button>
+      <button className="lock-link" onClick={onLock}>⌕ Bloquear</button>
       <small className="signature">by PalmiD3v · v0.1</small>
     </div>
   </aside>;

@@ -428,8 +428,14 @@ function Budget({ vault, updateVault }) {
   const save = (event) => {
     event.preventDefault();
     const items = rows.filter((row) => row.categoryId && Number(row.limit) > 0).map((row) => ({ categoryId: row.categoryId, limitMinorUnits: numberValue(row.limit) }));
-    if (!items.length) return;
-    updateVault((current) => ({ ...current, budgets: [...current.budgets, makeBudget({ name, currency, startDate: start.toISOString(), endDate: end.toISOString(), items })] }));
+    if (!name.trim() || !items.length || items.some((item) => !Number.isSafeInteger(item.limitMinorUnits) || item.limitMinorUnits <= 0)) return;
+    if (editingBudgetId) {
+      updateVault((current) => ({ ...current, budgets: current.budgets.map((budget) => budget.id === editingBudgetId ? { ...budget, name: name.trim(), currency, items } : budget) }));
+      setEditingBudgetId("");
+    } else {
+      updateVault((current) => ({ ...current, budgets: [...current.budgets, makeBudget({ name: name.trim(), currency, startDate: start.toISOString(), endDate: end.toISOString(), items })] }));
+    }
+    setName("Presupuesto mensual");
     setRows([{ categoryId: "cat-housing", limit: "" }]);
   };
   return <Module title="Presupuestos" eyebrow="Plan → Entender" description="Define límites y compara el plan contra el gasto real del ledger. Los actuals siempre salen de las transacciones.">

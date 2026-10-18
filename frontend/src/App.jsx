@@ -570,8 +570,30 @@ function NetWorth({ vault, updateVault }) {
   const [editingLiabilityId, setEditingLiabilityId] = useState("");
   const data = netWorth(vault, "COP");
   const otherCurrencies = [...new Set([...vault.assets, ...vault.liabilities, ...vault.debts].map((item) => item.currency || "COP"))].filter((currency) => currency !== "COP");
-  const addAsset = (event) => { event.preventDefault(); if (!asset.name || !asset.amount) return; updateVault((current) => ({ ...current, assets: [...current.assets, makeAsset({ name: asset.name, minorUnits: numberValue(asset.amount), currency: asset.currency })] })); setAsset({ name: "", amount: "", currency: asset.currency }); };
-  const addLiability = (event) => { event.preventDefault(); if (!liability.name.trim() || numberValue(liability.amount) <= 0) return; updateVault((current) => ({ ...current, liabilities: [...current.liabilities, makeLiability({ name: liability.name.trim(), minorUnits: numberValue(liability.amount), currency: liability.currency })] })); setLiability({ name: "", amount: "", currency: liability.currency }); };
+  const addAsset = (event) => {
+    event.preventDefault();
+    if (!asset.name.trim() || !asset.amount.trim() || !Number.isSafeInteger(numberValue(asset.amount)) || numberValue(asset.amount) <= 0) return;
+    if (editingAssetId) {
+      updateVault((current) => ({ ...current, assets: current.assets.map((item) => item.id === editingAssetId ? { ...item, name: asset.name.trim(), minorUnits: numberValue(asset.amount), currency: asset.currency } : item) }));
+      setEditingAssetId("");
+    } else {
+      updateVault((current) => ({ ...current, assets: [...current.assets, makeAsset({ name: asset.name.trim(), minorUnits: numberValue(asset.amount), currency: asset.currency })] }));
+    }
+    setAsset({ name: "", amount: "", currency: asset.currency });
+  };
+  const addLiability = (event) => {
+    event.preventDefault();
+    if (!liability.name.trim() || !liability.amount.trim() || !Number.isSafeInteger(numberValue(liability.amount)) || numberValue(liability.amount) <= 0) return;
+    if (editingLiabilityId) {
+      updateVault((current) => ({ ...current, liabilities: current.liabilities.map((item) => item.id === editingLiabilityId ? { ...item, name: liability.name.trim(), minorUnits: numberValue(liability.amount), currency: liability.currency } : item) }));
+      setEditingLiabilityId("");
+    } else {
+      updateVault((current) => ({ ...current, liabilities: [...current.liabilities, makeLiability({ name: liability.name.trim(), minorUnits: numberValue(liability.amount), currency: liability.currency })] }));
+    }
+    setLiability({ name: "", amount: "", currency: liability.currency });
+  };
+  const editAsset = (item) => { setEditingAssetId(item.id); setAsset({ name: item.name, amount: String((Number(item.minorUnits) || 0) / 100), currency: item.currency || "COP" }); };
+  const editLiability = (item) => { setEditingLiabilityId(item.id); setLiability({ name: item.name, amount: String((Number(item.minorUnits) || 0) / 100), currency: item.currency || "COP" }); };
   const removeAsset = (item) => {
     if (!window.confirm("¿Eliminar el activo " + item.name + "?")) return;
     updateVault((current) => ({ ...current, assets: current.assets.filter((entry) => entry.id !== item.id) }));

@@ -75,7 +75,18 @@ export function makeAccount({ name, type = "bank", currency = "COP", openingMino
 }
 
 export function makeTransaction(data) {
-  return { id: uid("tx"), createdAt: nowIso(), ...data, minorUnits: Math.abs(Number(data.minorUnits) || 0) };
+  const amount = Number(data.minorUnits);
+  if (!Number.isSafeInteger(amount) || amount <= 0) {
+    throw new Error("El movimiento debe tener un importe positivo y válido en unidades menores.");
+  }
+  if (!["income", "expense", "transfer"].includes(data.type)) {
+    throw new Error("El tipo de movimiento no es válido.");
+  }
+  if (!data.accountId) throw new Error("Selecciona una cuenta para el movimiento.");
+  if (data.type === "transfer" && (!data.toAccountId || data.toAccountId === data.accountId)) {
+    throw new Error("La transferencia requiere una cuenta destino distinta de la cuenta origen.");
+  }
+  return { id: uid("tx"), createdAt: nowIso(), ...data, minorUnits: amount };
 }
 
 export function makeBudget({ name, currency = "COP", startDate, endDate, items }) {

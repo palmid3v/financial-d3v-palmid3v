@@ -166,11 +166,11 @@ function Dashboard({ vault, setActive }) {
     });
     return () => { cancelled = true; };
   }, [vault, start, end]);
-  const jsTotals = transactionTotals(vault.transactions, start, end, "COP");
+  const jsTotals = transactionTotals(vault.transactions, start, end, "COP", vault.debtPayments);
   const jsNetWorth = netWorth(vault);
   const totals = goAnalysis?.cashFlow ?? jsTotals;
   const nw = goAnalysis?.netWorth ? { net: goAnalysis.netWorth.net, debtLiabilities: goAnalysis.netWorth.debtLiabilities, assets: goAnalysis.netWorth.assets, liabilities: goAnalysis.netWorth.liabilities } : jsNetWorth;
-  const accountTotals = vault.accounts.reduce((totals, account) => { totals[account.currency] = (totals[account.currency] || 0) + accountBalance(account, vault.transactions); return totals; }, {});
+  const accountTotals = vault.accounts.reduce((totals, account) => { totals[account.currency] = (totals[account.currency] || 0) + accountBalance(account, vault.transactions, vault.debtPayments); return totals; }, {});
   const savingsRate = totals.income > 0 ? ((totals.income - totals.expenses) / totals.income) * 100 : 0;
   const debt = nw.debtLiabilities;
   const series = monthSeries(vault.transactions, 6, new Date(), "COP");
@@ -236,7 +236,7 @@ function Dashboard({ vault, setActive }) {
     <div className="dashboard-bottom">
       <Panel className="reveal"><div className="panel-head"><div><small>Tu dinero</small><h3>Cuentas</h3></div><button onClick={() => setActive("accounts")} className="text-link">Ver todas</button></div>
         {vault.accounts.length === 0 ? <Empty title="Crea tu primera cuenta" text="Las cuentas son el punto de partida del ledger." action={<Button primary onClick={() => setActive("accounts")}>Agregar cuenta</Button>} /> :
-          <div className="stack-list">{vault.accounts.slice(0, 4).map((account) => <div className="stack-row" key={account.id}><span className="account-icon">{account.type === "credit" ? "▭" : "▣"}</span><div><b>{account.name}</b><small>{account.type} · {account.currency}</small></div><strong>{money(accountBalance(account, vault.transactions), account.currency)}</strong></div>)}</div>}
+          <div className="stack-list">{vault.accounts.slice(0, 4).map((account) => <div className="stack-row" key={account.id}><span className="account-icon">{account.type === "credit" ? "▭" : "▣"}</span><div><b>{account.name}</b><small>{account.type} · {account.currency}</small></div><strong>{money(accountBalance(account, vault.transactions, vault.debtPayments), account.currency)}</strong></div>)}</div>}
         <div className="panel-total"><span>Saldo por moneda</span><div className="currency-totals">{Object.entries(accountTotals).sort(([a],[b]) => a.localeCompare(b)).map(([currency, total]) => <b key={currency}>{money(total, currency)}</b>)}</div></div>
       </Panel>
 
@@ -394,11 +394,11 @@ function Accounts({ vault, updateVault }) {
               <Select label="Tipo" value={editForm.type} onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}><option value="cash">Efectivo</option><option value="bank">Banco</option><option value="credit">Crédito</option><option value="investment">Inversión</option><option value="other">Otro</option></Select>
               <Select label="Moneda" required value={editForm.currency} onChange={(e) => setEditForm({ ...editForm, currency: e.target.value })}><CurrencyOptions /></Select>
               <Field label={"Saldo inicial (" + editForm.currency + ")"} type="number" min="0" step="0.01" required value={editForm.opening} onChange={(e) => setEditForm({ ...editForm, opening: e.target.value })} />
-              <Notice>El saldo actual se calcula con este saldo inicial más los movimientos registrados: {money(accountBalance(account, vault.transactions), account.currency)}.</Notice>
+              <Notice>El saldo actual se calcula con este saldo inicial más los movimientos registrados: {money(accountBalance(account, vault.transactions, vault.debtPayments), account.currency)}.</Notice>
               <div className="form-actions"><Button primary type="submit">Guardar edición</Button><Button onClick={() => setEditingId("")}>Cancelar</Button></div>
             </form> : <>
               <div><span className="badge">{account.type}</span><small>{account.currency}</small></div><h3>{account.name}</h3>
-              <strong>{money(accountBalance(account, vault.transactions), account.currency)}</strong><p>Saldo inicial {money(account.openingMinorUnits, account.currency)}</p>
+              <strong>{money(accountBalance(account, vault.transactions, vault.debtPayments), account.currency)}</strong><p>Saldo inicial {money(account.openingMinorUnits, account.currency)}</p>
               <div className="account-actions"><Button onClick={() => edit(account)}>Editar</Button><Button onClick={() => remove(account)}>Eliminar</Button></div>
             </>}
           </article>)}</div>}
@@ -631,7 +631,7 @@ function NetWorth({ vault, updateVault }) {
 
 function Education({ vault }) {
   const { start, end } = currentMonthRange();
-  const flow = transactionTotals(vault.transactions, start, end, "COP");
+  const flow = transactionTotals(vault.transactions, start, end, "COP", vault.debtPayments);
   const worth = netWorth(vault, "COP");
   const monthlySavings = flow.income - flow.expenses;
   const budget = vault.budgets.find((item) => new Date(item.startDate) <= start && new Date(item.endDate) >= end && item.currency === "COP");

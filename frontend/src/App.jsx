@@ -500,9 +500,30 @@ async function extractProductMetadata(url) {
   const documentPage = new DOMParser().parseFromString(html, "text/html");
   const meta = (property) => documentPage.querySelector(`meta[property="${property}"]`)?.content
     || documentPage.querySelector(`meta[name="${property}"]`)?.content || "";
+  const imageUrl = meta("og:image") || meta("twitter:image") || "";
+  let imageDataUrl = "";
+  if (imageUrl) {
+    try {
+      const imageResponse = await fetch(new URL(imageUrl, parsed.href).href, { mode: "cors", credentials: "omit" });
+      if (imageResponse.ok && imageResponse.headers.get("content-type")?.startsWith("image/")) {
+        const imageBlob = await imageResponse.blob();
+        if (imageBlob.size <= 5 * 1024 * 1024) {
+          imageDataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ""));
+            reader.onerror = () => reject(new Error("No se pudo leer la imagen."));
+            reader.readAsDataURL(imageBlob);
+          });
+        }
+      }
+    } catch {
+      // Keep the public image URL as a fallback when the store blocks image downloads.
+    }
+  }
   return {
     name: meta("og:title") || documentPage.querySelector("h1")?.textContent?.trim() || documentPage.title || "",
-    imageUrl: meta("og:image") || meta("twitter:image") || "",
+    imageUrl: imageDataUrl ? "" : imageUrl,
+    imageDataUrl,
   };
 }
 
@@ -654,7 +675,7 @@ function Savings({ vault, updateVault }) {
     setProductStatus("Intentando leer el título y la imagen públicos de la tienda…");
     try {
       const metadata = await extractProductMetadata(product.url.trim());
-      setProduct((current) => ({ ...current, name: metadata.name || current.name, imageUrl: metadata.imageUrl || current.imageUrl }));
+      setProduct((current) => ({ ...current, name: metadata.name || current.name, imageUrl: metadata.imageDataUrl ? "" : (metadata.imageUrl || current.imageUrl), imageDataUrl: metadata.imageDataUrl || current.imageDataUrl }));
       setProductStatus(metadata.name || metadata.imageUrl
         ? "Se encontraron metadatos. Revisa el título y la imagen antes de guardar."
         : "La página no publicó metadatos reconocibles; completa el título y la imagen manualmente.");

@@ -59,11 +59,21 @@ export function normalizeVault(vault) {
     ...transaction,
     currency: String(transaction.currency || accountsById.get(transaction.accountId)?.currency || "COP").toUpperCase(),
   }));
-  next.budgets = (Array.isArray(next.budgets) ? next.budgets : []).map((item) => ({ ...item, currency: String(item.currency || "COP").toUpperCase() }));
+  next.budgets = (Array.isArray(next.budgets) ? next.budgets : []).map((item) => ({ ...item, currency: String(item.currency || "COP").toUpperCase(), accountId: item.accountId || "all" }));
   next.savingsGoals = (Array.isArray(next.savingsGoals) ? next.savingsGoals : []).map((item) => ({ ...item, currency: String(item.currency || "COP").toUpperCase() }));
-  next.savingsContributions = Array.isArray(next.savingsContributions) ? next.savingsContributions : [];
+  const goalsById = new Map(next.savingsGoals.map((item) => [item.id, item]));
+  next.savingsContributions = (Array.isArray(next.savingsContributions) ? next.savingsContributions : []).map((item) => ({
+    ...item,
+    currency: String(item.currency || goalsById.get(item.goalId)?.currency || "COP").toUpperCase(),
+    fromAccountId: item.fromAccountId || item.accountId || "",
+  }));
   next.debts = (Array.isArray(next.debts) ? next.debts : []).map((item) => ({ ...item, currency: String(item.currency || "COP").toUpperCase() }));
-  next.debtPayments = Array.isArray(next.debtPayments) ? next.debtPayments : [];
+  const debtsById = new Map(next.debts.map((item) => [item.id, item]));
+  next.debtPayments = (Array.isArray(next.debtPayments) ? next.debtPayments : []).map((item) => ({
+    ...item,
+    currency: String(item.currency || debtsById.get(item.debtId)?.currency || "COP").toUpperCase(),
+    categoryId: item.categoryId || "cat-other",
+  }));
   next.assets = (Array.isArray(next.assets) ? next.assets : []).map((item) => ({ ...item, currency: String(item.currency || "COP").toUpperCase() }));
   next.liabilities = (Array.isArray(next.liabilities) ? next.liabilities : []).map((item) => ({ ...item, currency: String(item.currency || "COP").toUpperCase() }));
   next.education = Array.isArray(next.education) && next.education.length ? next.education : EDUCATION;

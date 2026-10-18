@@ -218,7 +218,11 @@ test("debt payments reduce the selected account by the full payment but count on
     occurredAt: new Date(start.getTime() + 1000).toISOString(),
   });
   assert.equal(accountBalance(cash, [], [payment]), 900000);
-  assert.equal(transactionTotals([], start, end, "COP", [payment]).expenses, 20000);
+  const flow = transactionTotals([], start, end, "COP", [payment]);
+  assert.equal(flow.expenses, 20000);
+  assert.equal(flow.principalPayments, 80000);
+  assert.equal(flow.cashOutflows, 100000);
+  assert.equal(flow.netCashFlow, -100000);
   assert.equal(debtBalance(debt, [payment]), 520000);
   const worth = netWorth({
     accounts: [cash],

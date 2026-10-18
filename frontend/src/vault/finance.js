@@ -93,8 +93,8 @@ export function makeTransaction(data) {
   return { id: uid("tx"), createdAt: nowIso(), ...data, minorUnits: amount };
 }
 
-export function makeBudget({ name, currency = "COP", startDate, endDate, items }) {
-  return { id: uid("budget"), name, currency, startDate, endDate, items: items.map((item) => ({ ...item, limitMinorUnits: Number(item.limitMinorUnits) || 0 })), createdAt: nowIso() };
+export function makeBudget({ name, currency = "COP", accountId = "all", startDate, endDate, items }) {
+  return { id: uid("budget"), name, currency, accountId, startDate, endDate, items: items.map((item) => ({ ...item, limitMinorUnits: Number(item.limitMinorUnits) || 0 })), createdAt: nowIso() };
 }
 
 export function makeSavingsGoal({ name, targetMinorUnits, currency = "COP", targetDate = "" }) {
@@ -155,33 +155,33 @@ export function transactionSignedMinor(transaction) {
   return type === "income" ? transaction.minorUnits : type === "expense" ? -transaction.minorUnits : 0;
 }
 
-export function transactionTotals(transactions, start, end, currency = "COP") {
+export function transactionTotals(transactions, start, end, currency = "COP", debtPayments = []) {
   const scoped = transactions.filter((item) => inRange(item.occurredAt, start, end) && (item.currency || currency) === currency);
   const income = scoped.filter((item) => item.type === "income").reduce((sum, item) => sum + item.minorUnits, 0);
-  const expenses = scoped.filter((item) => item.type === "expense").reduce((sum, item) => sum + item.minorUnits, 0);
+  const transactionExpenses = scoped.filter((item) => item.type === "expense").reduce((sum, item) => sum + item.minorUnits, 0);
+  const debtServiceExpenses = debtPayments
+    .filter((item) => inRange(item.occurredAt, start, end) && (item.currency || currency) === currency)
+    .reduce((sum, item) => sum + (Number(item.interestMinorUnits) || 0) + (Number(item.feesMinorUnits) || 0), 0);
+  const expenses = transactionExpenses + debtServiceExpenses;
   return { income, expenses, netCashFlow: income - expenses, transactions: scoped };
 }
 
-export function accountBalance(account, transactions) {
+export function accountBalance(account, transactions, debtPayments = []) {
   const opening = Number(account.openingMinorUnits) || 0;
-  return transactions.reduce((balance, item) => {
+  const transactionBalance = transactions.reduce((balance, item) => {
     if ((item.currency || account.currency) !== account.currency) return balance;
-
-    if (item.type === "income" && item.accountId === account.id) {
-      return balance + item.minorUnits;
-    }
-
-    if (item.type === "expense" && item.accountId === account.id) {
-      return balance - item.minorUnits;
-    }
-
+    if (item.type === "income" && item.accountId === account.id) return balance + item.minorUnits;
+    if (item.type === "expense" && item.accountId === account.id) return balance - item.minorUnits;
     if (item.type === "transfer") {
       if (item.accountId === account.id) return balance - item.minorUnits;
       if (item.toAccountId === account.id) return balance + item.minorUnits;
     }
-
     return balance;
   }, opening);
+  return debtPayments.reduce((balance, payment) => {
+    if (payment.accountId !== account.id || (payment.currency || account.currency) !== account.currency) return balance;
+    return balance - (Number(payment.amountMinorUnits) || 0);
+  }, transactionBalance);
 }
 
 export function debtBalance(debt, payments) {
@@ -200,18 +200,31 @@ export function savingsProgress(goal, contributions) {
 }
 
 export function netWorth(vault, currency = "COP") {
-  const assets = vault.assets.filter((item) => item.currency === currency).reduce((sum, item) => sum + (Number(item.minorUnits) || 0), 0);
+  const accountBalances = vault.accounts.filter((account) => account.currency === currency)
+    .map((account) => accountBalance(account, vault.transactions, vault.debtPayments));
+  const accountAssets = accountBalances.reduce((sum, balance) => sum + Math.max(0, balance), 0);
+  const accountLiabilities = accountBalances.reduce((sum, balance) => sum + Math.max(0, -balance), 0);
+  const otherAssets = vault.assets.filter((item) => item.currency === currency).reduce((sum, item) => sum + (Number(item.minorUnits) || 0), 0);
   const explicitLiabilities = vault.liabilities.filter((item) => item.currency === currency).reduce((sum, item) => sum + (Number(item.minorUnits) || 0), 0);
   const debtLiabilities = vault.debts.filter((item) => item.currency === currency).reduce((sum, debt) => sum + debtBalance(debt, vault.debtPayments), 0);
-  return { assets, liabilities: explicitLiabilities + debtLiabilities, debtLiabilities, net: assets - explicitLiabilities - debtLiabilities };
+  const assets = accountAssets + otherAssets;
+  const liabilities = accountLiabilities + explicitLiabilities + debtLiabilities;
+  return { assets, accountAssets, otherAssets, liabilities, accountLiabilities, debtLiabilities, net: assets - liabilities };
 }
 
 export function budgetSummary(budget, vault, start = new Date(budget.startDate), end = new Date(budget.endDate)) {
+  const inScope = (entry) => (!budget.accountId || budget.accountId === "all" || entry.accountId === budget.accountId)
+    && (entry.currency || budget.currency) === budget.currency
+    && inRange(entry.occurredAt, start, end);
   const lines = budget.items.map((item) => {
     const category = vault.categories.find((candidate) => candidate.id === item.categoryId);
-    const spent = vault.transactions
-      .filter((tx) => tx.type === "expense" && (tx.currency || budget.currency) === budget.currency && tx.categoryId === item.categoryId && inRange(tx.occurredAt, start, end))
+    const transactionSpent = vault.transactions
+      .filter((tx) => tx.type === "expense" && inScope(tx) && tx.categoryId === item.categoryId)
       .reduce((sum, tx) => sum + tx.minorUnits, 0);
+    const debtServiceSpent = vault.debtPayments
+      .filter((payment) => inScope(payment) && (payment.categoryId || "cat-other") === item.categoryId)
+      .reduce((sum, payment) => sum + (Number(payment.interestMinorUnits) || 0) + (Number(payment.feesMinorUnits) || 0), 0);
+    const spent = transactionSpent + debtServiceSpent;
     const limit = Number(item.limitMinorUnits) || 0;
     return { ...item, categoryName: category?.name || "Category", spent, remaining: limit - spent, percent: limit ? (spent / limit) * 100 : 0 };
   });

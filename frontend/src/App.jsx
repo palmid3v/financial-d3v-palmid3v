@@ -411,6 +411,7 @@ function Budget({ vault, updateVault }) {
   const [name, setName] = useState("Presupuesto mensual");
   const [currency, setCurrency] = useState("COP");
   const [rows, setRows] = useState([{ categoryId: "cat-housing", limit: "" }, { categoryId: "cat-food", limit: "" }, { categoryId: "cat-transport", limit: "" }]);
+  const [editingBudgetId, setEditingBudgetId] = useState("");
   const expenseCategories = vault.categories.filter((item) => item.kind === "expense");
   const budgets = vault.budgets;
   const removeBudget = (budget) => {

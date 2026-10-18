@@ -263,6 +263,10 @@ function Transactions({ vault, updateVault }) {
   const [editingId, setEditingId] = useState("");
   const categories = vault.categories.filter((item) => item.kind === form.type);
   const removeTransaction = (transaction) => {
+    if (transaction.linkedContributionId || vault.savingsContributions.some((item) => item.transactionId === transaction.id)) {
+      window.alert("Esta transferencia está vinculada a una meta. Edítala o elimínala desde Ahorro y metas para mantener los saldos sincronizados.");
+      return;
+    }
     if (!window.confirm("¿Eliminar este movimiento del ledger? Esta acción se guardará cuando guardes el Vault.")) return;
     updateVault((current) => ({ ...current, transactions: current.transactions.filter((item) => item.id !== transaction.id) }));
     setMessageTone("success");
@@ -298,6 +302,10 @@ function Transactions({ vault, updateVault }) {
     setForm((current) => ({ ...current, amount: "", description: "" }));
   };
   const editTransaction = (tx) => {
+    if (tx.linkedContributionId || vault.savingsContributions.some((item) => item.transactionId === tx.id)) {
+      window.alert("Esta transferencia está vinculada a una meta. Edítala desde Ahorro y metas para mantener los saldos sincronizados.");
+      return;
+    }
     setEditingId(tx.id);
     setForm({
       type: tx.type,
@@ -334,7 +342,7 @@ function Transactions({ vault, updateVault }) {
       </Panel>
       <Panel><div className="panel-head"><div><small>Ledger privado</small><h3>Movimientos</h3></div><span>{items.length} registros</span></div>
         {items.length === 0 ? <Empty title="Sin movimientos" text="El ledger está listo. Registra tu primer ingreso, gasto o transferencia." /> :
-          <div className="stack-list">{items.map((tx) => <div className="stack-row" key={tx.id}><span className={`movement-icon ${tx.type}`}>{tx.type === "income" ? "↗" : tx.type === "expense" ? "↘" : "⇄"}</span><div><b>{tx.description}</b><small>{tx.type} · {new Date(tx.occurredAt).toLocaleString("es-CO")}</small></div><strong className={tx.type === "expense" ? "negative" : tx.type === "income" ? "positive" : ""}>{tx.type === "expense" ? "−" : tx.type === "income" ? "+" : ""}{money(tx.minorUnits, tx.currency)}</strong><Button onClick={() => editTransaction(tx)}>Editar</Button><Button className="danger-button" onClick={() => removeTransaction(tx)}>Eliminar</Button></div>)}</div>}
+          <div className="stack-list">{items.map((tx) => <div className="stack-row" key={tx.id}><span className={`movement-icon ${tx.type}`}>{tx.type === "income" ? "↗" : tx.type === "expense" ? "↘" : "⇄"}</span><div><b>{tx.description}</b><small>{tx.type} · {vault.accounts.find((account) => account.id === tx.accountId)?.name || "Cuenta"}{tx.type === "transfer" ? " → " + (vault.accounts.find((account) => account.id === tx.toAccountId)?.name || "Destino") : ""} · {new Date(tx.occurredAt).toLocaleString("es-CO")}</small></div><strong className={tx.type === "expense" ? "negative" : tx.type === "income" ? "positive" : ""}>{tx.type === "expense" ? "−" : tx.type === "income" ? "+" : ""}{money(tx.minorUnits, tx.currency)}</strong>{tx.linkedContributionId || vault.savingsContributions.some((entry) => entry.transactionId === tx.id) ? <small>Transferencia vinculada a meta · gestionar desde Ahorro y metas</small> : <><Button onClick={() => editTransaction(tx)}>Editar</Button><Button className="danger-button" onClick={() => removeTransaction(tx)}>Eliminar</Button></>}</div>)}</div>}
       </Panel>
     </div>
   </Module>;

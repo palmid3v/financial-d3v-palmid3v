@@ -184,9 +184,10 @@ Financial rules preserved:
 - Net worth is assets minus liabilities, with no silent cross-currency conversion.
 - The encrypted `.fdv` file remains the persistence source of truth; decrypted financial data stays in active application memory.
 
-Remaining validation:
+Validation status:
+- Automated CI passed on code commit `41a01eeea39ce6d43ab168eeb2013d008c8c2939`: Go tests/build, frontend tests (22 passing), Vite production build, WASM build and source security audit.
 - Currency conversion and exchange-rate sourcing are not implemented.
-- CI, frontend tests/build, WASM build and the save → lock → reopen flow still need to pass on this branch. Desktop/mobile UX also requires runtime verification with synthetic data.
+- Manual save → lock → reopen verification and desktop/mobile runtime UX testing with synthetic data are still pending. The PR remains a draft until those workflows are checked.
 - Do not treat this change set as complete until the validation script and manual workflows pass.
 
 Run locally from the repository root:

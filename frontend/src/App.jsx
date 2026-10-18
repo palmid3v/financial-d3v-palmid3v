@@ -18,6 +18,7 @@ import {
   monthSeries,
   netWorth,
   normalizeVault,
+  projectMonthlyCashFlow,
   savingsProgress,
   transactionTotals,
 } from "./vault/finance";
@@ -176,6 +177,7 @@ function Dashboard({ vault, setActive }) {
   const savingsRate = totals.income > 0 ? (totals.netCashFlow / totals.income) * 100 : 0;
   const debt = nw.debtLiabilities;
   const series = monthSeries(vault.transactions, 6, new Date(), "COP", vault.debtPayments);
+  const cashFlowProjection = projectMonthlyCashFlow(vault.transactions, vault.debtPayments, new Date(), "COP", 3);
   const max = Math.max(...series.flatMap((row) => [row.income, row.expenses]), 1);
   const expenseCategories = vault.categories.filter((item) => item.kind === "expense").map((category) => ({
     ...category,
@@ -197,6 +199,8 @@ function Dashboard({ vault, setActive }) {
       <b>Go Financial Engine</b>
       <span>{goEngineStatus === "ready" ? "WASM disponible · dashboard usa reglas JS para integrar cuentas y pagos" : goEngineStatus === "loading" ? "Inicializando motor local…" : "WASM no disponible · cálculo JS local"}</span>
     </Notice>
+
+    <Panel className="projection-panel reveal"><div className="panel-head"><div><small>Planeación · COP</small><h3>Referencia para el próximo mes</h3></div><span className="badge">Estimación</span></div><p>Promedio de los últimos {cashFlowProjection.basisMonths} meses completos; no es un movimiento registrado ni una garantía.</p><div className="projection-values"><div><small>Ingreso promedio</small><strong>{money(cashFlowProjection.averageIncome)}</strong></div><div><small>Egresos promedio</small><strong>{money(cashFlowProjection.averageExpenses + cashFlowProjection.averagePrincipalPayments)}</strong></div><div><small>Flujo neto promedio</small><strong className={cashFlowProjection.averageNetCashFlow >= 0 ? "positive" : "negative"}>{money(cashFlowProjection.averageNetCashFlow)}</strong></div></div></Panel>
 
     <div className="metrics metrics-4">
       <Metric label="Patrimonio neto" value={money(nw.net)} detail="Activos − pasivos" tone="green" />

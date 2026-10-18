@@ -541,10 +541,14 @@ function Savings({ vault, updateVault }) {
       setEditingContributionId("");
       setContribution({ goalId: "", amount: "", note: "", fromAccountId: "", toAccountId: "" });
     }
+    if (product.goalId === item.id) {
+      setProduct({ id: "", goalId: "", name: "", url: "", price: "", imageUrl: "", imageDataUrl: "", note: "" });
+    }
 
     updateVault((current) => ({
       ...current,
       savingsGoals: current.savingsGoals.filter((entry) => entry.id !== item.id),
+      savingsProducts: (current.savingsProducts || []).filter((entry) => entry.goalId !== item.id),
       savingsContributions: current.savingsContributions.filter((entry) => entry.goalId !== item.id),
       transactions: current.transactions.filter(
         (transaction) =>

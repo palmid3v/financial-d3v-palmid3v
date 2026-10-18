@@ -532,7 +532,7 @@ function Savings({ vault, updateVault }) {
   const [contribution, setContribution] = useState({ goalId: "", amount: "", note: "", fromAccountId: "", toAccountId: "" });
   const [editingGoalId, setEditingGoalId] = useState("");
   const [editingContributionId, setEditingContributionId] = useState("");
-  const [product, setProduct] = useState({ id: "", goalId: "", name: "Nevera LG Bottom Freezer", url: "https://www.exito.com/nevera-bottom-freezer-tecnolog-lg-gb41wppapzcclm-3039571/p", price: "3365000", imageUrl: "", imageDataUrl: "", note: "" });
+  const [product, setProduct] = useState({ id: "", goalId: vault.savingsGoals.find((item) => item.name.trim().toLowerCase() === "hogar")?.id || "", name: "Nevera LG Bottom Freezer", url: "https://www.exito.com/nevera-bottom-freezer-tecnolog-lg-gb41wppapzcclm-3039571/p", price: "3365000", imageUrl: "", imageDataUrl: "", note: "" });
   const [productStatus, setProductStatus] = useState("");
   const [extractingProduct, setExtractingProduct] = useState(false);
   const editGoal = (item) => { setEditingGoalId(item.id); setGoal({ name: item.name, target: String((Number(item.targetMinorUnits) || 0) / 100), targetDate: item.targetDate || "", currency: item.currency || "COP" }); };

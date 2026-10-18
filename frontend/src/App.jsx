@@ -546,7 +546,12 @@ function Debts({ vault, updateVault }) {
         interestMinorUnits,
         feesMinorUnits,
       });
-      updateVault((current) => ({ ...current, debtPayments: [...current.debtPayments, newPayment] }));
+      if (editingPaymentId) {
+        updateVault((current) => ({ ...current, debtPayments: current.debtPayments.map((item) => item.id === editingPaymentId ? { ...newPayment, id: item.id, occurredAt: item.occurredAt } : item) }));
+        setEditingPaymentId("");
+      } else {
+        updateVault((current) => ({ ...current, debtPayments: [...current.debtPayments, newPayment] }));
+      }
       setPayment({ debtId: payment.debtId, amount: "", principal: "", interest: "", fees: "" });
     } catch (error) {
       setPaymentError(error instanceof Error ? error.message : "No se pudo validar el pago.");

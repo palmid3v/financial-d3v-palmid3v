@@ -13,6 +13,8 @@ export default function VaultGate() {
   const [mode, setMode] = useState("open");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [fileHandle, setFileHandle] = useState(null);
+  const [selectedFileName, setSelectedFileName] = useState("");
   const fileRef = useRef(null);
 
   if (!locked) return <App />;
@@ -31,7 +33,7 @@ export default function VaultGate() {
       } else {
         const file = fileRef.current?.files?.[0];
         if (!file) throw new Error("Select your Financial Vault file.");
-        await unlockFile(file, password);
+        await unlockFile(file, password, fileHandle);
       }
 
       setPassword("");
@@ -40,6 +42,30 @@ export default function VaultGate() {
       setError(err.message || "Unable to open the Financial Vault.");
     } finally {
       setBusy(false);
+    }
+  };
+
+  const chooseVaultFile = async () => {
+    setError("");
+    if (typeof window.showOpenFilePicker !== "function") {
+      fileRef.current?.click();
+      return;
+    }
+    try {
+      const [handle] = await window.showOpenFilePicker({
+        multiple: false,
+        types: [{ description: "Financial-D3v encrypted vault", accept: { "application/json": [".fdv", ".json"] } }],
+      });
+      const file = await handle.getFile();
+      setFileHandle(handle);
+      setSelectedFileName(file.name);
+      if (fileRef.current) {
+        const transfer = new DataTransfer();
+        transfer.items.add(file);
+        fileRef.current.files = transfer.files;
+      }
+    } catch (err) {
+      if (err?.name !== "AbortError") setError("No se pudo seleccionar el archivo. Puedes usar el selector tradicional.");
     }
   };
 
@@ -55,7 +81,7 @@ export default function VaultGate() {
         <button type="button" className={mode === "create" ? "active" : ""} onClick={() => { setMode("create"); setError(""); }}>Create vault</button>
       </div>
       <form onSubmit={submit} className="form-grid">
-        {mode === "open" && <label className="field"><span>Encrypted vault file</span><input ref={fileRef} type="file" accept=".fdv,application/json" required /></label>}
+        {mode === "open" && <div className="field"><span>Archivo de bóveda cifrada</span><button className="button" type="button" onClick={chooseVaultFile}>Elegir archivo .fdv</button><input ref={fileRef} type="file" accept=".fdv,application/json" required onChange={(event) => { setFileHandle(null); setSelectedFileName(event.target.files?.[0]?.name || ""); }} /><small>{selectedFileName || "Selecciona tu archivo cifrado."}</small><small>En Chrome o Edge de escritorio, seleccionar el archivo con el selector avanzado permite guardar cambios sobre el mismo archivo tras autorizarlo.</small></div>}
         <Field label="Vault password" type="password" autoComplete={mode === "create" ? "new-password" : "current-password"} required value={password} onChange={(event) => setPassword(event.target.value)} />
         {mode === "create" && <Field label="Confirm password" type="password" autoComplete="new-password" required value={confirm} onChange={(event) => setConfirm(event.target.value)} />}
         {error && <div className="notice error"><b>Vault unavailable.</b><span>{error}</span></div>}

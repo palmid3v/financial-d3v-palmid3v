@@ -200,8 +200,8 @@ function Dashboard({ vault, setActive }) {
 
     <div className="metrics metrics-4">
       <Metric label="Patrimonio neto" value={money(nw.net)} detail="Activos − pasivos" tone="green" />
-      <Metric label="Flujo de caja" value={`${totals.netCashFlow > 0 ? "+ " : totals.netCashFlow < 0 ? "− " : ""}${money(Math.abs(totals.netCashFlow))}`} detail="Este mes" tone="green" />
-      <Metric label="Ahorro del mes" value={`${Math.round(savingsRate)}%`} detail="Flujo neto / ingresos" tone="yellow" />
+      <Metric label="Flujo de caja" value={`${totals.netCashFlow > 0 ? "+ " : totals.netCashFlow < 0 ? "− " : ""}${money(Math.abs(totals.netCashFlow))}`} detail="Este mes · COP" tone="green" />
+      <Metric label="Ahorro del mes" value={`${Math.round(savingsRate)}%`} detail="Flujo neto / ingresos · COP" tone="yellow" />
       <Metric label="Deuda pendiente" value={money(debt)} detail="Saldo de deudas" tone="blue" />
     </div>
 
@@ -220,7 +220,7 @@ function Dashboard({ vault, setActive }) {
       </Panel>
 
       <Panel className="chart-panel reveal">
-        <div className="panel-head"><div><small>Este mes</small><h3>Gasto por categoría</h3></div></div>
+        <div className="panel-head"><div><small>Este mes · COP</small><h3>Gasto por categoría</h3></div></div>
         {totalCategorySpend === 0 ? <Empty title="Sin gastos todavía" text="Registra una transacción y aquí aparecerá la distribución." /> :
           <div className="donut-wrap">
             <div className="donut" style={{
@@ -278,6 +278,7 @@ function Transactions({ vault, updateVault }) {
     if (!account || !form.amount) { setMessageTone("error"); setMessage("Selecciona una cuenta e ingresa un monto."); return; }
     const destination = vault.accounts.find((item) => item.id === form.toAccountId);
     const amountMinorUnits = numberValue(form.amount);
+    if (!form.occurredAt || Number.isNaN(new Date(form.occurredAt).getTime())) { setMessageTone("error"); setMessage("Selecciona una fecha válida para el movimiento."); return; }
     if (!Number.isSafeInteger(amountMinorUnits) || amountMinorUnits <= 0) { setMessageTone("error"); setMessage("El monto debe ser mayor que cero y estar dentro del rango permitido."); return; }
     if (form.type === "transfer" && (account.type === "credit" || !destination || destination.type === "credit" || destination.id === account.id || destination.currency !== account.currency)) { setMessageTone("error"); setMessage("Selecciona dos cuentas distintas, no crediticias y con la misma moneda."); return; }
     const transaction = makeTransaction({
@@ -357,8 +358,10 @@ function Accounts({ vault, updateVault }) {
     event.preventDefault();
     const name = form.name.trim();
     const currency = form.currency.trim().toUpperCase();
+    const openingMinorUnits = form.opening.trim() ? numberValue(form.opening) : 0;
     if (!name || !/^[A-Z]{3}$/.test(currency)) { setNotice("Ingresa un nombre y un código de moneda de 3 letras."); return; }
-    updateVault((current) => ({ ...current, accounts: [...current.accounts, makeAccount({ name, type: form.type, currency, openingMinorUnits: numberValue(form.opening) })] }));
+    if (!Number.isSafeInteger(openingMinorUnits) || openingMinorUnits < 0) { setNotice("Ingresa un saldo inicial entero no negativo."); return; }
+    updateVault((current) => ({ ...current, accounts: [...current.accounts, makeAccount({ name, type: form.type, currency, openingMinorUnits })] }));
     setForm({ name: "", type: "bank", currency: "COP", opening: "" });
     setNotice("Cuenta creada. Guarda el vault para conservar los cambios en el archivo.");
   };

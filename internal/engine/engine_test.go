@@ -44,3 +44,46 @@ func TestAnalyzeRejectsInvalidPeriod(t *testing.T) {
 	_, err := Analyze(Vault{}, Period{Start: "bad", End: "also-bad"}, "COP")
 	if err == nil { t.Fatal("expected invalid period error") }
 }
+
+
+func TestAnalyzeExcludesOtherCurrenciesFromSavingsAndNetWorth(t *testing.T) {
+	vault := Vault{
+		SavingsGoals: []SavingsGoal{
+			{ID: "cop-goal", TargetMinorUnits: 100000, Currency: "COP"},
+			{ID: "usd-goal", TargetMinorUnits: 100000, Currency: "USD"},
+		},
+		SavingsContributions: []SavingsContribution{
+			{GoalID: "cop-goal", AmountMinorUnits: 25000},
+			{GoalID: "usd-goal", AmountMinorUnits: 90000},
+		},
+		Debts: []Debt{
+			{ID: "cop-debt", OriginalMinorUnits: 200000, Currency: "COP"},
+			{ID: "usd-debt", OriginalMinorUnits: 800000, Currency: "USD"},
+		},
+		DebtPayments: []DebtPayment{
+			{DebtID: "cop-debt", PrincipalMinorUnits: 50000},
+			{DebtID: "usd-debt", PrincipalMinorUnits: 100000},
+		},
+		Assets: []Asset{
+			{MinorUnits: 500000, Currency: "COP"},
+			{MinorUnits: 700000, Currency: "USD"},
+		},
+		Liabilities: []Liability{
+			{MinorUnits: 100000, Currency: "COP"},
+			{MinorUnits: 200000, Currency: "USD"},
+		},
+	}
+	result, err := Analyze(vault, Period{Start: "2026-10-01T00:00:00Z", End: "2026-11-01T00:00:00Z"}, "COP")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Savings) != 1 || result.Savings[0].GoalID != "cop-goal" {
+		t.Fatalf("unexpected savings currencies: %+v", result.Savings)
+	}
+	if len(result.Debts) != 1 || result.Debts[0].DebtID != "cop-debt" {
+		t.Fatalf("unexpected debt currencies: %+v", result.Debts)
+	}
+	if result.NetWorth.Assets != 500000 || result.NetWorth.Liabilities != 250000 || result.NetWorth.Net != 250000 {
+		t.Fatalf("unexpected COP net worth: %+v", result.NetWorth)
+	}
+}

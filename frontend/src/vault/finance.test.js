@@ -4,6 +4,7 @@ import {
   accountBalance,
   budgetSummary,
   makeDebtPayment,
+  makeTransaction,
   transactionTotals,
   normalizeVault,
   currentMonthRange,
@@ -173,4 +174,14 @@ test("net worth filters assets and liabilities by currency without conversion", 
   const usd = netWorth(vault, "USD");
   assert.deepEqual(cop, { assets: 250000, liabilities: 80000, debtLiabilities: 30000, net: 170000 });
   assert.deepEqual(usd, { assets: 90000, liabilities: 30000, debtLiabilities: 20000, net: 60000 });
+});
+
+
+test("transaction domain helper rejects invalid amounts and malformed transfers", () => {
+  assert.throws(() => makeTransaction({ type: "expense", accountId: "acc-1", minorUnits: 0 }), /importe positivo/);
+  assert.throws(() => makeTransaction({ type: "expense", accountId: "acc-1", minorUnits: -100 }), /importe positivo/);
+  assert.throws(() => makeTransaction({ type: "expense", accountId: "acc-1", minorUnits: Number.MAX_SAFE_INTEGER + 1 }), /importe positivo/);
+  assert.throws(() => makeTransaction({ type: "transfer", accountId: "acc-1", toAccountId: "acc-1", minorUnits: 100 }), /cuenta destino distinta/);
+  const valid = makeTransaction({ type: "transfer", accountId: "acc-1", toAccountId: "acc-2", minorUnits: 100 });
+  assert.equal(valid.minorUnits, 100);
 });

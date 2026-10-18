@@ -164,23 +164,31 @@ Older Cloud Run/Firebase production documents are historical traceability, not a
 
 ## Integrated 8-part build — 2026-10-18
 
-Scope: Dashboard, Accounts, Transactions, Budgets, Savings & Goals, Debts, Net Worth, and Education. Work is being applied directly to `main`, as requested.
+Scope: Dashboard, Accounts, Transactions, Budgets, Savings & Goals, Debts, Net Worth, and Education. Implementation changes are being applied directly to `main`, as requested.
 
-Implemented in the current `main` history:
-- Account create/edit supports the opening balance; current balance continues to derive from the opening balance and ledger.
-- Account, transaction, budget, goal, debt, asset and liability currencies are stored explicitly where supported; the dashboard groups account balances by currency and does not add unlike currencies together.
-- Transaction create/edit/delete flows are available; transfers require distinct accounts with matching currencies.
-- Budgets can be created, edited and deleted; budget actuals are derived from expense transactions and filtered by budget currency.
-- Goals can be created and deleted only when no contributions are linked; debts can be created and deleted only when no payments are linked. These safeguards preserve linked financial history.
-- Assets and liabilities can be created and deleted.
-- Debt payments validate that total payment equals principal + interest + fees, and only principal reduces the outstanding balance.
-- Net-worth calculations include liabilities and outstanding debt, scoped to one currency without silent exchange-rate conversion.
-- The encrypted `.fdv` vault is the persistence source of truth; decrypted data is held in active application memory.
+Implemented in current `main` history:
+- Account creation and editing include the opening balance; account balances remain derived from opening balance plus the ledger.
+- Transactions support create, edit and delete. Domain helpers reject non-positive/unsafe amounts and malformed same-account transfers; UI validation also requires transfer accounts to share a currency.
+- Budgets support create, edit and delete. Actual spending is derived from expense transactions and scoped by budget currency.
+- Savings goals support create and edit. Goals with linked contributions cannot be deleted; contribution history is visible and individual contributions can be deleted with confirmation.
+- Debts support create and edit. Debts with linked payments cannot be deleted; payment history is visible and payments can be deleted with confirmation. Debt editing guards against reducing original principal below principal already paid and blocks currency changes after payments exist.
+- Assets and liabilities support create, edit and delete.
+- Account, asset, liability, goal, debt and budget forms store their selected currency; dashboard account totals are grouped by currency.
+- Debt payments validate total = principal + interest + fees; only principal reduces outstanding debt.
+- Net worth includes explicit liabilities and outstanding debts, calculated separately by currency without silent conversion.
+- Domain-level validation and regression tests have been added for account opening balances, transaction amounts/transfers and savings contributions.
+- The encrypted `.fdv` remains the persistent source of truth; decrypted financial data is held in active application memory.
 
-Known limitations / next work:
+Known limitations / verification still required:
 - Currency conversion and exchange-rate sourcing are not implemented. Cross-currency totals must remain separate.
-- Editing is not yet complete for every record type; savings contributions and debt payments need full lifecycle management, and asset/liability/goal/debt edit workflows still need completion.
-- Education content remains a static learning set rather than a fully contextual, data-driven coach.
-- Local automated tests/build and end-to-end desktop/mobile workflows must be run against the latest `main` checkout before declaring the eight parts complete.
+- Debt payments currently support add and delete; editing an existing payment is not implemented.
+- Savings contributions currently support add and delete; editing an existing contribution is not implemented.
+- Education content remains a static learning set, not a fully contextual, data-driven coach.
+- Latest changes have not been run through local frontend tests/build or full desktop/mobile runtime workflows from this environment. Do not treat the integrated scope as complete until the checks below pass.
 
-Validation: do not mark the integrated eight-part scope complete until `npm test`, `npm run build`, `npm run build:wasm`, the repository validation/security scripts, and local workflows for create/edit/delete → save encrypted vault → lock → reopen all pass. Use synthetic financial data for testing.
+Required local verification from repository root:
+```powershell
+.\scripts\validate.ps1
+```
+
+Then verify with synthetic data: create/edit/delete records in all eight modules; save the encrypted `.fdv`; lock; reopen the same file; confirm records and financial totals; repeat the principal flows on desktop and mobile. The eight-part scope must not be marked complete until automated checks and these runtime flows pass.

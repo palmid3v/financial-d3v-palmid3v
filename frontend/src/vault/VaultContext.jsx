@@ -14,6 +14,7 @@ export function VaultProvider({ children }) {
   const [vault, setVault] = useState(null);
   const [fileName, setFileName] = useState("");
   const [dirty, setDirty] = useState(false);
+  const [fileHandle, setFileHandle] = useState(null);
   const passwordRef = useRef(null);
   const autoLockTimerRef = useRef(null);
 
@@ -26,6 +27,7 @@ export function VaultProvider({ children }) {
     setVault(null);
     setFileName("");
     setDirty(false);
+    setFileHandle(null);
     passwordRef.current = null;
   }, []);
 
@@ -37,9 +39,14 @@ export function VaultProvider({ children }) {
     }
 
     autoLockTimerRef.current = setTimeout(() => {
+      // Never discard unsaved work silently. Defer auto-lock while dirty.
+      if (dirty) {
+        autoLockTimerRef.current = setTimeout(() => resetAutoLockTimer(), 60 * 1000);
+        return;
+      }
       lock();
     }, VAULT_AUTO_LOCK_MS);
-  }, [lock, vault]);
+  }, [dirty, lock, vault]);
 
   useEffect(() => {
     if (!vault) return undefined;
@@ -70,6 +77,7 @@ export function VaultProvider({ children }) {
     const serialized = await sealVault(data, password);
 
     downloadVault(serialized, "financial-d3v.fdv");
+    setFileHandle(null);
 
     passwordRef.current = password;
     setVault(normalizeVault(data));
@@ -78,12 +86,13 @@ export function VaultProvider({ children }) {
     return data;
   }, []);
 
-  const unlockFile = useCallback(async (file, password) => {
+  const unlockFile = useCallback(async (file, password, handle = null) => {
     const serialized = await readFile(file);
     const data = await openVault(serialized, password);
     passwordRef.current = password;
     setVault(normalizeVault(data));
     setFileName(file.name || "financial-d3v.fdv");
+    setFileHandle(handle);
     setDirty(false);
     return data;
   }, []);
@@ -105,11 +114,22 @@ export function VaultProvider({ children }) {
       { ...nextVault, updatedAt: new Date().toISOString() },
       passwordRef.current,
     );
-    downloadVault(serialized, fileName || "financial-d3v.fdv");
+    if (fileHandle && typeof fileHandle.createWritable === "function") {
+      const writable = await fileHandle.createWritable();
+      try {
+        await writable.write(serialized);
+        await writable.close();
+      } catch (error) {
+        try { await writable.abort(); } catch { /* preserve original error */ }
+        throw error;
+      }
+    } else {
+      downloadVault(serialized, fileName || "financial-d3v.fdv");
+    }
     setDirty(false);
     resetAutoLockTimer();
     return serialized;
-  }, [fileName, resetAutoLockTimer, vault]);
+  }, [fileHandle, fileName, resetAutoLockTimer, vault]);
 
   const value = useMemo(() => ({
     vault,

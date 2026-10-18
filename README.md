@@ -162,31 +162,34 @@ Older Cloud Run/Firebase production documents are historical traceability, not a
 10. Move to the next phase.
 
 
-## Integrated 8-part build — 2026-10-18
+## Account-linked finance workflows — 2026-10-18
 
-Scope: Dashboard, Accounts, Transactions, Budgets, Savings & Goals, Debts, Net Worth, and Education. Implementation changes are being applied directly to `main`, as requested.
+This branch connects the eight finance tabs around the same account-aware ledger. It is a candidate change set and has not been merged into `main`.
 
-Implemented in current `main` history:
-- Account creation and editing include the opening balance; account balances remain derived from opening balance plus the ledger.
-- Transactions support create, edit and delete. Domain helpers reject non-positive/unsafe amounts and malformed same-account transfers; UI validation also requires transfer accounts to share a currency.
-- Budgets support create, edit and delete. Actual spending is derived from expense transactions and scoped by budget currency.
-- Savings goals support create and edit. Goals with linked contributions cannot be deleted; contribution history is visible and contributions support edit/delete with confirmation.
-- Debts support create and edit. Debts with linked payments cannot be deleted; payment history is visible and payments support edit/delete with confirmation. Debt editing guards against reducing original principal below principal already paid and blocks currency changes after payments exist.
-- Assets and liabilities support create, edit and delete.
-- Account, asset, liability, goal, debt and budget forms store their selected currency; dashboard account totals are grouped by currency.
-- Debt payments validate total = principal + interest + fees; only principal reduces outstanding debt.
-- Net worth includes explicit liabilities and outstanding debts, calculated separately by currency without silent conversion.
-- Domain-level validation and regression tests have been added for account opening balances, transaction amounts/transfers and savings contributions.
-- The encrypted `.fdv` remains the persistent source of truth; decrypted financial data is held in active application memory.
+Implemented in this branch:
+- Transactions keep a required source account; transfers require two distinct, non-credit accounts in the same currency. Ledger rows and dashboard recent activity show account context.
+- Savings contributions require a source and destination account in the goal's currency. Recording a contribution creates a linked transfer, so both account balances update without counting the transfer as an expense. Editing/deleting the contribution updates/removes its linked transfer. Linked transfers are managed from Savings to prevent ledger drift.
+- Debt payments require a non-credit payment account in the debt's currency. The full payment reduces that account's balance; only principal reduces the debt liability; interest and fees count as expenses and can be assigned to an expense category. Principal payments affect cash flow but are not misclassified as ordinary spending.
+- Budgets can apply to all accounts in one selected currency or a specific account. Actuals include expenses and debt interest/fees for that scope; principal and internal transfers are excluded from budget spending.
+- Net worth includes positive balances in non-credit accounts and other recorded assets; negative balances in non-credit accounts are treated as liabilities. Credit-type accounts are excluded from net-worth assets to avoid double-counting; record the associated obligation in Debts.
+- Account currency changes and deletion are blocked when linked transactions, payments, goals or budgets would become inconsistent.
+- Dashboard cash flow, monthly trend, expense categories and savings rate account for linked debt payments. The JS finance domain is authoritative for these account-linked calculations; the existing WASM result is not allowed to overwrite them until its schema and calculations are brought into parity.
+- Legacy budgets default to all accounts; legacy goal contributions and debt payments retain their historical values. Existing records without account links cannot be retroactively assigned a source account without user input.
+- Added regression coverage for account-linked debt accounting, account-scoped budgets, legacy metadata normalization and credit-account net-worth handling.
 
-Known limitations / verification still required:
-- Currency conversion and exchange-rate sourcing are not implemented. Cross-currency totals must remain separate.
-- Education concepts remain a curated static learning set; current COP cash-flow, savings-rate, net-worth and budget metrics are shown contextually, but there is no personalized recommendation engine.
-- Latest changes have not been run through local frontend tests/build or full desktop/mobile runtime workflows from this environment. Do not treat the integrated scope as complete until the checks below pass.
+Financial rules preserved:
+- Money is represented as integer minor units with a currency.
+- Internal transfers are not ordinary expenses.
+- Debt principal alone reduces debt; interest and fees are expenses.
+- Net worth is assets minus liabilities, with no silent cross-currency conversion.
+- The encrypted `.fdv` file remains the persistence source of truth; decrypted financial data stays in active application memory.
 
-Required local verification from repository root:
+Remaining validation:
+- Currency conversion and exchange-rate sourcing are not implemented.
+- CI, frontend tests/build, WASM build and the save → lock → reopen flow still need to pass on this branch. Desktop/mobile UX also requires runtime verification with synthetic data.
+- Do not treat this change set as complete until the validation script and manual workflows pass.
+
+Run locally from the repository root:
 ```powershell
 .\scripts\validate.ps1
 ```
-
-Then verify with synthetic data: create/edit/delete records in all eight modules; save the encrypted `.fdv`; lock; reopen the same file; confirm records and financial totals; repeat the principal flows on desktop and mobile. The eight-part scope must not be marked complete until automated checks and these runtime flows pass.

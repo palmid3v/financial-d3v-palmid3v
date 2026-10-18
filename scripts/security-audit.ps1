@@ -1,3 +1,4 @@
+# Financial-D3v security source audit
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
@@ -18,14 +19,21 @@ $forbiddenPatterns = @(
   "localStorage",
   "sessionStorage",
   "indexedDB",
-  "navigator\\.sendBeacon",
+  "navigator\.sendBeacon",
   "XMLHttpRequest",
-  "\\bfetch\\s*\\("
+  "\bfetch\s*\("
 )
 
 $violations = @()
 foreach ($file in $files) {
   $content = Get-Content -Raw -LiteralPath $file.FullName
+
+  # The Go/WASM engine is intentionally fetched as a same-origin static asset.
+  # Allow only that exact fetch call; any additional fetch remains forbidden.
+  if ($file.Name -eq "goEngine.js") {
+    $content = $content -replace 'fetch\("/wasm/financial-engine\.wasm"\)', ""
+  }
+
   foreach ($pattern in $forbiddenPatterns) {
     if ($content -match $pattern) { $violations += "$($file.FullName): forbidden pattern '$pattern'" }
   }
@@ -46,8 +54,8 @@ $context = Get-Content -Raw -LiteralPath $contextPath
 $crypto = Get-Content -Raw -LiteralPath $cryptoPath
 
 $requiredContextPatterns = @(
-  "passwordRef\\.current = null",
-  "setVault\\(null\\)",
+  "passwordRef\.current = null",
+  "setVault\(null\)",
   "VAULT_AUTO_LOCK_MS"
 )
 foreach ($pattern in $requiredContextPatterns) {
@@ -58,14 +66,15 @@ $requiredCryptoPatterns = @(
   "PBKDF2",
   "AES-GCM",
   "600000",
-  "crypto\\.getRandomValues",
+  "crypto\.getRandomValues",
   "tagLength: TAG_BITS"
 )
 foreach ($pattern in $requiredCryptoPatterns) {
   if ($crypto -notmatch $pattern) { throw "Crypto control missing: $pattern" }
 }
 
-Write-Host "[PASS] No browser persistence or network APIs detected in vault source."
+Write-Host "[PASS] No browser persistence or forbidden network APIs detected in vault source."
+Write-Host "[PASS] Only the allowlisted same-origin WASM asset fetch is permitted."
 Write-Host "[PASS] Lock/password clearing controls detected."
 Write-Host "[PASS] Auto-lock control detected."
 Write-Host "[PASS] PBKDF2/AES-GCM crypto controls detected."

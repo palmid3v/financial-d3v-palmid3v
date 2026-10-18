@@ -172,8 +172,8 @@ test("net worth filters assets and liabilities by currency without conversion", 
   };
   const cop = netWorth(vault, "COP");
   const usd = netWorth(vault, "USD");
-  assert.deepEqual(cop, { assets: 250000, liabilities: 80000, debtLiabilities: 30000, net: 170000 });
-  assert.deepEqual(usd, { assets: 90000, liabilities: 30000, debtLiabilities: 20000, net: 60000 });
+  assert.deepEqual(cop, { assets: 250000, accountAssets: 0, otherAssets: 250000, liabilities: 80000, accountLiabilities: 0, debtLiabilities: 30000, net: 170000 });
+  assert.deepEqual(usd, { assets: 90000, accountAssets: 0, otherAssets: 90000, liabilities: 30000, accountLiabilities: 0, debtLiabilities: 20000, net: 60000 });
 });
 
 

@@ -461,7 +461,7 @@ function Budget({ vault, updateVault }) {
 
 function Savings({ vault, updateVault }) {
   const [goal, setGoal] = useState({ name: "", target: "", targetDate: "", currency: "COP" });
-  const [contribution, setContribution] = useState({ goalId: "", amount: "", note: "" });
+  const [contribution, setContribution] = useState({ goalId: "", amount: "", note: "", fromAccountId: "", toAccountId: "" });
   const [editingGoalId, setEditingGoalId] = useState("");
   const [editingContributionId, setEditingContributionId] = useState("");
   const editGoal = (item) => { setEditingGoalId(item.id); setGoal({ name: item.name, target: String((Number(item.targetMinorUnits) || 0) / 100), targetDate: item.targetDate || "", currency: item.currency || "COP" }); };
@@ -474,9 +474,57 @@ function Savings({ vault, updateVault }) {
     updateVault((current) => ({ ...current, savingsGoals: current.savingsGoals.filter((entry) => entry.id !== item.id) }));
   };
   const saveGoal = (event) => { event.preventDefault(); if (!goal.name.trim() || !goal.target.trim() || !Number.isSafeInteger(numberValue(goal.target)) || numberValue(goal.target) <= 0) return; if (editingGoalId) { updateVault((current) => ({ ...current, savingsGoals: current.savingsGoals.map((item) => item.id === editingGoalId ? { ...item, name: goal.name.trim(), targetMinorUnits: numberValue(goal.target), targetDate: goal.targetDate, currency: goal.currency } : item) })); setEditingGoalId(""); } else { updateVault((current) => ({ ...current, savingsGoals: [...current.savingsGoals, makeSavingsGoal({ name: goal.name.trim(), targetMinorUnits: numberValue(goal.target), targetDate: goal.targetDate, currency: goal.currency })] })); } setGoal({ name: "", target: "", targetDate: "", currency: goal.currency }); };
-  const saveContribution = (event) => { event.preventDefault(); const amountMinorUnits = numberValue(contribution.amount); if (!contribution.goalId || !contribution.amount.trim() || !Number.isSafeInteger(amountMinorUnits) || amountMinorUnits <= 0) return; if (editingContributionId) { const previous = vault.savingsContributions.find((item) => item.id === editingContributionId); const oldGoal = vault.savingsGoals.find((item) => item.id === previous?.goalId); const nextGoal = vault.savingsGoals.find((item) => item.id === contribution.goalId); if (oldGoal && nextGoal && oldGoal.currency !== nextGoal.currency) { window.alert("No puedes mover un aporte entre metas de monedas distintas."); return; } updateVault((current) => ({ ...current, savingsContributions: current.savingsContributions.map((item) => item.id === editingContributionId ? { ...item, goalId: contribution.goalId, amountMinorUnits, note: contribution.note } : item) })); setEditingContributionId(""); } else { updateVault((current) => ({ ...current, savingsContributions: [...current.savingsContributions, makeSavingsContribution({ goalId: contribution.goalId, amountMinorUnits, note: contribution.note })] })); } setContribution({ goalId: "", amount: "", note: "" }); };
-  const editContribution = (entry) => { setEditingContributionId(entry.id); setContribution({ goalId: entry.goalId, amount: String((Number(entry.amountMinorUnits) || 0) / 100), note: entry.note || "" }); };
-  const removeContribution = (entry) => { if (!window.confirm("¿Eliminar este aporte de la meta?")) return; if (editingContributionId === entry.id) setEditingContributionId(""); updateVault((current) => ({ ...current, savingsContributions: current.savingsContributions.filter((item) => item.id !== entry.id) })); };
+  const saveContribution = (event) => {
+    event.preventDefault();
+    const amountMinorUnits = numberValue(contribution.amount);
+    const goal = vault.savingsGoals.find((item) => item.id === contribution.goalId);
+    const source = vault.accounts.find((item) => item.id === contribution.fromAccountId);
+    const destination = vault.accounts.find((item) => item.id === contribution.toAccountId);
+    if (!goal || !source || !destination || !contribution.amount.trim() || !Number.isSafeInteger(amountMinorUnits) || amountMinorUnits <= 0) return;
+    if (source.id === destination.id || source.currency !== destination.currency || source.currency !== goal.currency) {
+      window.alert("Elige dos cuentas distintas con la misma moneda de la meta.");
+      return;
+    }
+    const previous = editingContributionId ? vault.savingsContributions.find((item) => item.id === editingContributionId) : null;
+    const previousGoal = vault.savingsGoals.find((item) => item.id === previous?.goalId);
+    if (previousGoal && previousGoal.currency !== goal.currency) {
+      window.alert("No puedes cambiar la moneda de un aporte ya registrado.");
+      return;
+    }
+    const contributionRecord = previous
+      ? { ...previous, goalId: goal.id, amountMinorUnits, note: contribution.note, accountId: source.id, fromAccountId: source.id, toAccountId: destination.id, currency: goal.currency }
+      : makeSavingsContribution({ goalId: goal.id, amountMinorUnits, note: contribution.note, accountId: source.id, fromAccountId: source.id, toAccountId: destination.id, currency: goal.currency });
+    const existingTransfer = previous?.transactionId
+      ? vault.transactions.find((item) => item.id === previous.transactionId)
+      : vault.transactions.find((item) => item.linkedContributionId === previous?.id);
+    const transfer = existingTransfer
+      ? { ...existingTransfer, accountId: source.id, toAccountId: destination.id, type: "transfer", minorUnits: amountMinorUnits, currency: goal.currency, categoryId: "", description: "Aporte a meta: " + goal.name }
+      : makeTransaction({ accountId: source.id, toAccountId: destination.id, type: "transfer", minorUnits: amountMinorUnits, currency: goal.currency, categoryId: "", description: "Aporte a meta: " + goal.name, occurredAt: contributionRecord.occurredAt, linkedContributionId: contributionRecord.id });
+    contributionRecord.transactionId = transfer.id;
+    updateVault((current) => ({
+      ...current,
+      savingsContributions: previous
+        ? current.savingsContributions.map((item) => item.id === previous.id ? contributionRecord : item)
+        : [...current.savingsContributions, contributionRecord],
+      transactions: existingTransfer
+        ? current.transactions.map((item) => item.id === existingTransfer.id ? transfer : item)
+        : [...current.transactions, transfer],
+    }));
+    setEditingContributionId("");
+    setContribution({ goalId: "", amount: "", note: "", fromAccountId: "", toAccountId: "" });
+  };
+  const editContribution = (entry) => { setEditingContributionId(entry.id); setContribution({ goalId: entry.goalId, amount: String((Number(entry.amountMinorUnits) || 0) / 100), note: entry.note || "", fromAccountId: entry.fromAccountId || entry.accountId || "", toAccountId: entry.toAccountId || "" }); };
+  const removeContribution = (entry) => {
+    if (!window.confirm("¿Eliminar este aporte? También se eliminará la transferencia vinculada para devolver el saldo a la cuenta de origen.")) return;
+    if (editingContributionId === entry.id) setEditingContributionId("");
+    updateVault((current) => ({
+      ...current,
+      savingsContributions: current.savingsContributions.filter((item) => item.id !== entry.id),
+      transactions: current.transactions.filter((item) => item.id !== entry.transactionId && item.linkedContributionId !== entry.id),
+    }));
+  };
+  const selectedContributionGoal = vault.savingsGoals.find((item) => item.id === contribution.goalId);
+  const contributionAccounts = vault.accounts.filter((item) => !selectedContributionGoal || item.currency === selectedContributionGoal.currency);
   return <Module title="Ahorro y metas" eyebrow="Planeación" description="Las contribuciones son registros de progreso de una meta, no gastos del presupuesto.">
     <div className="two-col">
       <Panel><div className="panel-head"><div><small>{editingGoalId ? "Editar meta" : "Nueva meta"}</small><h3>{editingGoalId ? "Actualizar objetivo" : "Define qué estás construyendo"}</h3></div></div><form onSubmit={saveGoal} className="form-grid">
@@ -486,10 +534,12 @@ function Savings({ vault, updateVault }) {
         <div className="form-actions"><Button primary type="submit">{editingGoalId ? "Guardar cambios" : "Crear meta"}</Button>{editingGoalId && <Button onClick={() => { setEditingGoalId(""); setGoal({ name: "", target: "", targetDate: "", currency: "COP" }); }}>Cancelar</Button>}</div>
       </form></Panel>
       <Panel><div className="panel-head"><div><small>{editingContributionId ? "Editar aporte" : "Progreso"}</small><h3>{editingContributionId ? "Actualizar aporte" : "Contribuir"}</h3></div></div><form onSubmit={saveContribution} className="form-grid">
-        <Select label="Meta" required value={contribution.goalId} onChange={(e) => setContribution({ ...contribution, goalId: e.target.value })}><option value="">Selecciona meta</option>{vault.savingsGoals.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select>
+        <Select label="Meta" required value={contribution.goalId} onChange={(e) => { const selected = vault.savingsGoals.find((item) => item.id === e.target.value); setContribution({ ...contribution, goalId: e.target.value, fromAccountId: "", toAccountId: "" }); }}><option value="">Selecciona meta</option>{vault.savingsGoals.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.currency}</option>)}</Select>
+        <Select label="Cuenta de origen" required value={contribution.fromAccountId} onChange={(e) => setContribution({ ...contribution, fromAccountId: e.target.value, toAccountId: contribution.toAccountId === e.target.value ? "" : contribution.toAccountId })}><option value="">Selecciona cuenta origen</option>{contributionAccounts.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.currency}</option>)}</Select>
+        <Select label="Cuenta de destino / ahorro" required value={contribution.toAccountId} onChange={(e) => setContribution({ ...contribution, toAccountId: e.target.value }}><option value="">Selecciona cuenta destino</option>{contributionAccounts.filter((item) => item.id !== contribution.fromAccountId).map((item) => <option key={item.id} value={item.id}>{item.name} · {item.currency}</option>)}</Select>
         <Field label="Monto" type="number" min="0.01" step="0.01" required value={contribution.amount} onChange={(e) => setContribution({ ...contribution, amount: e.target.value })} />
         <Field label="Nota" placeholder="Opcional" value={contribution.note} onChange={(e) => setContribution({ ...contribution, note: e.target.value })} />
-        <div className="form-actions"><Button primary type="submit" disabled={!vault.savingsGoals.length}>{editingContributionId ? "Guardar cambios" : "Registrar aporte"}</Button>{editingContributionId && <Button onClick={() => { setEditingContributionId(""); setContribution({ goalId: "", amount: "", note: "" }); }}>Cancelar</Button>}</div>
+        <div className="form-actions"><Button primary type="submit" disabled={!vault.savingsGoals.length}>{editingContributionId ? "Guardar cambios" : "Registrar aporte"}</Button>{editingContributionId && <Button onClick={() => { setEditingContributionId(""); setContribution({ goalId: "", amount: "", note: "", fromAccountId: "", toAccountId: "" }); }}>Cancelar</Button>}</div>
       </form></Panel>
     </div>
     <div className="goal-grid">{vault.savingsGoals.map((item) => { const data = savingsProgress(item, vault.savingsContributions); return <Panel className="goal-card reveal" key={item.id}><div className="goal-head"><div><span className="badge">Meta</span><h3>{item.name}</h3></div><strong>{Math.round(data.percent)}%</strong></div><Progress value={data.percent} tone="green" /><div className="goal-values"><span>{money(data.saved, item.currency)}</span><span>{money(data.target, item.currency)}</span></div>{item.targetDate && <small>Objetivo · {new Date(item.targetDate).toLocaleDateString("es-CO")}</small>}{vault.savingsContributions.filter((entry) => entry.goalId === item.id).length > 0 && <div className="stack-list compact">{vault.savingsContributions.filter((entry) => entry.goalId === item.id).map((entry) => <div className="stack-row" key={entry.id}><div><b>{money(entry.amountMinorUnits, item.currency)}</b><small>{entry.note || "Aporte"} · {new Date(entry.occurredAt).toLocaleDateString("es-CO")}</small></div><Button onClick={() => editContribution(entry)}>Editar</Button><Button onClick={() => removeContribution(entry)}>Eliminar aporte</Button></div>)}</div>}<div className="form-actions"><Button onClick={() => editGoal(item)}>Editar</Button><Button onClick={() => removeGoal(item)}>Eliminar meta</Button></div></Panel>; })}</div>

@@ -388,6 +388,10 @@ function Budget({ vault, updateVault }) {
   const [rows, setRows] = useState([{ categoryId: "cat-housing", limit: "" }, { categoryId: "cat-food", limit: "" }, { categoryId: "cat-transport", limit: "" }]);
   const expenseCategories = vault.categories.filter((item) => item.kind === "expense");
   const budgets = vault.budgets;
+  const removeBudget = (budget) => {
+    if (!window.confirm("¿Eliminar el presupuesto " + budget.name + "?")) return;
+    updateVault((current) => ({ ...current, budgets: current.budgets.filter((item) => item.id !== budget.id) }));
+  };
   const save = (event) => {
     event.preventDefault();
     const items = rows.filter((row) => row.categoryId && Number(row.limit) > 0).map((row) => ({ categoryId: row.categoryId, limitMinorUnits: numberValue(row.limit) }));
@@ -404,7 +408,7 @@ function Budget({ vault, updateVault }) {
       </form></Panel>
       <Panel><div className="panel-head"><div><small>Plan vs realidad</small><h3>Presupuestos</h3></div></div>
         {budgets.length === 0 ? <Empty title="Sin presupuesto" text="Crea un presupuesto y dale un trabajo concreto a cada peso." /> :
-          <div className="budget-list">{budgets.map((budget) => { const data = budgetSummary(budget, vault, new Date(budget.startDate), new Date(budget.endDate)); return <article className="budget-card reveal" key={budget.id}><div className="budget-card-head"><div><b>{budget.name}</b><small>{new Date(budget.startDate).toLocaleDateString("es-CO")} — {new Date(budget.endDate).toLocaleDateString("es-CO")}</small></div><strong>{Math.round(data.percent)}%</strong></div>{data.lines.map((line) => <div className="budget-line" key={line.categoryId}><div><b>{line.categoryName}</b><span>{money(line.spent)} / {money(line.limitMinorUnits)}</span></div><Progress value={line.percent} tone={line.percent >= 100 ? "red" : line.percent >= 80 ? "yellow" : "green"} /></div>)}</article>; })}</div>}
+          <div className="budget-list">{budgets.map((budget) => { const data = budgetSummary(budget, vault, new Date(budget.startDate), new Date(budget.endDate)); return <article className="budget-card reveal" key={budget.id}><div className="budget-card-head"><div><b>{budget.name}</b><small>{new Date(budget.startDate).toLocaleDateString("es-CO")} — {new Date(budget.endDate).toLocaleDateString("es-CO")}</small></div><strong>{Math.round(data.percent)}%</strong></div>{data.lines.map((line) => <div className="budget-line" key={line.categoryId}><div><b>{line.categoryName}</b><span>{money(line.spent, budget.currency)} / {money(line.limitMinorUnits, budget.currency)}</span></div><Progress value={line.percent} tone={line.percent >= 100 ? "red" : line.percent >= 80 ? "yellow" : "green"} /></div>)}<div className="form-actions"><Button onClick={() => removeBudget(budget)}>Eliminar presupuesto</Button></div></article>; })}</div>}
       </Panel>
     </div>
   </Module>;
@@ -413,7 +417,15 @@ function Budget({ vault, updateVault }) {
 function Savings({ vault, updateVault }) {
   const [goal, setGoal] = useState({ name: "", target: "", targetDate: "", currency: "COP" });
   const [contribution, setContribution] = useState({ goalId: "", amount: "", note: "" });
-  const saveGoal = (event) => { event.preventDefault(); if (!goal.name || !goal.target) return; updateVault((current) => ({ ...current, savingsGoals: [...current.savingsGoals, makeSavingsGoal({ name: goal.name, targetMinorUnits: numberValue(goal.target), targetDate: goal.targetDate, currency: goal.currency })] })); setGoal({ name: "", target: "", targetDate: "", currency: goal.currency }); };
+  const removeGoal = (item) => {
+    if (vault.savingsContributions.some((entry) => entry.goalId === item.id)) {
+      window.alert("Esta meta tiene aportes registrados. Conserva el historial y no se puede eliminar.");
+      return;
+    }
+    if (!window.confirm("¿Eliminar la meta " + item.name + "?")) return;
+    updateVault((current) => ({ ...current, savingsGoals: current.savingsGoals.filter((entry) => entry.id !== item.id) }));
+  };
+  const saveGoal = (event) => { event.preventDefault(); if (!goal.name.trim() || numberValue(goal.target) <= 0) return; updateVault((current) => ({ ...current, savingsGoals: [...current.savingsGoals, makeSavingsGoal({ name: goal.name, targetMinorUnits: numberValue(goal.target), targetDate: goal.targetDate, currency: goal.currency })] })); setGoal({ name: "", target: "", targetDate: "", currency: goal.currency }); };
   const saveContribution = (event) => { event.preventDefault(); if (!contribution.goalId || !contribution.amount) return; updateVault((current) => ({ ...current, savingsContributions: [...current.savingsContributions, makeSavingsContribution({ goalId: contribution.goalId, amountMinorUnits: numberValue(contribution.amount), note: contribution.note })] })); setContribution({ goalId: contribution.goalId, amount: "", note: "" }); };
   return <Module title="Ahorro y metas" eyebrow="Planeación" description="Las contribuciones son registros de progreso de una meta, no gastos del presupuesto.">
     <div className="two-col">
@@ -430,7 +442,7 @@ function Savings({ vault, updateVault }) {
         <div className="form-actions"><Button primary type="submit" disabled={!vault.savingsGoals.length}>Registrar aporte</Button></div>
       </form></Panel>
     </div>
-    <div className="goal-grid">{vault.savingsGoals.map((item) => { const data = savingsProgress(item, vault.savingsContributions); return <Panel className="goal-card reveal" key={item.id}><div className="goal-head"><div><span className="badge">Meta</span><h3>{item.name}</h3></div><strong>{Math.round(data.percent)}%</strong></div><Progress value={data.percent} tone="green" /><div className="goal-values"><span>{money(data.saved, item.currency)}</span><span>{money(data.target, item.currency)}</span></div>{item.targetDate && <small>Objetivo · {new Date(item.targetDate).toLocaleDateString("es-CO")}</small>}</Panel>; })}</div>
+    <div className="goal-grid">{vault.savingsGoals.map((item) => { const data = savingsProgress(item, vault.savingsContributions); return <Panel className="goal-card reveal" key={item.id}><div className="goal-head"><div><span className="badge">Meta</span><h3>{item.name}</h3></div><strong>{Math.round(data.percent)}%</strong></div><Progress value={data.percent} tone="green" /><div className="goal-values"><span>{money(data.saved, item.currency)}</span><span>{money(data.target, item.currency)}</span></div>{item.targetDate && <small>Objetivo · {new Date(item.targetDate).toLocaleDateString("es-CO")}</small>}<div className="form-actions"><Button onClick={() => removeGoal(item)}>Eliminar meta</Button></div></Panel>; })}</div>
   </Module>;
 }
 
@@ -438,7 +450,15 @@ function Debts({ vault, updateVault }) {
   const [debt, setDebt] = useState({ name: "", amount: "", dueDate: "", currency: "COP" });
   const [payment, setPayment] = useState({ debtId: "", amount: "", principal: "", interest: "", fees: "" });
   const [paymentError, setPaymentError] = useState("");
-  const saveDebt = (event) => { event.preventDefault(); if (!debt.name || !debt.amount) return; updateVault((current) => ({ ...current, debts: [...current.debts, makeDebt({ name: debt.name, originalMinorUnits: numberValue(debt.amount), dueDate: debt.dueDate, currency: debt.currency })] })); setDebt({ name: "", amount: "", dueDate: "", currency: debt.currency }); };
+  const removeDebt = (item) => {
+    if (vault.debtPayments.some((entry) => entry.debtId === item.id)) {
+      window.alert("Esta deuda tiene pagos registrados. Conserva el historial y no se puede eliminar.");
+      return;
+    }
+    if (!window.confirm("¿Eliminar la deuda " + item.name + "?")) return;
+    updateVault((current) => ({ ...current, debts: current.debts.filter((entry) => entry.id !== item.id) }));
+  };
+  const saveDebt = (event) => { event.preventDefault(); if (!debt.name.trim() || numberValue(debt.amount) <= 0) return; updateVault((current) => ({ ...current, debts: [...current.debts, makeDebt({ name: debt.name, originalMinorUnits: numberValue(debt.amount), dueDate: debt.dueDate, currency: debt.currency })] })); setDebt({ name: "", amount: "", dueDate: "", currency: debt.currency }); };
   const savePayment = (event) => {
     event.preventDefault();
     setPaymentError("");
@@ -500,7 +520,7 @@ function Debts({ vault, updateVault }) {
         <div className="form-actions"><Button primary type="submit" disabled={!vault.debts.length}>Registrar pago</Button></div>
       </form>{paymentError && <Notice tone="error"><b>Pago no registrado.</b><span>{paymentError}</span></Notice>}</Panel>
     </div>
-    <div className="debt-grid">{vault.debts.map((item) => { const balance = debtBalance(item, vault.debtPayments); return <Panel className="debt-card reveal" key={item.id}><div className="goal-head"><div><span className="badge">Deuda</span><h3>{item.name}</h3></div><strong className="negative">{money(balance, item.currency)}</strong></div><Progress value={item.originalMinorUnits ? ((item.originalMinorUnits - balance) / item.originalMinorUnits) * 100 : 0} tone="red" /><div className="goal-values"><span>Pagado {money(item.originalMinorUnits - balance)}</span><span>Inicial {money(item.originalMinorUnits)}</span></div></Panel>; })}</div>
+    <div className="debt-grid">{vault.debts.map((item) => { const balance = debtBalance(item, vault.debtPayments); return <Panel className="debt-card reveal" key={item.id}><div className="goal-head"><div><span className="badge">Deuda</span><h3>{item.name}</h3></div><strong className="negative">{money(balance, item.currency)}</strong></div><Progress value={item.originalMinorUnits ? ((item.originalMinorUnits - balance) / item.originalMinorUnits) * 100 : 0} tone="red" /><div className="goal-values"><span>Pagado {money(item.originalMinorUnits - balance, item.currency)}</span><span>Inicial {money(item.originalMinorUnits, item.currency)}</span></div><div className="form-actions"><Button onClick={() => removeDebt(item)}>Eliminar deuda</Button></div></Panel>; })}</div>
   </Module>;
 }
 
@@ -510,12 +530,20 @@ function NetWorth({ vault, updateVault }) {
   const data = netWorth(vault, "COP");
   const otherCurrencies = [...new Set([...vault.assets, ...vault.liabilities, ...vault.debts].map((item) => item.currency || "COP"))].filter((currency) => currency !== "COP");
   const addAsset = (event) => { event.preventDefault(); if (!asset.name || !asset.amount) return; updateVault((current) => ({ ...current, assets: [...current.assets, makeAsset({ name: asset.name, minorUnits: numberValue(asset.amount), currency: asset.currency })] })); setAsset({ name: "", amount: "", currency: asset.currency }); };
-  const addLiability = (event) => { event.preventDefault(); if (!liability.name || !liability.amount) return; updateVault((current) => ({ ...current, liabilities: [...current.liabilities, makeLiability({ name: liability.name, minorUnits: numberValue(liability.amount), currency: liability.currency })] })); setLiability({ name: "", amount: "", currency: liability.currency }); };
+  const addLiability = (event) => { event.preventDefault(); if (!liability.name.trim() || numberValue(liability.amount) <= 0) return; updateVault((current) => ({ ...current, liabilities: [...current.liabilities, makeLiability({ name: liability.name.trim(), minorUnits: numberValue(liability.amount), currency: liability.currency })] })); setLiability({ name: "", amount: "", currency: liability.currency }); };
+  const removeAsset = (item) => {
+    if (!window.confirm("¿Eliminar el activo " + item.name + "?")) return;
+    updateVault((current) => ({ ...current, assets: current.assets.filter((entry) => entry.id !== item.id) }));
+  };
+  const removeLiability = (item) => {
+    if (!window.confirm("¿Eliminar el pasivo " + item.name + "?")) return;
+    updateVault((current) => ({ ...current, liabilities: current.liabilities.filter((entry) => entry.id !== item.id) }));
+  };
   return <Module title="Patrimonio neto" eyebrow="Activos − pasivos" description="Una vista patrimonial: activos menos todos los pasivos. Los saldos de deuda se incluyen como pasivos.">
     <div className="metrics metrics-4"><Metric label="Patrimonio neto" value={money(data.net)} detail="Activos − pasivos" tone="green" /><Metric label="Activos" value={money(data.assets)} detail="Activos registrados" tone="green" /><Metric label="Pasivos" value={money(data.liabilities)} detail="Incluye deudas" tone="red" /><Metric label="Deuda" value={money(data.debtLiabilities)} detail="Saldo pendiente" tone="blue" /></div>{otherCurrencies.length > 0 && <Notice>Patrimonio mostrado en COP. Otras monedas ({otherCurrencies.join(", ")}) se mantienen separadas; no se convierten automáticamente.</Notice>}
     <div className="two-col">
-      <Panel><div className="panel-head"><div><small>Patrimonio</small><h3>Activos</h3></div></div><form onSubmit={addAsset} className="form-grid"><Field label="Nombre" placeholder="Apartamento" required value={asset.name} onChange={(e) => setAsset({ ...asset, name: e.target.value })} /><Field label="Valor" type="number" min="0" step="0.01" required value={asset.amount} onChange={(e) => setAsset({ ...asset, amount: e.target.value })} /><Select label="Moneda" value={asset.currency} onChange={(e) => setAsset({ ...asset, currency: e.target.value })}><CurrencyOptions /></Select><div className="form-actions"><Button primary type="submit">Agregar activo</Button></div></form><div className="stack-list compact">{vault.assets.map((item) => <div className="stack-row" key={item.id}><div><b>{item.name}</b><small>Activo</small></div><strong>{money(item.minorUnits, item.currency)}</strong></div>)}</div></Panel>
-      <Panel><div className="panel-head"><div><small>Patrimonio</small><h3>Pasivos</h3></div></div><form onSubmit={addLiability} className="form-grid"><Field label="Nombre" placeholder="Obligación" required value={liability.name} onChange={(e) => setLiability({ ...liability, name: e.target.value })} /><Field label="Valor" type="number" min="0" step="0.01" required value={liability.amount} onChange={(e) => setLiability({ ...liability, amount: e.target.value })} /><Select label="Moneda" value={liability.currency} onChange={(e) => setLiability({ ...liability, currency: e.target.value })}><CurrencyOptions /></Select><div className="form-actions"><Button primary type="submit">Agregar pasivo</Button></div></form><div className="stack-list compact">{vault.liabilities.map((item) => <div className="stack-row" key={item.id}><div><b>{item.name}</b><small>Pasivo</small></div><strong className="negative">{money(item.minorUnits, item.currency)}</strong></div>)}{vault.debts.map((item) => <div className="stack-row" key={`debt-${item.id}`}><div><b>{item.name}</b><small>Deuda</small></div><strong className="negative">{money(debtBalance(item, vault.debtPayments), item.currency)}</strong></div>)}</div></Panel>
+      <Panel><div className="panel-head"><div><small>Patrimonio</small><h3>Activos</h3></div></div><form onSubmit={addAsset} className="form-grid"><Field label="Nombre" placeholder="Apartamento" required value={asset.name} onChange={(e) => setAsset({ ...asset, name: e.target.value })} /><Field label="Valor" type="number" min="0" step="0.01" required value={asset.amount} onChange={(e) => setAsset({ ...asset, amount: e.target.value })} /><Select label="Moneda" value={asset.currency} onChange={(e) => setAsset({ ...asset, currency: e.target.value })}><CurrencyOptions /></Select><div className="form-actions"><Button primary type="submit">Agregar activo</Button></div></form><div className="stack-list compact">{vault.assets.map((item) => <div className="stack-row" key={item.id}><div><b>{item.name}</b><small>Activo · {item.currency}</small></div><strong>{money(item.minorUnits, item.currency)}</strong><Button onClick={() => removeAsset(item)}>Eliminar</Button></div>)}</div></Panel>
+      <Panel><div className="panel-head"><div><small>Patrimonio</small><h3>Pasivos</h3></div></div><form onSubmit={addLiability} className="form-grid"><Field label="Nombre" placeholder="Obligación" required value={liability.name} onChange={(e) => setLiability({ ...liability, name: e.target.value })} /><Field label="Valor" type="number" min="0" step="0.01" required value={liability.amount} onChange={(e) => setLiability({ ...liability, amount: e.target.value })} /><Select label="Moneda" value={liability.currency} onChange={(e) => setLiability({ ...liability, currency: e.target.value })}><CurrencyOptions /></Select><div className="form-actions"><Button primary type="submit">Agregar pasivo</Button></div></form><div className="stack-list compact">{vault.liabilities.map((item) => <div className="stack-row" key={item.id}><div><b>{item.name}</b><small>Pasivo · {item.currency}</small></div><strong className="negative">{money(item.minorUnits, item.currency)}</strong><Button onClick={() => removeLiability(item)}>Eliminar</Button></div>)}{vault.debts.map((item) => <div className="stack-row" key={`debt-${item.id}`}><div><b>{item.name}</b><small>Deuda</small></div><strong className="negative">{money(debtBalance(item, vault.debtPayments), item.currency)}</strong></div>)}</div></Panel>
     </div>
   </Module>;
 }

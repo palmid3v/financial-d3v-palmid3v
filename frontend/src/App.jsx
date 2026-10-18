@@ -168,19 +168,22 @@ function Dashboard({ vault, setActive }) {
   }, [vault, start, end]);
   const jsTotals = transactionTotals(vault.transactions, start, end, "COP", vault.debtPayments);
   const jsNetWorth = netWorth(vault);
-  const totals = goAnalysis?.cashFlow ?? jsTotals;
-  const nw = goAnalysis?.netWorth ? { net: goAnalysis.netWorth.net, debtLiabilities: goAnalysis.netWorth.debtLiabilities, assets: goAnalysis.netWorth.assets, liabilities: goAnalysis.netWorth.liabilities } : jsNetWorth;
+  // Account-linked debt payments are currently authoritative in the JS domain engine.
+  // Keep WASM available for parity checks, but don't let its older schema overwrite these totals.
+  const totals = jsTotals;
+  const nw = jsNetWorth;
   const accountTotals = vault.accounts.reduce((totals, account) => { totals[account.currency] = (totals[account.currency] || 0) + accountBalance(account, vault.transactions, vault.debtPayments); return totals; }, {});
   const savingsRate = totals.income > 0 ? ((totals.income - totals.expenses) / totals.income) * 100 : 0;
   const debt = nw.debtLiabilities;
-  const series = monthSeries(vault.transactions, 6, new Date(), "COP");
+  const series = monthSeries(vault.transactions, 6, new Date(), "COP", vault.debtPayments);
   const max = Math.max(...series.flatMap((row) => [row.income, row.expenses]), 1);
   const expenseCategories = vault.categories.filter((item) => item.kind === "expense").map((category) => ({
     ...category,
-    value: vault.transactions.filter((tx) => tx.type === "expense" && (tx.currency || "COP") === "COP" && tx.categoryId === category.id && new Date(tx.occurredAt) >= start && new Date(tx.occurredAt) < end).reduce((sum, tx) => sum + tx.minorUnits, 0),
+    value: vault.transactions.filter((tx) => tx.type === "expense" && (tx.currency || "COP") === "COP" && tx.categoryId === category.id && new Date(tx.occurredAt) >= start && new Date(tx.occurredAt) < end).reduce((sum, tx) => sum + tx.minorUnits, 0)
+      + vault.debtPayments.filter((payment) => (payment.currency || "COP") === "COP" && (payment.categoryId || "cat-other") === category.id && new Date(payment.occurredAt) >= start && new Date(payment.occurredAt) < end).reduce((sum, payment) => sum + (Number(payment.interestMinorUnits) || 0) + (Number(payment.feesMinorUnits) || 0), 0),
   })).filter((item) => item.value > 0).sort((a, b) => b.value - a.value);
   const totalCategorySpend = expenseCategories.reduce((sum, item) => sum + item.value, 0);
-  const budget = vault.budgets.find((item) => new Date(item.startDate) <= start && new Date(item.endDate) >= end) || vault.budgets[0];
+  const budget = vault.budgets.find((item) => item.currency === "COP" && new Date(item.startDate) <= start && new Date(item.endDate) >= end) || vault.budgets.find((item) => item.currency === "COP");
   const budgetData = budget ? budgetSummary(budget, vault, new Date(budget.startDate), new Date(budget.endDate)) : null;
   const recent = [...vault.transactions].sort((a, b) => new Date(b.occurredAt) - new Date(a.occurredAt)).slice(0, 6);
 
@@ -192,7 +195,7 @@ function Dashboard({ vault, setActive }) {
 
     <Notice tone={goEngineStatus === "ready" ? "success" : ""}>
       <b>Go Financial Engine</b>
-      <span>{goEngineStatus === "ready" ? "WASM activo · cálculos locales" : goEngineStatus === "loading" ? "Inicializando motor local…" : "WASM no disponible · cálculo JS local"}</span>
+      <span>{goEngineStatus === "ready" ? "WASM disponible · dashboard usa reglas JS para integrar cuentas y pagos" : goEngineStatus === "loading" ? "Inicializando motor local…" : "WASM no disponible · cálculo JS local"}</span>
     </Notice>
 
     <div className="metrics metrics-4">

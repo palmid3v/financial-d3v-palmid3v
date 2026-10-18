@@ -487,12 +487,42 @@ function Savings({ vault, updateVault }) {
   const [editingContributionId, setEditingContributionId] = useState("");
   const editGoal = (item) => { setEditingGoalId(item.id); setGoal({ name: item.name, target: String((Number(item.targetMinorUnits) || 0) / 100), targetDate: item.targetDate || "", currency: item.currency || "COP" }); };
   const removeGoal = (item) => {
-    if (vault.savingsContributions.some((entry) => entry.goalId === item.id)) {
-      window.alert("Esta meta tiene aportes registrados. Conserva el historial y no se puede eliminar.");
-      return;
+    const goalContributions = vault.savingsContributions.filter((entry) => entry.goalId === item.id);
+    const contributionIds = new Set(goalContributions.map((entry) => entry.id));
+    const linkedTransactionIds = new Set(
+      vault.transactions
+        .filter((transaction) =>
+          goalContributions.some((entry) =>
+            (entry.transactionId && transaction.id === entry.transactionId) ||
+            transaction.linkedContributionId === entry.id
+          )
+        )
+        .map((transaction) => transaction.id)
+    );
+    const message = goalContributions.length
+      ? `¿Eliminar la meta "${item.name}" junto con sus ${goalContributions.length} aporte(s) y las transferencias vinculadas? Esas transferencias se quitarán del registro y los saldos de las cuentas se recalcularán. Los demás movimientos no se modificarán.`
+      : `¿Eliminar la meta "${item.name}"?`;
+    if (!window.confirm(message)) return;
+
+    if (editingGoalId === item.id) {
+      setEditingGoalId("");
+      setGoal({ name: "", target: "", targetDate: "", currency: "COP" });
     }
-    if (!window.confirm("¿Eliminar la meta " + item.name + "?")) return;
-    updateVault((current) => ({ ...current, savingsGoals: current.savingsGoals.filter((entry) => entry.id !== item.id) }));
+    if (goalContributions.some((entry) => entry.id === editingContributionId)) {
+      setEditingContributionId("");
+      setContribution({ goalId: "", amount: "", note: "", fromAccountId: "", toAccountId: "" });
+    }
+
+    updateVault((current) => ({
+      ...current,
+      savingsGoals: current.savingsGoals.filter((entry) => entry.id !== item.id),
+      savingsContributions: current.savingsContributions.filter((entry) => entry.goalId !== item.id),
+      transactions: current.transactions.filter(
+        (transaction) =>
+          !linkedTransactionIds.has(transaction.id) &&
+          !contributionIds.has(transaction.linkedContributionId)
+      ),
+    }));
   };
   const saveGoal = (event) => { event.preventDefault(); if (!goal.name.trim() || !goal.target.trim() || !Number.isSafeInteger(numberValue(goal.target)) || numberValue(goal.target) <= 0) return; if (editingGoalId) { const existingGoal = vault.savingsGoals.find((item) => item.id === editingGoalId); if (existingGoal && existingGoal.currency !== goal.currency && vault.savingsContributions.some((entry) => entry.goalId === editingGoalId)) { window.alert("No puedes cambiar la moneda de una meta que ya tiene aportes registrados."); return; } updateVault((current) => ({ ...current, savingsGoals: current.savingsGoals.map((item) => item.id === editingGoalId ? { ...item, name: goal.name.trim(), targetMinorUnits: numberValue(goal.target), targetDate: goal.targetDate, currency: goal.currency } : item) })); setEditingGoalId(""); } else { updateVault((current) => ({ ...current, savingsGoals: [...current.savingsGoals, makeSavingsGoal({ name: goal.name.trim(), targetMinorUnits: numberValue(goal.target), targetDate: goal.targetDate, currency: goal.currency })] })); } setGoal({ name: "", target: "", targetDate: "", currency: goal.currency }); };
   const saveContribution = (event) => {

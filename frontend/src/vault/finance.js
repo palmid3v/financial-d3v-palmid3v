@@ -49,7 +49,10 @@ export function seedCategories(categories = []) {
 
 export function normalizeVault(vault) {
   const next = { ...vault };
-  next.accounts = Array.isArray(next.accounts) ? next.accounts : [];
+  next.accounts = (Array.isArray(next.accounts) ? next.accounts : []).map((account) => ({
+    ...account,
+    currency: String(account.currency || "COP").toUpperCase(),
+  }));
   next.categories = seedCategories(Array.isArray(next.categories) ? next.categories : []);
   const accountsById = new Map(next.accounts.map((account) => [account.id, account]));
   next.transactions = (Array.isArray(next.transactions) ? next.transactions : []).map((transaction) => ({

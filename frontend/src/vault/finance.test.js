@@ -185,3 +185,11 @@ test("transaction domain helper rejects invalid amounts and malformed transfers"
   const valid = makeTransaction({ type: "transfer", accountId: "acc-1", toAccountId: "acc-2", minorUnits: 100 });
   assert.equal(valid.minorUnits, 100);
 });
+
+
+test("savings contribution helper rejects missing goals and invalid amounts", () => {
+  assert.throws(() => makeSavingsContribution({ goalId: "goal-1", amountMinorUnits: 0 }), /meta y un importe positivo/);
+  assert.throws(() => makeSavingsContribution({ goalId: "", amountMinorUnits: 100 }), /meta y un importe positivo/);
+  assert.throws(() => makeSavingsContribution({ goalId: "goal-1", amountMinorUnits: -100 }), /meta y un importe positivo/);
+  assert.equal(makeSavingsContribution({ goalId: "goal-1", amountMinorUnits: 100 }).amountMinorUnits, 100);
+});

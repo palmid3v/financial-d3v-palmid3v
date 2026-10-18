@@ -33,10 +33,10 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .brand-mark,.vault-brand>b{width:34px;height:34px;display:grid;place-items:center;border-radius:9px;background:#f2f4f7;color:#0b0d10;font-weight:900}
 .brand strong,.brand small{display:block}
 .brand strong{font-size:14px;letter-spacing:-.02em}
-.brand small{margin-top:3px;color:var(--muted);font-size:10px}
+.brand small{margin-top:3px;color:var(--muted);font-size:12px}
 .nav-group{margin-bottom:18px}
-.label{display:block;padding:0 10px 8px;color:#69727e;font-size:8px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
-.nav{width:100%;display:flex;align-items:center;gap:11px;border:0;border-radius:9px;background:transparent;color:#929aa5;padding:9px 10px;text-align:left;font-size:11px;transition:background .16s ease,color .16s ease,transform .16s ease}
+.label{display:block;padding:0 10px 8px;color:#8da295;font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
+.nav{width:100%;display:flex;align-items:center;gap:11px;border:0;border-radius:9px;background:transparent;color:#aebbb2;padding:10px 10px;text-align:left;font-size:13px;transition:background .16s ease,color .16s ease,transform .16s ease}
 .nav i{width:17px;color:#7d8692;font-style:normal;text-align:center}
 .nav:hover{background:#161b21;color:#e7eaee}
 .nav.active{background:#1a1f26;color:#f5f6f8}
@@ -50,13 +50,13 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .signature{display:block;margin:18px 8px 0;color:#414a55;font-size:8px;letter-spacing:.08em}
 .main{margin-left:232px;min-height:100vh}
 .topbar{height:76px;border-bottom:1px solid #171c22;padding:0 38px;display:flex;align-items:center;justify-content:space-between}
-.topbar small{color:#68717c;font-size:9px}.topbar small b{color:#3b434e}.topbar h1{margin:4px 0 0;font-size:18px;letter-spacing:-.035em}
+.topbar small{color:#9aafa2;font-size:11px}.topbar small b{color:#3b434e}.topbar h1{margin:4px 0 0;font-size:18px;letter-spacing:-.035em}
 .top-actions{display:flex;align-items:center;gap:8px}
-.save-status{display:flex;align-items:center;gap:6px;color:#66707c;font-size:9px}
+.save-status{display:flex;align-items:center;gap:6px;color:#9aafa2;font-size:11px}
 .save-status i{width:6px;height:6px;border-radius:50%;background:#48515c}
 .save-status.dirty i{background:var(--warning);animation:pulse 1.6s ease-in-out infinite}
 .avatar{width:34px;height:34px;border:1px solid var(--border);border-radius:50%;background:#151a20;color:#dce0e5;font-weight:800}
-.button{min-height:36px;padding:0 13px;border:1px solid var(--border);border-radius:9px;background:#12171c;color:#e8ebee;font-size:10px;font-weight:700;transition:background .16s ease,border-color .16s ease,transform .16s ease}
+.button{min-height:38px;padding:0 14px;border:1px solid var(--border);border-radius:9px;background:#12171c;color:#e8ebee;font-size:13px;font-weight:700;transition:background .16s ease,border-color .16s ease,transform .16s ease}
 .button:hover:not(:disabled){background:#1a2027;border-color:#303944;transform:translateY(-1px)}
 .button.primary{background:var(--income);border-color:var(--income);color:#061108}
 .button.primary:hover:not(:disabled){background:#25d866;border-color:#25d866}

@@ -138,3 +138,12 @@ They are not active architecture and are not prerequisites for the current $0 Fi
 8. Record evidence.
 9. Mark phase complete.
 10. Move to the next phase.
+
+
+## Documentation checkpoint — 2026-10-18
+
+- The owner confirmed the deployed HTTPS version opens the encrypted vault from a phone; the local HTTP address `http://192.168.1.3:5173/` did not provide a reliable secure context for Web Crypto.
+- Continue manual save → lock → reopen checks on mobile and desktop, using a test vault before touching the original.
+- The account-linked finance changes described in README remain a candidate until reconciled with current main, tests and release validation.
+- FASE 32 historical financial intelligence remains planned. Currency conversion/rate sourcing remains unimplemented.
+- Preserve `.fdv` as persistence source of truth and keep decrypted financial data in active memory only.

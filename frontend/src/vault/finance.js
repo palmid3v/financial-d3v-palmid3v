@@ -169,11 +169,12 @@ export function transactionTotals(transactions, start, end, currency = "COP", de
   const scoped = transactions.filter((item) => inRange(item.occurredAt, start, end) && (item.currency || currency) === currency);
   const income = scoped.filter((item) => item.type === "income").reduce((sum, item) => sum + item.minorUnits, 0);
   const transactionExpenses = scoped.filter((item) => item.type === "expense").reduce((sum, item) => sum + item.minorUnits, 0);
-  const debtServiceExpenses = debtPayments
-    .filter((item) => inRange(item.occurredAt, start, end) && (item.currency || currency) === currency)
-    .reduce((sum, item) => sum + (Number(item.interestMinorUnits) || 0) + (Number(item.feesMinorUnits) || 0), 0);
+  const scopedDebtPayments = debtPayments.filter((item) => inRange(item.occurredAt, start, end) && (item.currency || currency) === currency);
+  const debtServiceExpenses = scopedDebtPayments.reduce((sum, item) => sum + (Number(item.interestMinorUnits) || 0) + (Number(item.feesMinorUnits) || 0), 0);
+  const principalPayments = scopedDebtPayments.reduce((sum, item) => sum + (Number(item.principalMinorUnits) || 0), 0);
   const expenses = transactionExpenses + debtServiceExpenses;
-  return { income, expenses, netCashFlow: income - expenses, transactions: scoped };
+  const cashOutflows = expenses + principalPayments;
+  return { income, expenses, principalPayments, cashOutflows, netCashFlow: income - cashOutflows, transactions: scoped };
 }
 
 export function accountBalance(account, transactions, debtPayments = []) {
@@ -253,7 +254,7 @@ export function monthSeries(transactions, months = 6, reference = new Date(), cu
     const date = new Date(reference.getFullYear(), reference.getMonth() - i, 1);
     const { start, end } = currentMonthRange(date);
     const totals = transactionTotals(transactions, start, end, currency, debtPayments);
-    rows.push({ label: monthLabel(date), income: totals.income, expenses: totals.expenses });
+    rows.push({ label: monthLabel(date), income: totals.income, expenses: totals.cashOutflows });
   }
   return rows;
 }

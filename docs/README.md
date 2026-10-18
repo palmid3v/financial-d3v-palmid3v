@@ -74,3 +74,8 @@ These are not active deployment instructions:
 - Cloud Run / Artifact Registry / Scheduler material under `deploy/`.
 
 Follow current architecture documents for active work.
+
+
+## Documentation checkpoint — 2026-10-18
+
+Current public product description and project continuation context live in the root README.md and CONTEXT.md. The active roadmap is 13-ROADMAP.md; security boundary and operational recovery are documented in 08-SECURITY.md and OPERATIONS-RUNBOOK.md. The latest documented mobile verification confirms that HTTPS deployment is required for Web Crypto in the phone browser. Manual save → lock → reopen validation remains an explicit gate.

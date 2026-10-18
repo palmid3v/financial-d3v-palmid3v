@@ -551,3 +551,20 @@ footer {
   .panel-total { align-items: flex-start; gap: 8px; }
   .currency-totals { justify-content: flex-start; }
 }
+
+
+.danger-button {
+  min-height: 30px;
+  padding: 0 9px;
+  border-color: #633441;
+  color: #fda4af;
+  background: #24131a;
+  font-size: 11px;
+}
+.danger-button:hover:not(:disabled) {
+  border-color: #9f4358;
+  background: #351923;
+}
+@media (max-width: 720px) {
+  .stack-row .danger-button { flex-shrink: 0; }
+}

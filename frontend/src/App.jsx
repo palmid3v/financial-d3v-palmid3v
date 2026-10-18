@@ -523,6 +523,8 @@ function Debts({ vault, updateVault }) {
       ? amountMinorUnits - interestMinorUnits - feesMinorUnits
       : numberValue(payment.principal);
     const existingPayment = editingPaymentId ? vault.debtPayments.find((item) => item.id === editingPaymentId) : null;
+    const previousDebt = existingPayment ? vault.debts.find((item) => item.id === existingPayment.debtId) : null;
+    if (previousDebt && previousDebt.id !== selectedDebt.id && previousDebt.currency !== selectedDebt.currency) { setPaymentError("No puedes mover un pago entre deudas de monedas distintas."); return; }
     const outstanding = debtBalance(selectedDebt, vault.debtPayments) + (existingPayment?.debtId === selectedDebt.id ? (Number(existingPayment.principalMinorUnits) || 0) : 0);
 
     if (![amountMinorUnits, principalMinorUnits, interestMinorUnits, feesMinorUnits].every(Number.isSafeInteger)

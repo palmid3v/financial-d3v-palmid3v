@@ -61,6 +61,7 @@ export function normalizeVault(vault) {
   }));
   next.budgets = (Array.isArray(next.budgets) ? next.budgets : []).map((item) => ({ ...item, currency: String(item.currency || "COP").toUpperCase(), accountId: item.accountId || "all" }));
   next.savingsGoals = (Array.isArray(next.savingsGoals) ? next.savingsGoals : []).map((item) => ({ ...item, currency: String(item.currency || "COP").toUpperCase() }));
+  next.savingsProducts = (Array.isArray(next.savingsProducts) ? next.savingsProducts : []).map((item) => ({ ...item, currency: String(item.currency || "COP").toUpperCase(), imageUrl: String(item.imageUrl || ""), imageDataUrl: String(item.imageDataUrl || "") }));
   const goalsById = new Map(next.savingsGoals.map((item) => [item.id, item]));
   next.savingsContributions = (Array.isArray(next.savingsContributions) ? next.savingsContributions : []).map((item) => ({
     ...item,

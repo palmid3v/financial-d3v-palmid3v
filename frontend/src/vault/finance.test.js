@@ -5,6 +5,7 @@ import {
   budgetSummary,
   makeDebtPayment,
   transactionTotals,
+  normalizeVault,
   currentMonthRange,
   debtBalance,
   makeAccount,
@@ -139,4 +140,14 @@ test("net worth includes debt balances as liabilities", () => {
   assert.equal(result.assets, 2000000);
   assert.equal(result.liabilities, 700000);
   assert.equal(result.net, 1300000);
+});
+
+
+test("legacy transactions inherit the normalized source-account currency", () => {
+  const vault = normalizeVault({
+    accounts: [{ id: "usd-account", name: "USD", currency: "usd", openingMinorUnits: 0 }],
+    transactions: [{ id: "legacy-tx", accountId: "usd-account", type: "income", minorUnits: 1000 }],
+  });
+  assert.equal(vault.accounts[0].currency, "USD");
+  assert.equal(vault.transactions[0].currency, "USD");
 });

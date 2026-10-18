@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import {
   accountBalance,
   budgetSummary,
+  makeDebtPayment,
+  transactionTotals,
   currentMonthRange,
   debtBalance,
   makeAccount,
@@ -20,9 +22,9 @@ const account = makeAccount({ name: "Cuenta principal", openingMinorUnits: 10000
 test("account balance derives from ledger and transfers", () => {
   const other = makeAccount({ name: "Ahorros", openingMinorUnits: 0 });
   const transactions = [
-    { accountId: account.id, type: "income", minorUnits: 500000 },
-    { accountId: account.id, type: "expense", minorUnits: 120000 },
-    { accountId: account.id, toAccountId: other.id, type: "transfer", minorUnits: 200000 },
+    { accountId: account.id, type: "income", minorUnits: 500000, currency: "COP" },
+    { accountId: account.id, type: "expense", minorUnits: 120000, currency: "COP" },
+    { accountId: account.id, toAccountId: other.id, type: "transfer", minorUnits: 200000, currency: "COP" },
   ];
 
   assert.equal(accountBalance(account, transactions), 1180000);
@@ -45,9 +47,62 @@ test("budget actuals come from expense transactions", () => {
     ],
   };
 
+  vault.transactions.push({
+    type: "expense",
+    categoryId: "cat-food",
+    minorUnits: 700000,
+    currency: "USD",
+    occurredAt: new Date(start.getTime() + 3000).toISOString(),
+  });
+
   const result = budgetSummary(budget, vault, start, end);
   assert.equal(result.totalSpent, 125000);
   assert.equal(result.totalRemaining, 375000);
+});
+
+test("cash flow excludes transactions in a different currency", () => {
+  const { start, end } = currentMonthRange();
+  const transactions = [
+    { type: "income", minorUnits: 500000, currency: "COP", occurredAt: new Date(start.getTime() + 1000).toISOString() },
+    { type: "income", minorUnits: 800000, currency: "USD", occurredAt: new Date(start.getTime() + 2000).toISOString() },
+    { type: "expense", minorUnits: 120000, currency: "COP", occurredAt: new Date(start.getTime() + 3000).toISOString() },
+  ];
+  const result = transactionTotals(transactions, start, end, "COP");
+  assert.equal(result.income, 500000);
+  assert.equal(result.expenses, 120000);
+  assert.equal(result.netCashFlow, 380000);
+});
+
+test("account balance ignores transactions whose currency differs from the account", () => {
+  const transactions = [
+    { accountId: account.id, type: "income", minorUnits: 100000, currency: "USD" },
+  ];
+  assert.equal(accountBalance(account, transactions), account.openingMinorUnits);
+});
+
+test("debt payments must reconcile principal, interest, fees and total", () => {
+  assert.throws(() => makeDebtPayment({
+    debtId: "debt-1",
+    amountMinorUnits: 10000,
+    principalMinorUnits: 8000,
+    interestMinorUnits: 1000,
+    feesMinorUnits: 500,
+  }), /principal \+ intereses \+ cargos/);
+  assert.throws(() => makeDebtPayment({
+    debtId: "debt-1",
+    amountMinorUnits: 10000,
+    principalMinorUnits: -1,
+    interestMinorUnits: 10001,
+    feesMinorUnits: 0,
+  }), /importes enteros válidos/);
+  const valid = makeDebtPayment({
+    debtId: "debt-1",
+    amountMinorUnits: 10000,
+    principalMinorUnits: 8500,
+    interestMinorUnits: 1000,
+    feesMinorUnits: 500,
+  });
+  assert.equal(valid.amountMinorUnits, 10000);
 });
 
 test("savings progress is separate from ordinary expenses", () => {

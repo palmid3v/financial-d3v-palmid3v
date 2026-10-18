@@ -480,11 +480,40 @@ function Budget({ vault, updateVault }) {
   </Module>;
 }
 
+async function readImageFile(file) {
+  if (!file || !file.type.startsWith("image/")) throw new Error("Selecciona un archivo de imagen válido.");
+  if (file.size > 5 * 1024 * 1024) throw new Error("La imagen debe pesar máximo 5 MB.");
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("No se pudo leer la imagen."));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function extractProductMetadata(url) {
+  const parsed = new URL(url);
+  if (!["http:", "https:"].includes(parsed.protocol)) throw new Error("Usa un enlace http o https.");
+  const response = await fetch(parsed.href, { mode: "cors", credentials: "omit" });
+  if (!response.ok) throw new Error("La tienda no permitió consultar la página.");
+  const html = await response.text();
+  const documentPage = new DOMParser().parseFromString(html, "text/html");
+  const meta = (property) => documentPage.querySelector(`meta[property="${property}"]`)?.content
+    || documentPage.querySelector(`meta[name="${property}"]`)?.content || "";
+  return {
+    name: meta("og:title") || documentPage.querySelector("h1")?.textContent?.trim() || documentPage.title || "",
+    imageUrl: meta("og:image") || meta("twitter:image") || "",
+  };
+}
+
 function Savings({ vault, updateVault }) {
   const [goal, setGoal] = useState({ name: "", target: "", targetDate: "", currency: "COP" });
   const [contribution, setContribution] = useState({ goalId: "", amount: "", note: "", fromAccountId: "", toAccountId: "" });
   const [editingGoalId, setEditingGoalId] = useState("");
   const [editingContributionId, setEditingContributionId] = useState("");
+  const [product, setProduct] = useState({ id: "", goalId: "", name: "Nevera LG Bottom Freezer", url: "https://www.exito.com/nevera-bottom-freezer-tecnolog-lg-gb41wppapzcclm-3039571/p", price: "3365000", imageUrl: "", imageDataUrl: "", note: "" });
+  const [productStatus, setProductStatus] = useState("");
+  const [extractingProduct, setExtractingProduct] = useState(false);
   const editGoal = (item) => { setEditingGoalId(item.id); setGoal({ name: item.name, target: String((Number(item.targetMinorUnits) || 0) / 100), targetDate: item.targetDate || "", currency: item.currency || "COP" }); };
   const removeGoal = (item) => {
     const goalContributions = vault.savingsContributions.filter((entry) => entry.goalId === item.id);
@@ -574,6 +603,61 @@ function Savings({ vault, updateVault }) {
       transactions: current.transactions.filter((item) => item.id !== entry.transactionId && item.linkedContributionId !== entry.id),
     }));
   };
+  const saveProduct = (event) => {
+    event.preventDefault();
+    const priceMinorUnits = numberValue(product.price);
+    let parsedUrl;
+    try { parsedUrl = new URL(product.url); } catch { window.alert("Ingresa un enlace de compra válido."); return; }
+    if (!["http:", "https:"].includes(parsedUrl.protocol) || !product.name.trim() || !product.goalId || !Number.isSafeInteger(priceMinorUnits) || priceMinorUnits <= 0) {
+      window.alert("Completa el nombre, la meta, el enlace y un precio mayor que cero.");
+      return;
+    }
+    const selectedGoal = vault.savingsGoals.find((item) => item.id === product.goalId);
+    if (!selectedGoal) return;
+    const record = {
+      id: product.id || `product-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      goalId: selectedGoal.id,
+      name: product.name.trim(),
+      url: parsedUrl.href,
+      priceMinorUnits,
+      currency: selectedGoal.currency || "COP",
+      imageUrl: product.imageUrl.trim(),
+      imageDataUrl: product.imageDataUrl || "",
+      note: product.note.trim(),
+      updatedAt: new Date().toISOString(),
+    };
+    updateVault((current) => ({
+      ...current,
+      savingsProducts: product.id
+        ? (current.savingsProducts || []).map((item) => item.id === product.id ? record : item)
+        : [...(current.savingsProducts || []), record],
+    }));
+    setProduct({ id: "", goalId: selectedGoal.id, name: "", url: "", price: "", imageUrl: "", imageDataUrl: "", note: "" });
+    setProductStatus("Producto guardado en el archivo de trabajo. Usa «Guardar archivo» para cifrar y conservar los cambios.");
+  };
+  const editProduct = (item) => {
+    setProduct({ id: item.id, goalId: item.goalId, name: item.name, url: item.url, price: String((Number(item.priceMinorUnits) || 0) / 100), imageUrl: item.imageUrl || "", imageDataUrl: item.imageDataUrl || "", note: item.note || "" });
+    setProductStatus("");
+  };
+  const removeProduct = (item) => {
+    if (!window.confirm(`¿Eliminar "${item.name}" de tus productos deseados?`)) return;
+    updateVault((current) => ({ ...current, savingsProducts: (current.savingsProducts || []).filter((entry) => entry.id !== item.id) }));
+    if (product.id === item.id) setProduct({ id: "", goalId: item.goalId, name: "", url: "", price: "", imageUrl: "", imageDataUrl: "", note: "" });
+  };
+  const loadProductMetadata = async () => {
+    if (!product.url.trim()) { setProductStatus("Ingresa primero el enlace del producto."); return; }
+    setExtractingProduct(true);
+    setProductStatus("Intentando leer el título y la imagen públicos de la tienda…");
+    try {
+      const metadata = await extractProductMetadata(product.url.trim());
+      setProduct((current) => ({ ...current, name: metadata.name || current.name, imageUrl: metadata.imageUrl || current.imageUrl }));
+      setProductStatus(metadata.name || metadata.imageUrl
+        ? "Se encontraron metadatos. Revisa el título y la imagen antes de guardar."
+        : "La página no publicó metadatos reconocibles; completa el título y la imagen manualmente.");
+    } catch {
+      setProductStatus("La tienda bloqueó la lectura automática o no permite CORS. Completa el título y pega la URL directa de una imagen, o sube una foto. No se envían tus datos financieros a ningún servicio.");
+    } finally { setExtractingProduct(false); }
+  };
   const selectedContributionGoal = vault.savingsGoals.find((item) => item.id === contribution.goalId);
   const contributionAccounts = vault.accounts.filter((item) => item.type !== "credit" && (!selectedContributionGoal || item.currency === selectedContributionGoal.currency));
   return <Module title="Ahorro y metas" eyebrow="Planeación" description="Las contribuciones son registros de progreso de una meta, no gastos del presupuesto.">
@@ -593,7 +677,23 @@ function Savings({ vault, updateVault }) {
         <div className="form-actions"><Button primary type="submit" disabled={!vault.savingsGoals.length}>{editingContributionId ? "Guardar cambios" : "Registrar aporte"}</Button>{editingContributionId && <Button onClick={() => { setEditingContributionId(""); setContribution({ goalId: "", amount: "", note: "", fromAccountId: "", toAccountId: "" }); }}>Cancelar</Button>}</div>
       </form></Panel>
     </div>
-    <div className="goal-grid">{vault.savingsGoals.map((item) => { const data = savingsProgress(item, vault.savingsContributions); return <Panel className="goal-card reveal" key={item.id}><div className="goal-head"><div><span className="badge">Meta</span><h3>{item.name}</h3></div><strong>{Math.round(data.percent)}%</strong></div><Progress value={data.percent} tone="green" /><div className="goal-values"><span>{money(data.saved, item.currency)}</span><span>{money(data.target, item.currency)}</span></div>{item.targetDate && <small>Objetivo · {new Date(item.targetDate).toLocaleDateString("es-CO")}</small>}{vault.savingsContributions.filter((entry) => entry.goalId === item.id).length > 0 && <div className="stack-list compact">{vault.savingsContributions.filter((entry) => entry.goalId === item.id).map((entry) => <div className="stack-row" key={entry.id}><div><b>{money(entry.amountMinorUnits, item.currency)}</b><small>{vault.accounts.find((account) => account.id === (entry.fromAccountId || entry.accountId))?.name || "Origen sin asignar"} → {vault.accounts.find((account) => account.id === entry.toAccountId)?.name || "Destino sin asignar"} · {entry.note || "Aporte"} · {new Date(entry.occurredAt).toLocaleDateString("es-CO")}</small></div><Button onClick={() => editContribution(entry)}>Editar</Button><Button onClick={() => removeContribution(entry)}>Eliminar aporte</Button></div>)}</div>}<div className="form-actions"><Button onClick={() => editGoal(item)}>Editar</Button><Button onClick={() => removeGoal(item)}>Eliminar meta</Button></div></Panel>; })}</div>
+    <Panel>
+      <div className="panel-head"><div><small>Lista de deseos</small><h3>{product.id ? "Editar producto" : "Agregar producto a una meta"}</h3></div></div>
+      <Notice>La extracción automática depende de que la tienda permita acceso desde el navegador. Si no funciona, ingresa los datos y la imagen manualmente. La información del producto se guarda dentro del archivo .fdv cifrado al guardar el archivo.</Notice>
+      <form onSubmit={saveProduct} className="form-grid">
+        <Field label="Nombre del producto" required placeholder="Nevera LG Bottom Freezer" value={product.name} onChange={(e) => setProduct({ ...product, name: e.target.value })} />
+        <Select label="Meta de ahorro" required value={product.goalId} onChange={(e) => setProduct({ ...product, goalId: e.target.value })}><option value="">Selecciona una meta</option>{vault.savingsGoals.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.currency}</option>)}</Select>
+        <Field label="Enlace de compra" type="url" required placeholder="https://tienda.com/producto" value={product.url} onChange={(e) => setProduct({ ...product, url: e.target.value })} />
+        <Field label="Precio objetivo" type="number" min="0.01" step="0.01" required value={product.price} onChange={(e) => setProduct({ ...product, price: e.target.value })} />
+        <Field label="URL directa de la imagen (opcional)" type="url" placeholder="https://tienda.com/imagen.jpg" value={product.imageUrl} onChange={(e) => setProduct({ ...product, imageUrl: e.target.value, imageDataUrl: "" })} />
+        <Field label="Nota (opcional)" placeholder="Color, modelo, condiciones…" value={product.note} onChange={(e) => setProduct({ ...product, note: e.target.value })} />
+        <label className="field"><span>O subir fotografía (máx. 5 MB)</span><input type="file" accept="image/*" onChange={async (e) => { const file = e.target.files?.[0]; if (!file) return; try { const imageDataUrl = await readImageFile(file); setProduct((current) => ({ ...current, imageDataUrl, imageUrl: "" })); setProductStatus("Fotografía preparada y se guardará dentro del archivo cifrado."); } catch (error) { setProductStatus(error.message); } }} /></label>
+        {(product.imageDataUrl || product.imageUrl) && <div className="form-actions"><img src={product.imageDataUrl || product.imageUrl} alt="Vista previa del producto" style={{ width: 150, height: 130, objectFit: "contain", borderRadius: 12 }} /></div>}
+        <div className="form-actions"><Button type="button" onClick={loadProductMetadata} disabled={extractingProduct}>{extractingProduct ? "Consultando…" : "Intentar extraer título e imagen"}</Button><Button primary type="submit" disabled={!vault.savingsGoals.length}>{product.id ? "Guardar producto" : "Agregar producto"}</Button>{product.id && <Button type="button" onClick={() => { setProduct({ id: "", goalId: "", name: "", url: "", price: "", imageUrl: "", imageDataUrl: "", note: "" }); setProductStatus(""); }}>Cancelar edición</Button>}</div>
+        {productStatus && <p role="status" className="muted">{productStatus}</p>}
+      </form>
+    </Panel>
+    <div className="goal-grid">{vault.savingsGoals.map((item) => { const data = savingsProgress(item, vault.savingsContributions); const goalProducts = (vault.savingsProducts || []).filter((entry) => entry.goalId === item.id); return <Panel className="goal-card reveal" key={item.id}><div className="goal-head"><div><span className="badge">Meta</span><h3>{item.name}</h3></div><strong>{Math.round(data.percent)}%</strong></div><Progress value={data.percent} tone="green" /><div className="goal-values"><span>{money(data.saved, item.currency)}</span><span>{money(data.target, item.currency)}</span></div>{item.targetDate && <small>Objetivo · {new Date(item.targetDate).toLocaleDateString("es-CO")}</small>}{goalProducts.length > 0 && <div className="stack-list compact"><h4>Productos deseados</h4>{goalProducts.map((desired) => { const remaining = Math.max(0, (Number(desired.priceMinorUnits) || 0) - data.saved); const percent = desired.priceMinorUnits > 0 ? Math.min(100, data.saved / desired.priceMinorUnits * 100) : 0; return <div className="stack-row" key={desired.id} style={{ alignItems: "flex-start" }}>{(desired.imageDataUrl || desired.imageUrl) && <img src={desired.imageDataUrl || desired.imageUrl} alt={desired.name} loading="lazy" style={{ width: 96, height: 96, objectFit: "contain", borderRadius: 10, flexShrink: 0 }} />}<div style={{ minWidth: 0, flex: 1 }}><b>{desired.name}</b><small>{money(desired.priceMinorUnits, desired.currency)} · faltan {money(remaining, desired.currency)}</small><Progress value={percent} tone="green" /><small>{Math.round(percent)}% del precio cubierto con el ahorro de esta meta</small>{desired.note && <small>{desired.note}</small>}<a href={desired.url} target="_blank" rel="noreferrer">Abrir tienda ↗</a><div className="form-actions"><Button onClick={() => editProduct(desired)}>Editar</Button><Button onClick={() => removeProduct(desired)}>Eliminar producto</Button></div></div></div>; })}</div>}{vault.savingsContributions.filter((entry) => entry.goalId === item.id).length > 0 && <div className="stack-list compact">{vault.savingsContributions.filter((entry) => entry.goalId === item.id).map((entry) => <div className="stack-row" key={entry.id}><div><b>{money(entry.amountMinorUnits, item.currency)}</b><small>{vault.accounts.find((account) => account.id === (entry.fromAccountId || entry.accountId))?.name || "Origen sin asignar"} → {vault.accounts.find((account) => account.id === entry.toAccountId)?.name || "Destino sin asignar"} · {entry.note || "Aporte"} · {new Date(entry.occurredAt).toLocaleDateString("es-CO")}</small></div><Button onClick={() => editContribution(entry)}>Editar</Button><Button onClick={() => removeContribution(entry)}>Eliminar aporte</Button></div>)}</div>}<div className="form-actions"><Button onClick={() => editGoal(item)}>Editar</Button><Button onClick={() => removeGoal(item)}>Eliminar meta</Button></div></Panel>; })}</div>
   </Module>;
 }
 

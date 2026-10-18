@@ -628,7 +628,20 @@ function NetWorth({ vault, updateVault }) {
 }
 
 function Education({ vault }) {
-  return <Module title="Educación" eyebrow="Aprender → ajustar" description="Cada concepto sigue FACT → CALCULATION → INTERPRETATION → ACTION.">
+  const { start, end } = currentMonthRange();
+  const flow = transactionTotals(vault.transactions, start, end, "COP");
+  const worth = netWorth(vault, "COP");
+  const monthlySavings = flow.income - flow.expenses;
+  const budget = vault.budgets.find((item) => new Date(item.startDate) <= start && new Date(item.endDate) >= end && item.currency === "COP");
+  const budgetData = budget ? budgetSummary(budget, vault, new Date(budget.startDate), new Date(budget.endDate)) : null;
+  return <Module title="Educación" eyebrow="Aprender → ajustar" description="Conecta conceptos financieros con tus cifras actuales. Las cifras de ejemplo se calculan localmente desde tu vault.">
+    <div className="metrics metrics-4">
+      <Metric label="Flujo neto del mes" value={money(monthlySavings)} detail="Ingresos − gastos en COP" tone={monthlySavings >= 0 ? "green" : "red"} />
+      <Metric label="Patrimonio en COP" value={money(worth.net)} detail="Activos − pasivos" tone="green" />
+      <Metric label="Tasa de ahorro" value={flow.income > 0 ? Math.round((monthlySavings / flow.income) * 100) + "%" : "—"} detail="Flujo neto / ingresos" tone="yellow" />
+      <Metric label="Presupuesto usado" value={budgetData ? Math.round(budgetData.percent) + "%" : "—"} detail={budget ? budget.name : "Sin presupuesto COP activo"} tone="blue" />
+    </div>
+    <Notice>Interpretación: un flujo positivo indica que los ingresos registrados superan los gastos del mes. El patrimonio y el presupuesto se muestran en COP; no se convierten otras monedas automáticamente.</Notice>
     <div className="education-grid">{vault.education.map((card) => <Panel className="education-card reveal" key={card.id}><span className="badge">{card.topic}</span><h3>{card.title}</h3><div><b>FACT</b><p>{card.fact}</p></div><div><b>CALCULATION</b><p>{card.calculation}</p></div><div><b>INTERPRETATION</b><p>{card.interpretation}</p></div><div><b>ACTION</b><p>{card.action}</p></div></Panel>)}</div>
   </Module>;
 }

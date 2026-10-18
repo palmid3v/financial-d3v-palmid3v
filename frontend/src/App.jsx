@@ -490,6 +490,7 @@ function Savings({ vault, updateVault }) {
 function Debts({ vault, updateVault }) {
   const [debt, setDebt] = useState({ name: "", amount: "", dueDate: "", currency: "COP" });
   const [payment, setPayment] = useState({ debtId: "", amount: "", principal: "", interest: "", fees: "" });
+  const [editingDebtId, setEditingDebtId] = useState("");
   const [paymentError, setPaymentError] = useState("");
   const removeDebt = (item) => {
     if (vault.debtPayments.some((entry) => entry.debtId === item.id)) {

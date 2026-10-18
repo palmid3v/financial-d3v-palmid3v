@@ -193,3 +193,10 @@ test("savings contribution helper rejects missing goals and invalid amounts", ()
   assert.throws(() => makeSavingsContribution({ goalId: "goal-1", amountMinorUnits: -100 }), /meta y un importe positivo/);
   assert.equal(makeSavingsContribution({ goalId: "goal-1", amountMinorUnits: 100 }).amountMinorUnits, 100);
 });
+
+
+test("account helper rejects negative or unsafe opening balances", () => {
+  assert.throws(() => makeAccount({ name: "Invalid", openingMinorUnits: -1 }), /saldo inicial entero no negativo/);
+  assert.throws(() => makeAccount({ name: "Invalid", openingMinorUnits: Number.MAX_SAFE_INTEGER + 1 }), /saldo inicial entero no negativo/);
+  assert.equal(makeAccount({ name: "Valid", currency: "usd", openingMinorUnits: 0 }).currency, "USD");
+});

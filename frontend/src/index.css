@@ -568,3 +568,26 @@ footer {
 @media (max-width: 720px) {
   .stack-row .danger-button { flex-shrink: 0; }
 }
+
+
+/* Mobile review: comfortable touch targets, safe-area spacing and resilient long values. */
+@media (max-width: 720px) {
+  button, .button, select, input { touch-action: manipulation; }
+  .mobile-nav button { min-height: 52px; padding: 5px 2px; }
+  .mobile-nav small { font-size: 9px; line-height: 1.2; }
+  .mobile-more button { min-height: 44px; font-size: 12px; }
+  .topbar { padding-top: max(0px, env(safe-area-inset-top)); }
+  main { overflow-x: clip; }
+  .panel, .account-card, .goal-card, .debt-card, .budget-card { min-width: 0; }
+  .form-actions { gap: 8px; }
+  .form-actions .button { min-height: 44px; }
+  .field input, .field select { min-height: 44px; font-size: 16px; }
+  .stack-row { gap: 8px; flex-wrap: wrap; }
+  .stack-row > * { min-width: 0; }
+  .mobile-more { max-height: min(65vh, 480px); overflow-y: auto; padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+}
+@media (max-width: 380px) {
+  .topbar h1 { max-width: 38vw; }
+  .top-actions .button { min-height: 38px; padding-inline: 8px; font-size: 10px; }
+  .mobile-nav { left: 5px; right: 5px; bottom: max(5px, env(safe-area-inset-bottom)); }
+}

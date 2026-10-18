@@ -170,8 +170,8 @@ Implemented in current `main` history:
 - Account creation and editing include the opening balance; account balances remain derived from opening balance plus the ledger.
 - Transactions support create, edit and delete. Domain helpers reject non-positive/unsafe amounts and malformed same-account transfers; UI validation also requires transfer accounts to share a currency.
 - Budgets support create, edit and delete. Actual spending is derived from expense transactions and scoped by budget currency.
-- Savings goals support create and edit. Goals with linked contributions cannot be deleted; contribution history is visible and individual contributions can be deleted with confirmation.
-- Debts support create and edit. Debts with linked payments cannot be deleted; payment history is visible and payments can be deleted with confirmation. Debt editing guards against reducing original principal below principal already paid and blocks currency changes after payments exist.
+- Savings goals support create and edit. Goals with linked contributions cannot be deleted; contribution history is visible and contributions support edit/delete with confirmation.
+- Debts support create and edit. Debts with linked payments cannot be deleted; payment history is visible and payments support edit/delete with confirmation. Debt editing guards against reducing original principal below principal already paid and blocks currency changes after payments exist.
 - Assets and liabilities support create, edit and delete.
 - Account, asset, liability, goal, debt and budget forms store their selected currency; dashboard account totals are grouped by currency.
 - Debt payments validate total = principal + interest + fees; only principal reduces outstanding debt.
@@ -181,8 +181,6 @@ Implemented in current `main` history:
 
 Known limitations / verification still required:
 - Currency conversion and exchange-rate sourcing are not implemented. Cross-currency totals must remain separate.
-- Debt payments currently support add and delete; editing an existing payment is not implemented.
-- Savings contributions currently support add and delete; editing an existing contribution is not implemented.
 - Education content remains a static learning set, not a fully contextual, data-driven coach.
 - Latest changes have not been run through local frontend tests/build or full desktop/mobile runtime workflows from this environment. Do not treat the integrated scope as complete until the checks below pass.
 

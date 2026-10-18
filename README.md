@@ -164,16 +164,23 @@ Older Cloud Run/Firebase production documents are historical traceability, not a
 
 ## Integrated 8-part build — 2026-10-18
 
-Approved scope: Dashboard, Accounts, Transactions, Budgets, Savings & Goals, Debts, Net Worth, and Education. The goal is one connected local-first finance workflow, not eight isolated screens.
+Scope: Dashboard, Accounts, Transactions, Budgets, Savings & Goals, Debts, Net Worth, and Education. Work is being applied directly to `main`, as requested.
 
-Current implementation work on `feat/financial-d3v-integrated-8-parts`:
-- Account currency selection uses a curated ISO-code list rather than requiring users to type a code.
-- Dashboard account balances are grouped by currency; the UI does not add COP and USD as if they were equivalent.
-- Dashboard category spending explicitly scopes to COP, matching the COP dashboard cash-flow and trend scope.
-- Empty months render zero-height bars instead of visually implying activity.
-- Transaction entry validates positive safe-integer minor units and rejects transfers with a missing, identical, or different-currency destination account.
-- Budgets, savings goals, debts, assets, and liabilities expose currency selection; asset/liability creation stores the selected currency.
-- Net-worth headline calculations remain explicitly COP-scoped; non-COP balances are not silently converted. Currency conversion and exchange-rate sourcing are not implemented.
-- Responsive currency totals can wrap on narrow screens.
+Implemented in the current `main` history:
+- Account create/edit supports the opening balance; current balance continues to derive from the opening balance and ledger.
+- Account, transaction, budget, goal, debt, asset and liability currencies are stored explicitly where supported; the dashboard groups account balances by currency and does not add unlike currencies together.
+- Transaction create/edit/delete flows are available; transfers require distinct accounts with matching currencies.
+- Budgets can be created, edited and deleted; budget actuals are derived from expense transactions and filtered by budget currency.
+- Goals can be created and deleted only when no contributions are linked; debts can be created and deleted only when no payments are linked. These safeguards preserve linked financial history.
+- Assets and liabilities can be created and deleted.
+- Debt payments validate that total payment equals principal + interest + fees, and only principal reduces the outstanding balance.
+- Net-worth calculations include liabilities and outstanding debt, scoped to one currency without silent exchange-rate conversion.
+- The encrypted `.fdv` vault is the persistence source of truth; decrypted data is held in active application memory.
 
-Validation status: implementation is in progress. These changes are not considered runtime-validated until the pull request CI, frontend tests/build, and desktop/mobile workflows pass. Test with synthetic amounts only, then verify save → lock → reopen on the encrypted `.fdv` file.
+Known limitations / next work:
+- Currency conversion and exchange-rate sourcing are not implemented. Cross-currency totals must remain separate.
+- Editing is not yet complete for every record type; savings contributions and debt payments need full lifecycle management, and asset/liability/goal/debt edit workflows still need completion.
+- Education content remains a static learning set rather than a fully contextual, data-driven coach.
+- Local automated tests/build and end-to-end desktop/mobile workflows must be run against the latest `main` checkout before declaring the eight parts complete.
+
+Validation: do not mark the integrated eight-part scope complete until `npm test`, `npm run build`, `npm run build:wasm`, the repository validation/security scripts, and local workflows for create/edit/delete → save encrypted vault → lock → reopen all pass. Use synthetic financial data for testing.

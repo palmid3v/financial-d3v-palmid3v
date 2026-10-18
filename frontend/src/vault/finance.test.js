@@ -10,7 +10,6 @@ import {
   makeAccount,
   makeBudget,
   makeDebt,
-  makeDebtPayment,
   makeSavingsContribution,
   makeSavingsGoal,
   netWorth,

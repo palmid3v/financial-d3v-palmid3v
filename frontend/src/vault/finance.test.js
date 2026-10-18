@@ -20,6 +20,18 @@ import {
 
 const account = makeAccount({ name: "Cuenta principal", openingMinorUnits: 1000000 });
 
+test("normalizeVault preserves savings products and supports old vaults without them", () => {
+  const oldVault = normalizeVault({ accounts: [], transactions: [], savingsGoals: [], savingsContributions: [] });
+  assert.deepEqual(oldVault.savingsProducts, []);
+  const normalized = normalizeVault({
+    accounts: [], transactions: [], savingsGoals: [], savingsContributions: [],
+    savingsProducts: [{ id: "p1", goalId: "g1", name: "Nevera LG", url: "https://www.exito.com/producto", priceMinorUnits: 336500000, imageUrl: "https://example.com/nevera.jpg" }],
+  });
+  assert.equal(normalized.savingsProducts[0].currency, "COP");
+  assert.equal(normalized.savingsProducts[0].imageUrl, "https://example.com/nevera.jpg");
+  assert.equal(normalized.savingsProducts[0].imageDataUrl, "");
+});
+
 test("account balance derives from ledger and transfers", () => {
   const other = makeAccount({ name: "Ahorros", openingMinorUnits: 0 });
   const transactions = [

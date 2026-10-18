@@ -250,7 +250,7 @@ function Dashboard({ vault, setActive }) {
 
       <Panel className="reveal"><div className="panel-head"><div><small>Ledger</small><h3>Movimientos recientes</h3></div><button onClick={() => setActive("transactions")} className="text-link">Ver todos</button></div>
         {recent.length === 0 ? <Empty title="Tu ledger está vacío" text="Registra el primer movimiento para empezar." /> :
-          <div className="stack-list">{recent.map((tx) => <div className="stack-row" key={tx.id}><span className={`movement-icon ${tx.type}`}>{tx.type === "income" ? "↗" : tx.type === "expense" ? "↘" : "⇄"}</span><div><b>{tx.description || "Movimiento"}</b><small>{tx.type} · {new Date(tx.occurredAt).toLocaleDateString("es-CO")}</small></div><strong className={tx.type === "expense" ? "negative" : tx.type === "income" ? "positive" : ""}>{tx.type === "expense" ? "−" : tx.type === "income" ? "+" : ""}{money(tx.minorUnits, tx.currency)}</strong></div>)}</div>}
+          <div className="stack-list">{recent.map((tx) => <div className="stack-row" key={tx.id}><span className={`movement-icon ${tx.type}`}>{tx.type === "income" ? "↗" : tx.type === "expense" ? "↘" : "⇄"}</span><div><b>{tx.description || "Movimiento"}</b><small>{tx.type} · {vault.accounts.find((account) => account.id === tx.accountId)?.name || "Cuenta"}{tx.type === "transfer" ? " → " + (vault.accounts.find((account) => account.id === tx.toAccountId)?.name || "Destino") : ""} · {new Date(tx.occurredAt).toLocaleDateString("es-CO")}</small></div><strong className={tx.type === "expense" ? "negative" : tx.type === "income" ? "positive" : ""}>{tx.type === "expense" ? "−" : tx.type === "income" ? "+" : ""}{money(tx.minorUnits, tx.currency)}</strong></div>)}</div>}
       </Panel>
     </div>
   </div>;
@@ -279,7 +279,7 @@ function Transactions({ vault, updateVault }) {
     const destination = vault.accounts.find((item) => item.id === form.toAccountId);
     const amountMinorUnits = numberValue(form.amount);
     if (!Number.isSafeInteger(amountMinorUnits) || amountMinorUnits <= 0) { setMessageTone("error"); setMessage("El monto debe ser mayor que cero y estar dentro del rango permitido."); return; }
-    if (form.type === "transfer" && (!destination || destination.id === account.id || destination.currency !== account.currency)) { setMessageTone("error"); setMessage("Selecciona una cuenta destino distinta y con la misma moneda."); return; }
+    if (form.type === "transfer" && (account.type === "credit" || !destination || destination.type === "credit" || destination.id === account.id || destination.currency !== account.currency)) { setMessageTone("error"); setMessage("Selecciona dos cuentas distintas, no crediticias y con la misma moneda."); return; }
     const transaction = makeTransaction({
       accountId: form.accountId,
       toAccountId: form.type === "transfer" ? form.toAccountId : "",

@@ -521,7 +521,8 @@ function Debts({ vault, updateVault }) {
     const principalMinorUnits = payment.principal === ""
       ? amountMinorUnits - interestMinorUnits - feesMinorUnits
       : numberValue(payment.principal);
-    const outstanding = debtBalance(selectedDebt, vault.debtPayments);
+    const existingPayment = editingPaymentId ? vault.debtPayments.find((item) => item.id === editingPaymentId) : null;
+    const outstanding = debtBalance(selectedDebt, vault.debtPayments) + (existingPayment?.debtId === selectedDebt.id ? (Number(existingPayment.principalMinorUnits) || 0) : 0);
 
     if (![amountMinorUnits, principalMinorUnits, interestMinorUnits, feesMinorUnits].every(Number.isSafeInteger)
       || amountMinorUnits <= 0 || principalMinorUnits < 0 || interestMinorUnits < 0 || feesMinorUnits < 0) {

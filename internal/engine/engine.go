@@ -250,6 +250,9 @@ func Analyze(v Vault, period Period, currency string) (Analysis, error) {
 	}
 
 	for _, goal := range v.SavingsGoals {
+		if goal.Currency != currency {
+			continue
+		}
 		saved := int64(0)
 		for _, contribution := range v.SavingsContributions {
 			if contribution.GoalID == goal.ID {
@@ -270,6 +273,9 @@ func Analyze(v Vault, period Period, currency string) (Analysis, error) {
 	}
 
 	for _, debt := range v.Debts {
+		if debt.Currency != currency {
+			continue
+		}
 		principalPaid := int64(0)
 		for _, payment := range v.DebtPayments {
 			if payment.DebtID == debt.ID {

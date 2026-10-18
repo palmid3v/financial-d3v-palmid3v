@@ -151,3 +151,26 @@ test("legacy transactions inherit the normalized source-account currency", () =>
   assert.equal(vault.accounts[0].currency, "USD");
   assert.equal(vault.transactions[0].currency, "USD");
 });
+
+
+test("net worth filters assets and liabilities by currency without conversion", () => {
+  const vault = {
+    assets: [
+      { id: "cop-asset", minorUnits: 250000, currency: "COP" },
+      { id: "usd-asset", minorUnits: 90000, currency: "USD" },
+    ],
+    liabilities: [
+      { id: "cop-liability", minorUnits: 50000, currency: "COP" },
+      { id: "usd-liability", minorUnits: 10000, currency: "USD" },
+    ],
+    debts: [
+      { id: "cop-debt", originalMinorUnits: 30000, currency: "COP" },
+      { id: "usd-debt", originalMinorUnits: 20000, currency: "USD" },
+    ],
+    debtPayments: [],
+  };
+  const cop = netWorth(vault, "COP");
+  const usd = netWorth(vault, "USD");
+  assert.deepEqual(cop, { assets: 250000, liabilities: 80000, debtLiabilities: 30000, net: 170000 });
+  assert.deepEqual(usd, { assets: 90000, liabilities: 30000, debtLiabilities: 20000, net: 60000 });
+});

@@ -261,3 +261,21 @@ export function monthSeries(transactions, months = 6, reference = new Date(), cu
 }
 
 export { DEFAULT_CATEGORIES, EDUCATION };
+
+
+/** Forecasts next month's net cash flow from the last complete months only.
+ * Values are in minor units and never combine different currencies. This is a
+ * planning estimate, not a booked transaction or a guaranteed balance.
+ */
+export function projectMonthlyCashFlow(transactions, debtPayments = [], reference = new Date(), currency = "COP", months = 3) {
+  const count = Math.max(1, Math.min(12, Math.floor(Number(months) || 3)));
+  const history = [];
+  for (let offset = count; offset >= 1; offset -= 1) {
+    const start = new Date(reference.getFullYear(), reference.getMonth() - offset, 1);
+    const end = new Date(reference.getFullYear(), reference.getMonth() - offset + 1, 1);
+    const totals = transactionTotals(transactions, start, end, currency, debtPayments);
+    history.push({ year: start.getFullYear(), month: start.getMonth() + 1, income: totals.income, expenses: totals.expenses, principalPayments: totals.principalPayments, netCashFlow: totals.netCashFlow });
+  }
+  const average = (key) => Math.round(history.reduce((sum, item) => sum + item[key], 0) / history.length);
+  return { currency, months: history, averageIncome: average("income"), averageExpenses: average("expenses"), averagePrincipalPayments: average("principalPayments"), averageNetCashFlow: average("netCashFlow"), basisMonths: history.length, isEstimate: true };
+}

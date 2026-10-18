@@ -263,3 +263,37 @@ test("account-scoped budgets include only expenses and debt interest/fees from t
   };
   assert.equal(budgetSummary(budget, vault, start, end).totalSpent, 45000);
 });
+
+
+test("legacy vault records receive safe defaults for account-linked finance", () => {
+  const vault = normalizeVault({
+    accounts: [{ id: "bank-cop", name: "Banco", currency: "cop", type: "bank", openingMinorUnits: 0 }],
+    budgets: [{ id: "budget-legacy", name: "Legacy", items: [] }],
+    savingsGoals: [{ id: "goal-usd", name: "USD goal", currency: "usd", targetMinorUnits: 10000 }],
+    savingsContributions: [{ id: "contribution-legacy", goalId: "goal-usd", amountMinorUnits: 1000 }],
+    debts: [{ id: "debt-usd", name: "USD debt", currency: "usd", originalMinorUnits: 10000 }],
+    debtPayments: [{ id: "payment-legacy", debtId: "debt-usd", amountMinorUnits: 1000, principalMinorUnits: 500, interestMinorUnits: 400, feesMinorUnits: 100 }],
+  });
+  assert.equal(vault.budgets[0].accountId, "all");
+  assert.equal(vault.savingsContributions[0].currency, "USD");
+  assert.equal(vault.debtPayments[0].currency, "USD");
+  assert.equal(vault.debtPayments[0].categoryId, "cat-other");
+});
+
+test("credit accounts are not double-counted as net-worth assets", () => {
+  const bank = makeAccount({ name: "Banco", openingMinorUnits: 500000 });
+  const card = makeAccount({ name: "Tarjeta", type: "credit", openingMinorUnits: 0 });
+  const vault = {
+    accounts: [bank, card],
+    transactions: [{ type: "expense", accountId: card.id, currency: "COP", minorUnits: 100000 }],
+    assets: [],
+    liabilities: [],
+    debts: [makeDebt({ name: "Tarjeta", originalMinorUnits: 100000 })],
+    debtPayments: [],
+  };
+  const result = netWorth(vault);
+  assert.equal(result.accountAssets, 500000);
+  assert.equal(result.accountLiabilities, 0);
+  assert.equal(result.liabilities, 100000);
+  assert.equal(result.net, 400000);
+});

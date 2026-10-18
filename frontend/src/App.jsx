@@ -257,6 +257,7 @@ function Transactions({ vault, updateVault }) {
   const [form, setForm] = useState({ type: "expense", amount: "", accountId: "", toAccountId: "", categoryId: "cat-food", description: "", occurredAt: localDateTimeInput() });
   const [message, setMessage] = useState("");
   const [messageTone, setMessageTone] = useState("success");
+  const [editingId, setEditingId] = useState("");
   const categories = vault.categories.filter((item) => item.kind === form.type);
   const removeTransaction = (transaction) => {
     if (!window.confirm("¿Eliminar este movimiento del ledger? Esta acción se guardará cuando guardes el Vault.")) return;
@@ -282,16 +283,40 @@ function Transactions({ vault, updateVault }) {
       description: form.description || (form.type === "income" ? "Ingreso" : form.type === "expense" ? "Gasto" : "Transferencia"),
       occurredAt: new Date(form.occurredAt).toISOString(),
     });
-    updateVault((current) => ({ ...current, transactions: [...current.transactions, transaction] }));
+    if (editingId) {
+      updateVault((current) => ({ ...current, transactions: current.transactions.map((item) => item.id === editingId ? { ...transaction, id: item.id, createdAt: item.createdAt } : item) }));
+      setMessage("Movimiento actualizado en el Vault en memoria. Usa Guardar vault para persistirlo cifrado.");
+      setEditingId("");
+    } else {
+      updateVault((current) => ({ ...current, transactions: [...current.transactions, transaction] }));
+      setMessage("Movimiento registrado en el Vault en memoria. Usa Guardar vault para persistirlo cifrado.");
+    }
     setMessageTone("success");
-    setMessage("Movimiento registrado en el Vault en memoria. Usa Guardar vault para persistirlo cifrado.");
     setForm((current) => ({ ...current, amount: "", description: "" }));
+  };
+  const editTransaction = (tx) => {
+    setEditingId(tx.id);
+    setForm({
+      type: tx.type,
+      amount: String((Number(tx.minorUnits) || 0) / 100),
+      accountId: tx.accountId || "",
+      toAccountId: tx.toAccountId || "",
+      categoryId: tx.categoryId || "",
+      description: tx.description || "",
+      occurredAt: localDateTimeInput(new Date(tx.occurredAt)),
+    });
+    setMessage("");
+  };
+  const cancelEdit = () => {
+    setEditingId("");
+    setForm({ type: "expense", amount: "", accountId: "", toAccountId: "", categoryId: "cat-food", description: "", occurredAt: localDateTimeInput() });
+    setMessage("");
   };
   const items = [...vault.transactions].sort((a, b) => new Date(b.occurredAt) - new Date(a.occurredAt));
 
   return <Module title="Transacciones" eyebrow="Registrar → Categorizar" description="Captura ingresos, gastos y transferencias directamente en el ledger privado.">
     <div className="two-col">
-      <Panel><div className="panel-head"><div><small>Nueva transacción</small><h3>Registrar movimiento</h3></div></div>
+      <Panel><div className="panel-head"><div><small>{editingId ? "Editar ledger" : "Nueva transacción"}</small><h3>{editingId ? "Editar movimiento" : "Registrar movimiento"}</h3></div></div>
         <form onSubmit={save} className="form-grid">
           <div className="segmented full"><button type="button" className={form.type === "expense" ? "active" : ""} onClick={() => setForm({ ...form, type: "expense", categoryId: "cat-food" })}>Gasto</button><button type="button" className={form.type === "income" ? "active" : ""} onClick={() => setForm({ ...form, type: "income", categoryId: "cat-salary" })}>Ingreso</button><button type="button" className={form.type === "transfer" ? "active" : ""} onClick={() => setForm({ ...form, type: "transfer", categoryId: "" })}>Transfer.</button></div>
           <Field label="Monto" type="number" min="0.01" step="0.01" required value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
@@ -300,13 +325,13 @@ function Transactions({ vault, updateVault }) {
             <Select label="Categoría" value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })}>{categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select>}
           <Field label="Fecha" type="datetime-local" value={form.occurredAt} onChange={(e) => setForm({ ...form, occurredAt: e.target.value })} />
           <Field label="Descripción" placeholder="Opcional" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-          <div className="form-actions"><Button primary type="submit">Guardar movimiento</Button></div>
+          <div className="form-actions"><Button primary type="submit">{editingId ? "Guardar cambios" : "Guardar movimiento"}</Button>{editingId && <Button onClick={cancelEdit}>Cancelar edición</Button>}</div>
         </form>
         {message && <Notice tone={messageTone}><b>{messageTone === "error" ? "No se registró el movimiento." : "Ledger actualizado."}</b><span>{message}</span></Notice>}
       </Panel>
       <Panel><div className="panel-head"><div><small>Ledger privado</small><h3>Movimientos</h3></div><span>{items.length} registros</span></div>
         {items.length === 0 ? <Empty title="Sin movimientos" text="El ledger está listo. Registra tu primer ingreso, gasto o transferencia." /> :
-          <div className="stack-list">{items.map((tx) => <div className="stack-row" key={tx.id}><span className={`movement-icon ${tx.type}`}>{tx.type === "income" ? "↗" : tx.type === "expense" ? "↘" : "⇄"}</span><div><b>{tx.description}</b><small>{tx.type} · {new Date(tx.occurredAt).toLocaleString("es-CO")}</small></div><strong className={tx.type === "expense" ? "negative" : tx.type === "income" ? "positive" : ""}>{tx.type === "expense" ? "−" : tx.type === "income" ? "+" : ""}{money(tx.minorUnits, tx.currency)}</strong><Button className="danger-button" onClick={() => removeTransaction(tx)}>Eliminar</Button></div>)}</div>}
+          <div className="stack-list">{items.map((tx) => <div className="stack-row" key={tx.id}><span className={`movement-icon ${tx.type}`}>{tx.type === "income" ? "↗" : tx.type === "expense" ? "↘" : "⇄"}</span><div><b>{tx.description}</b><small>{tx.type} · {new Date(tx.occurredAt).toLocaleString("es-CO")}</small></div><strong className={tx.type === "expense" ? "negative" : tx.type === "income" ? "positive" : ""}>{tx.type === "expense" ? "−" : tx.type === "income" ? "+" : ""}{money(tx.minorUnits, tx.currency)}</strong><Button onClick={() => editTransaction(tx)}>Editar</Button><Button className="danger-button" onClick={() => removeTransaction(tx)}>Eliminar</Button></div>)}</div>}
       </Panel>
     </div>
   </Module>;

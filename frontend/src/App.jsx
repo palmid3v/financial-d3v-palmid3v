@@ -128,14 +128,14 @@ function MobileNav({ active, setActive, moreOpen, setMoreOpen }) {
   </>;
 }
 
-function Topbar({ active, dirty, saveVault, lock }) {
+function Topbar({ active, dirty, saveVault, lock, saveMode }) {
   const label = allNav.find(([key]) => key === active)?.[1] || "Dashboard";
   return <header className="topbar">
     <div><small>Financial-D3v <b>/</b> {label}</small><h1>{label}</h1></div>
     <div className="top-actions">
       <span className={dirty ? "save-status dirty" : "save-status"}><i /> {dirty ? "Cambios sin guardar" : "Vault guardado"}</span>
       <Button onClick={() => saveVault()} disabled={!dirty}>
-        {dirty ? "Guardar vault" : "Guardado"}
+        {dirty ? (saveMode === "same-file" ? "Guardar cambios" : "Descargar actualización") : "Guardado"}
       </Button>
       <button className="avatar" onClick={lock} aria-label="Bloquear vault">P</button>
     </div>
@@ -896,7 +896,7 @@ function Module({ title, eyebrow, description, children }) {
 }
 
 export default function App() {
-  const { vault, updateVault, saveVault, dirty, lock } = useVault();
+  const { vault, updateVault, saveVault, dirty, lock, saveMode } = useVault();
   const [active, setActive] = useState("dashboard");
   const [moreOpen, setMoreOpen] = useState(false);
   const safeVault = useMemo(() => normalizeVault(vault), [vault]);
@@ -922,7 +922,7 @@ export default function App() {
   return <div className="app-shell">
     <Sidebar active={active} setActive={setActive} onLock={guardedLock} dirty={dirty} />
     <div className="main">
-      <Topbar active={active} dirty={dirty} saveVault={saveVault} lock={guardedLock} />
+      <Topbar active={active} dirty={dirty} saveVault={saveVault} lock={guardedLock} saveMode={saveMode} />
       <main>{render()}</main>
       <footer>PRIVATE BY DESIGN · FINANCIAL-D3V · BY PALMID3V</footer>
     </div>

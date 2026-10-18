@@ -446,7 +446,8 @@ function Budget({ vault, updateVault }) {
   };
   const save = (event) => {
     event.preventDefault();
-    const items = rows.filter((row) => row.categoryId && Number(row.limit) > 0).map((row) => ({ categoryId: row.categoryId, limitMinorUnits: numberValue(row.limit) }));
+    const groupedLimits = rows.filter((row) => row.categoryId && Number(row.limit) > 0).reduce((grouped, row) => { const amount = numberValue(row.limit); if (!Number.isSafeInteger(amount) || amount <= 0) return grouped; grouped.set(row.categoryId, (grouped.get(row.categoryId) || 0) + amount); return grouped; }, new Map());
+    const items = [...groupedLimits].map(([categoryId, limitMinorUnits]) => ({ categoryId, limitMinorUnits }));
     if (!name.trim() || !items.length || items.some((item) => !Number.isSafeInteger(item.limitMinorUnits) || item.limitMinorUnits <= 0)) return;
     if (editingBudgetId) {
       updateVault((current) => ({ ...current, budgets: current.budgets.map((budget) => budget.id === editingBudgetId ? { ...budget, name: name.trim(), currency, accountId, items } : budget) }));
@@ -490,7 +491,7 @@ function Savings({ vault, updateVault }) {
     if (!window.confirm("¿Eliminar la meta " + item.name + "?")) return;
     updateVault((current) => ({ ...current, savingsGoals: current.savingsGoals.filter((entry) => entry.id !== item.id) }));
   };
-  const saveGoal = (event) => { event.preventDefault(); if (!goal.name.trim() || !goal.target.trim() || !Number.isSafeInteger(numberValue(goal.target)) || numberValue(goal.target) <= 0) return; if (editingGoalId) { updateVault((current) => ({ ...current, savingsGoals: current.savingsGoals.map((item) => item.id === editingGoalId ? { ...item, name: goal.name.trim(), targetMinorUnits: numberValue(goal.target), targetDate: goal.targetDate, currency: goal.currency } : item) })); setEditingGoalId(""); } else { updateVault((current) => ({ ...current, savingsGoals: [...current.savingsGoals, makeSavingsGoal({ name: goal.name.trim(), targetMinorUnits: numberValue(goal.target), targetDate: goal.targetDate, currency: goal.currency })] })); } setGoal({ name: "", target: "", targetDate: "", currency: goal.currency }); };
+  const saveGoal = (event) => { event.preventDefault(); if (!goal.name.trim() || !goal.target.trim() || !Number.isSafeInteger(numberValue(goal.target)) || numberValue(goal.target) <= 0) return; if (editingGoalId) { const existingGoal = vault.savingsGoals.find((item) => item.id === editingGoalId); if (existingGoal && existingGoal.currency !== goal.currency && vault.savingsContributions.some((entry) => entry.goalId === editingGoalId)) { window.alert("No puedes cambiar la moneda de una meta que ya tiene aportes registrados."); return; } updateVault((current) => ({ ...current, savingsGoals: current.savingsGoals.map((item) => item.id === editingGoalId ? { ...item, name: goal.name.trim(), targetMinorUnits: numberValue(goal.target), targetDate: goal.targetDate, currency: goal.currency } : item) })); setEditingGoalId(""); } else { updateVault((current) => ({ ...current, savingsGoals: [...current.savingsGoals, makeSavingsGoal({ name: goal.name.trim(), targetMinorUnits: numberValue(goal.target), targetDate: goal.targetDate, currency: goal.currency })] })); } setGoal({ name: "", target: "", targetDate: "", currency: goal.currency }); };
   const saveContribution = (event) => {
     event.preventDefault();
     const amountMinorUnits = numberValue(contribution.amount);

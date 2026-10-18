@@ -16,6 +16,7 @@ import {
   makeSavingsGoal,
   netWorth,
   savingsProgress,
+  projectMonthlyCashFlow,
 } from "./finance.js";
 
 const account = makeAccount({ name: "Cuenta principal", openingMinorUnits: 1000000 });
@@ -308,4 +309,25 @@ test("credit accounts are not double-counted as net-worth assets", () => {
   assert.equal(result.accountLiabilities, 0);
   assert.equal(result.liabilities, 100000);
   assert.equal(result.net, 400000);
+});
+
+
+test("cash-flow projection uses only completed months and separates principal payments", () => {
+  const reference = new Date("2026-10-18T12:00:00");
+  const transactions = [
+    { type: "income", minorUnits: 500000, currency: "COP", occurredAt: "2026-07-10T12:00:00Z" },
+    { type: "expense", minorUnits: 100000, currency: "COP", occurredAt: "2026-07-12T12:00:00Z" },
+    { type: "income", minorUnits: 700000, currency: "COP", occurredAt: "2026-08-10T12:00:00Z" },
+    { type: "expense", minorUnits: 200000, currency: "COP", occurredAt: "2026-08-12T12:00:00Z" },
+    { type: "income", minorUnits: 999999, currency: "COP", occurredAt: "2026-10-02T12:00:00Z" },
+    { type: "income", minorUnits: 100000, currency: "USD", occurredAt: "2026-09-10T12:00:00Z" },
+  ];
+  const debtPayments = [{ currency: "COP", occurredAt: "2026-07-20T12:00:00Z", principalMinorUnits: 50000, interestMinorUnits: 10000, feesMinorUnits: 0 }];
+  const result = projectMonthlyCashFlow(transactions, debtPayments, reference, "COP", 2);
+  assert.equal(result.basisMonths, 2);
+  assert.equal(result.averageIncome, 600000);
+  assert.equal(result.averageExpenses, 105000);
+  assert.equal(result.averagePrincipalPayments, 25000);
+  assert.equal(result.averageNetCashFlow, 470000);
+  assert.equal(result.isEstimate, true);
 });

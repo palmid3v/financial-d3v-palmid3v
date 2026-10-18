@@ -200,8 +200,8 @@ export function savingsProgress(goal, contributions) {
 }
 
 export function netWorth(vault, currency = "COP") {
-  const accountBalances = vault.accounts.filter((account) => account.currency === currency)
-    .map((account) => accountBalance(account, vault.transactions, vault.debtPayments));
+  const accountBalances = (vault.accounts || []).filter((account) => account.currency === currency)
+    .map((account) => accountBalance(account, vault.transactions || [], vault.debtPayments || []));
   const accountAssets = accountBalances.reduce((sum, balance) => sum + Math.max(0, balance), 0);
   const accountLiabilities = accountBalances.reduce((sum, balance) => sum + Math.max(0, -balance), 0);
   const otherAssets = vault.assets.filter((item) => item.currency === currency).reduce((sum, item) => sum + (Number(item.minorUnits) || 0), 0);
@@ -221,7 +221,7 @@ export function budgetSummary(budget, vault, start = new Date(budget.startDate),
     const transactionSpent = vault.transactions
       .filter((tx) => tx.type === "expense" && inScope(tx) && tx.categoryId === item.categoryId)
       .reduce((sum, tx) => sum + tx.minorUnits, 0);
-    const debtServiceSpent = vault.debtPayments
+    const debtServiceSpent = (vault.debtPayments || [])
       .filter((payment) => inScope(payment) && (payment.categoryId || "cat-other") === item.categoryId)
       .reduce((sum, payment) => sum + (Number(payment.interestMinorUnits) || 0) + (Number(payment.feesMinorUnits) || 0), 0);
     const spent = transactionSpent + debtServiceSpent;

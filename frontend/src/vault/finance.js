@@ -210,7 +210,7 @@ export function savingsProgress(goal, contributions) {
 }
 
 export function netWorth(vault, currency = "COP") {
-  const accountBalances = (vault.accounts || []).filter((account) => account.currency === currency)
+  const accountBalances = (vault.accounts || []).filter((account) => account.currency === currency && account.type !== "credit")
     .map((account) => accountBalance(account, vault.transactions || [], vault.debtPayments || []));
   const accountAssets = accountBalances.reduce((sum, balance) => sum + Math.max(0, balance), 0);
   const accountLiabilities = accountBalances.reduce((sum, balance) => sum + Math.max(0, -balance), 0);

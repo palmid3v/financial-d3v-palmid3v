@@ -255,3 +255,21 @@ The filename and `Last updated` date use the actual Colombia documentation date.
 README.md actualizado y se registra el desbloqueo probado en despliegue HTTPS de Vercel desde teléfono. La dirección HTTP local mediante --host no ofrece un contexto seguro fiable para Web Crypto en móvil. Pendiente: ciclo de guardar → bloquear → reabrir y reconciliación de cambios de cuentas/ledger con tests. La bóveda .fdv sigue siendo fuente de persistencia; los datos descifrados se mantienen en memoria.
 
 Status labels describe the latest documented evidence, not a guarantee that every workflow is complete. Update this checkpoint when new validation results arrive.
+
+## Ecosystem handoff — 2026-11-01
+
+Financial-D3v is one of four separate PALMI-D3V applications launched by [PALMI-D3V Connected Workspace](https://github.com/palmid3v/PALMI-D3V-Connected-Workspace). Its local app directory is `frontend/` and local URL is `http://127.0.0.1:5183`. The other apps are DayFlow (5180), Cupboard (HTTPS 5181) and Sandwichies (5182). Workspace root: `D:\\PALMI-D3V\\projects`.
+
+**Domain ownership:** Financial-D3v owns private personal financial records and learning. It must not share plaintext financial data with the other apps or cloud services.
+
+**Active architecture:** React/Vite/Tailwind PWA, FDV1 encrypted `.fdv` vault, decrypted state in memory only, local Go 1.27/WebAssembly calculations, Vercel HTTPS hosting. The encrypted file is the source of truth. Historical Firestore/Go REST cloud architecture is retired from the active financial-data path.
+
+**Privacy invariant:** do not persist decrypted financial plaintext in localStorage, sessionStorage, IndexedDB, Firebase/Firestore, Vercel, GitHub or a remote Go API. Firebase Auth, if used, is identity only, not the encryption key. Keep password and unlocked financial state in memory; lock clears them. Preserve PBKDF2-SHA256 (600,000 iterations), AES-256-GCM and 15-minute inactivity auto-lock unless an explicitly reviewed security decision changes them.
+
+**Financial invariants:** money uses integer minor units and currency; transfers are not expenses; savings contributions update goal progress; debt payments separate principal/interest/fees and only principal reduces balance; net worth = assets minus liabilities.
+
+**Latest documented validation is historical:** 10/10 frontend tests, build, WASM build, Vault security source audit and Go tests/build passed; 2026-10-18 HTTPS mobile unlock was validated. Manual save → lock → reopen and account/ledger reconciliation remained pending. Do not call these fresh tests.
+
+**Next phase:** FASE 32 Historical Financial Intelligence is planned. Implement it without changing the local-first privacy boundary. Use `.\scripts\validate.ps1` and the security audit instructions in the repo after reviewing their current contents.
+
+For the shared launcher, project boundaries and cross-app continuation instructions, read the [PALMI-D3V AI handoff](https://github.com/palmid3v/PALMI-D3V-Connected-Workspace/blob/main/AI-HANDOFF-2026-11-01.md).

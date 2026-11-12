@@ -18,7 +18,7 @@ A phase is **APPROVED / BUILT / VALIDATED** only after implementation, validatio
 - [x] GO FINANCIAL ENGINE — FASE 29
 - [x] $0 DEPLOYMENT / DESIGN / PWA — FASE 30
 - [x] SECURITY / RECOVERY / VALIDATION — FASE 31
-- [ ] HISTORICAL FINANCIAL INTELLIGENCE — FASE 32
+- [~] HISTORICAL FINANCIAL INTELLIGENCE / BANK IMPORT — FASE 32 (in progress; 32.1 implementation pending local validation)
 - [ ] CONTINUOUS EVOLUTION — FASE 33+
 
 ## FASE 27 — Financial Vault
@@ -103,18 +103,28 @@ Unable to open the Financial Vault.
 Check the password or file integrity.
 ```
 
-## FASE 32 — Historical Financial Intelligence
+## FASE 32 — Historical Financial Intelligence + Bank Statement Import
 
-**Status: PLANNED**
+**Status: IN PROGRESS — FASE 32.1 implemented on `feat/bank-statement-import-nequi`; local validation pending.**
 
-Purpose:
-- historical trends;
-- comparisons;
-- recurring patterns;
-- financial learning from historical data;
-- local/private analytics.
+The first vertical slice adds a local-first CSV batch importer, review screen, account selection, transfer destination selection, duplicate fingerprints and import audit metadata in the encrypted vault. See `docs/32-BANK-STATEMENT-IMPORT.md`.
 
-Constraint: preserve the encrypted Vault as source of truth and do not reintroduce remote plaintext financial persistence.
+Target account scope:
+- Nequi: first statement adapter; historical imports January–November 2026.
+- Bancolombia: future adapter, reusing the same import engine.
+- Efectivo: remains manually registered.
+
+Remaining subphases:
+- 32.2 PDF.js parser and Nequi PDF adapter/OCR fallback;
+- 32.3 multi-period January–November batch control;
+- 32.4 opening/closing balance continuity reconciliation;
+- 32.5 transfer matching across Nequi, Bancolombia and cash;
+- 32.6 classification and links to debts/receivables;
+- 32.7 idempotency, recovery, audit and security validation.
+
+Current limitation: CSV only. PDF extraction/OCR and monthly balance reconciliation are not implemented in 32.1.
+
+Constraint: preserve the encrypted Vault as source of truth, process files locally, and do not reintroduce remote plaintext financial persistence.
 
 ## FASE 33+
 

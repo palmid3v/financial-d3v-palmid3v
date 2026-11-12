@@ -614,3 +614,11 @@ footer {
 .table-wrap{overflow-x:auto;margin-top:10px}
 .statement-import .panel{min-width:0}
 @media(max-width:720px){.statement-drop{padding:20px 12px}.statement-import .metrics{grid-template-columns:1fr 1fr}.statement-import .metric strong{font-size:15px}}
+
+.statement-months{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:12px}
+.statement-month{display:grid;gap:5px;padding:10px;border:1px solid var(--fd-border);border-radius:9px;background:var(--fd-surface-raised)}
+.statement-month b{font-size:11px;color:var(--fd-text)}
+.statement-month small{font-size:8px;color:var(--fd-text-subtle)}
+.statement-month.imported{border-color:#276044;background:color-mix(in srgb,var(--fd-income) 7%,var(--fd-surface))}
+.statement-month.imported small{color:var(--fd-income)}
+@media(max-width:720px){.statement-months{grid-template-columns:repeat(4,minmax(0,1fr))}}

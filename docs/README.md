@@ -44,7 +44,7 @@ FASE 32 is the next planned evolution.
 | `10-DEPLOYMENT.md` | Active deployment |
 | `11-AI-DEVELOPMENT-WORKFLOW.md` | AI workflow |
 | `12-LEARNING-GO.md` | Go learning |
-| `13-ROADMAP.md` | Roadmap |
+| `13-ROADMAP.md` | Roadmap |\n| `34-PALMI-ECOSYSTEM-BUSINESS-FINANCE-ADR.md` | Accepted architecture decision for separate Personal/Business vaults and cloud-delivered business events |\n| `contracts/palmi-business-financial-event.schema.json` | Version 1 JSON Schema for minimized commercial events |
 | `14-UI-UX-DESIGN.md` | UX direction |
 | `15-FINANCIAL-EDUCATION.md` | Education |
 | `16-PRIVATE-PERSONAL-USE.md` | Private-use scope |

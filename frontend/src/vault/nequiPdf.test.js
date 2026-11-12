@@ -31,3 +31,21 @@ test("extracts Nequi period, transactions, balances and summary without identity
 test("rejects unrelated PDFs and does not silently accept OCR-only documents", () => {
   assert.throws(() => parseNequiStatementText("PDF sin texto"), /no coincide/i);
 });
+
+test("passes reconciliation when Nequi summary matches transaction rows", () => {
+  const balanced = `Extracto de cuenta de ahorro de:
+NEQUI S.A. Compañía de Financiamiento
+Estado de cuenta para el período de: 2026/01/01 a 2026/01/02
+Saldo anterior $100.00
+Total abonos $10.00
+Total cargos $20.00
+Saldo actual $90.00
+02/01/2026 Compra $-20.00 $90.00
+01/01/2026 Abono $10.00 $110.00`;
+  const result = parseNequiStatementText(balanced);
+  assert.equal(result.validation.summaryComplete, true);
+  assert.equal(result.validation.incomeMatches, true);
+  assert.equal(result.validation.expenseMatches, true);
+  assert.equal(result.validation.openingBalanceMatches, true);
+  assert.equal(result.validation.closingBalanceMatches, true);
+});

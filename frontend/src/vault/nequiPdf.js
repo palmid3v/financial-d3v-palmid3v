@@ -70,7 +70,7 @@ export function parseNequiStatementText(text) {
       incomeMatches: expectedIncome != null && Math.abs(actualIncome - expectedIncome) <= tolerance,
       expenseMatches: expectedExpense != null && Math.abs(actualExpense - expectedExpense) <= tolerance,
       openingBalanceMatches: rows.length > 0 && summary.openingBalance != null
-        ? Math.abs(rows[rows.length - 1].balance + rows[rows.length - 1].amount - summary.openingBalance) <= tolerance
+        ? Math.abs(rows[rows.length - 1].balance - rows[rows.length - 1].amount - summary.openingBalance) <= tolerance
         : false,
       closingBalanceMatches: rows.length > 0 && summary.closingBalance != null
         ? Math.abs(rows[0].balance - summary.closingBalance) <= tolerance

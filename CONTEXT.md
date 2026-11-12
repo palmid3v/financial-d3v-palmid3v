@@ -273,3 +273,10 @@ Financial-D3v is one of four separate PALMI-D3V applications launched by [PALMI-
 **Next phase:** FASE 32 Historical Financial Intelligence is planned. Implement it without changing the local-first privacy boundary. Use `.\scripts\validate.ps1` and the security audit instructions in the repo after reviewing their current contents.
 
 For the shared launcher, project boundaries and cross-app continuation instructions, read the [PALMI-D3V AI handoff](https://github.com/palmid3v/PALMI-D3V-Connected-Workspace/blob/main/AI-HANDOFF-2026-11-01.md).
+
+
+## Bank statement import handoff — 2026-11-12
+
+A new branch `feat/bank-statement-import-nequi` starts FASE 32.1. It adds a local CSV batch import screen, account selection against existing vault accounts, editable income/expense/transfer classification, destination account selection for transfers, duplicate fingerprints, and audit metadata in `vault.statementImports`. Transaction records keep import source/provider/period/fingerprint and optional statement balance metadata. The import does not create accounts and does not save original files. Changes remain in unlocked memory until the user saves the encrypted .fdv.
+
+Current implementation is CSV-only. PDF.js/OCR, Nequi PDF parsing, January–November monthly balance continuity, cross-account transfer matching and semantic classification remain pending. Do not import the user's real historical PDF set or modify the primary vault until local tests/build/security/runtime validation pass. See `docs/32-BANK-STATEMENT-IMPORT.md`.

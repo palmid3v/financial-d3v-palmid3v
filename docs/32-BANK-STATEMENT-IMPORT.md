@@ -1,6 +1,6 @@
 # FASE 32.1 — Importación bancaria: base multi-cuenta
 
-**Estado:** IMPLEMENTADA EN RAMA / VALIDACIÓN LOCAL PENDIENTE  
+**Estado:** 32.1 IMPLEMENTADA EN RAMA / 32.2 IMPLEMENTACIÓN INICIAL EN RAMA / VALIDACIÓN LOCAL PENDIENTE  
 **Rama:** `feat/bank-statement-import-nequi`  
 **Alcance inicial:** Nequi, con motor preparado para Bancolombia y cuenta Efectivo manual.
 
@@ -46,14 +46,29 @@ Tampoco se hace todavía:
 - clasificación semántica automática de pagos, reembolsos, intereses, retiros y recargas;
 - asociación automática de pagos con deudas o cuentas por cobrar.
 
+## FASE 32.2 — Parser PDF local y adaptador Nequi
+
+**Estado:** IMPLEMENTACIÓN INICIAL EN RAMA / VALIDACIÓN CON EL EXTRACTO REAL PENDIENTE
+
+- Se incorpora `pdfjs-dist` como dependencia empaquetada; no se usa CDN ni se transmite el documento.
+- Extracción de texto de cada página en el navegador.
+- Adaptador inicial para el formato de extracto Nequi con fechas DD/MM/YYYY, valores con separador de miles por coma y decimales por punto.
+- Lectura del periodo, saldo anterior, total de abonos, total de cargos y saldo actual.
+- Vista previa compartida con el importador CSV.
+- Gate de importación: si el resumen o los saldos no coinciden, se bloquea el lote completo.
+- PDF cifrado, escaneado, sin capa de texto o con formato no reconocido se rechaza; OCR no está incluido.
+- No se conserva el archivo original ni se extraen datos de identidad/cuenta para auditoría.
+- Se añaden pruebas unitarias del parser de texto y montos; aún deben ejecutarse en Windows con `npm install`, `npm test` y `npm run build`.
+
+**Limitación importante:** el parser está construido sobre el formato de referencia de enero de 2026. Hasta pasar las pruebas de integridad del documento real en el entorno local, 32.2 no debe considerarse validada ni usarse para importar al vault principal.
+
 ## Próximas subfases
 
-1. 32.2 — Parser PDF local y adaptador Nequi.
-2. 32.3 — Importación por lotes enero–noviembre y control de periodos.
-3. 32.4 — Conciliación de saldos y continuidad mensual.
-4. 32.5 — Matching de transferencias entre cuentas.
-5. 32.6 — Reglas de clasificación y vinculación con deudas/cuentas por cobrar.
-6. 32.7 — Idempotencia, recuperación, auditoría y pruebas de seguridad.
+1. 32.3 — Importación por lotes enero–noviembre y control de periodos.
+2. 32.4 — Conciliación de saldos y continuidad mensual.
+3. 32.5 — Matching de transferencias entre cuentas.
+4. 32.6 — Reglas de clasificación y vinculación con deudas/cuentas por cobrar.
+5. 32.7 — Idempotencia, recuperación, auditoría y pruebas de seguridad.
 
 ## Validación requerida en el entorno local
 

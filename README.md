@@ -7,7 +7,7 @@ Financial-D3v permite registrar, comprender y planificar finanzas personales baj
 
 ## ✨ Capacidades y base técnica
 - Dashboard, flujo de caja, cuentas, movimientos y transferencias.
-- Importación bancaria local por lotes (primera entrega CSV; parser PDF/OCR pendiente de Fase 32.2).
+- Importación bancaria local por lotes: CSV genérico y parser PDF de texto para extractos Nequi (Fase 32.2 en validación; OCR no incluido).
 - Presupuestos, metas de ahorro, deudas, activos, pasivos y patrimonio neto.
 - Educación e informes financieros.
 - Bóveda FDV1 cifrada con PBKDF2-SHA256 y AES-256-GCM.
@@ -17,13 +17,13 @@ Financial-D3v permite registrar, comprender y planificar finanzas personales baj
 - Stack/versiones exactas: consultar `frontend/package.json` y scripts de `scripts/`.
 
 ## 📊 Estado del proyecto
-**Fases documentadas: 31 de 31 fases aprobadas/implementadas; Fase 32 planificada.** Esto representa el cierre de la línea fundacional documentada, no el 100% del producto ni la validación de todos los flujos manuales.
+**Fases documentadas: 1–31 cerradas en el baseline histórico; Fase 32 en implementación y validación.** Esto representa el cierre de la línea fundacional documentada, no el 100% del producto ni la validación de todos los flujos manuales.
 
 **Checkpoint histórico:** 10/10 pruebas frontend, build, WASM, auditoría fuente de seguridad, tests/build Go aprobados; desbloqueo móvil HTTPS probado el 2026-10-18. El ciclo manual guardar → bloquear → reabrir y reconciliación de cambios de cuentas/ledger seguían pendientes en el último contexto. No son pruebas recién ejecutadas.
 
 ## 🧭 Evolución de producto
 1. Fases 1–31: base local-first, bóveda, cálculos y fundamentos de privacidad.
-2. Fase 32 planificada: Historical Financial Intelligence.
+2. Fase 32 en curso: importación bancaria CSV/PDF Nequi y conciliación histórica.
 3. Cualquier integración con otras aplicaciones debe intercambiar únicamente datos comerciales agregados/no personales y solo mediante contrato explícito; nunca transferir plaintext financiero de la bóveda.
 
 ## 🔒 Seguridad y límite de release

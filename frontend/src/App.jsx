@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useVault } from "./vault/VaultContext";
 import { calculateWithGoEngine } from "./vault/goEngine";
+import StatementImport from "./StatementImport";
 import {
   accountBalance,
   budgetSummary,
@@ -39,7 +40,7 @@ const localDateTimeInput = (date = new Date()) => {
 };
 
 const navGroups = [
-  { label: "Finanzas", items: [["dashboard", "Dashboard", "⌂"], ["accounts", "Cuentas", "▣"], ["transactions", "Transacciones", "↕"], ["budget", "Presupuestos", "◫"]] },
+  { label: "Finanzas", items: [["dashboard", "Dashboard", "⌂"], ["accounts", "Cuentas", "▣"], ["transactions", "Transacciones", "↕"], ["statement-import", "Importar y conciliar", "⇧"], ["budget", "Presupuestos", "◫"]] },
   { label: "Planeación", items: [["savings", "Ahorro y metas", "◎"], ["debts", "Deudas", "◇"]] },
   { label: "Patrimonio", items: [["net-worth", "Patrimonio neto", "◆"]] },
   { label: "Aprendizaje", items: [["education", "Educación", "?"]] },
@@ -911,6 +912,7 @@ export default function App() {
   const render = () => {
     if (active === "dashboard") return <Dashboard vault={safeVault} setActive={setActive} />;
     if (active === "transactions") return <Transactions vault={safeVault} updateVault={updateVault} />;
+    if (active === "statement-import") return <StatementImport vault={safeVault} updateVault={updateVault} />;
     if (active === "accounts") return <Accounts vault={safeVault} updateVault={updateVault} />;
     if (active === "budget") return <Budget vault={safeVault} updateVault={updateVault} />;
     if (active === "savings") return <Savings vault={safeVault} updateVault={updateVault} />;

@@ -280,3 +280,16 @@ For the shared launcher, project boundaries and cross-app continuation instructi
 A new branch `feat/bank-statement-import-nequi` starts FASE 32.1. It adds a local CSV batch import screen, account selection against existing vault accounts, editable income/expense/transfer classification, destination account selection for transfers, duplicate fingerprints, and audit metadata in `vault.statementImports`. Transaction records keep import source/provider/period/fingerprint and optional statement balance metadata. The import does not create accounts and does not save original files. Changes remain in unlocked memory until the user saves the encrypted .fdv.
 
 Current implementation is CSV-only. PDF.js/OCR, Nequi PDF parsing, January–November monthly balance continuity, cross-account transfer matching and semantic classification remain pending. Do not import the user's real historical PDF set or modify the primary vault until local tests/build/security/runtime validation pass. See `docs/32-BANK-STATEMENT-IMPORT.md`.
+
+
+## PALMI Ecosystem Business Finance — ADR-034 (2026-11-12)
+
+**Decision accepted; implementation not started.** See `docs/34-PALMI-ECOSYSTEM-BUSINESS-FINANCE-ADR.md`, event schema `docs/contracts/palmi-business-financial-event.schema.json`, and Phase 34 in `docs/13-ROADMAP.md`.
+
+- Personal and Business are separate encrypted .fdv files, with independent passwords/keys, salts, IVs, lock state, backups and recovery.
+- Cloud synchronization transports only minimized, authenticated, non-PII commercial events. It never transports a vault, password, derived key, bank statement or decrypted ledger.
+- Business accounting uses cash basis: receipt recognized only when funds are actually received; expense recognized only when paid.
+- Sandwichies owns orders/payment state; Cupboard owns inventory/stock movements; Financial-D3v Business owns the cash ledger; DayFlow owns reminders/workflows; PALMI Connected Workspace remains the local launcher, not the cloud financial relay.
+- Import uses at-least-once delivery with idempotent processing. Financial-D3v must save the encrypted Business vault successfully before acknowledging the cloud event cursor.
+- Inventory purchase cash outflow is recorded once; later stock consumption is operational costing information, not another cash expense.
+- No code, cloud resources, credentials, billing or production configuration were changed by this ADR documentation.

@@ -93,7 +93,7 @@ export async function extractPdfText(file) {
       const content = await page.getTextContent();
       const lines = new Map();
       for (const item of content.items) {
-        if (!("str" in item) || !item.str.trim()) continue;
+        if (!("str" in item) || !item.str.trim() || !item.transform) continue;
         const y = Math.round(item.transform[5] / 2) * 2;
         if (!lines.has(y)) lines.set(y, []);
         lines.get(y).push({ x: item.transform[4], text: item.str });

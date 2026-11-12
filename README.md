@@ -7,6 +7,7 @@ Financial-D3v permite registrar, comprender y planificar finanzas personales baj
 
 ## ✨ Capacidades y base técnica
 - Dashboard, flujo de caja, cuentas, movimientos y transferencias.
+- Importación bancaria local por lotes (primera entrega CSV; parser PDF/OCR pendiente de Fase 32.2).
 - Presupuestos, metas de ahorro, deudas, activos, pasivos y patrimonio neto.
 - Educación e informes financieros.
 - Bóveda FDV1 cifrada con PBKDF2-SHA256 y AES-256-GCM.

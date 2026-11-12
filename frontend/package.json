@@ -19,7 +19,8 @@
     "react-dom": "latest",
     "tailwindcss": "latest",
     "@tailwindcss/vite": "latest",
-    "vite-plugin-pwa": "latest"
+    "vite-plugin-pwa": "latest",
+    "pdfjs-dist": "6.5.438"
   },
   "devDependencies": {}
 }

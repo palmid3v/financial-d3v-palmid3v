@@ -83,7 +83,9 @@ export default function StatementImport({ vault, updateVault }) {
     const importedAt = new Date().toISOString();
     const transactions = selected.map((row) => makeTransaction({
       accountId,
-      ...(row.type === "transfer" ? { toAccountId: row.toAccountId } : {}),
+      ...(row.type === "transfer" ? (row.amount < 0
+        ? { toAccountId: row.toAccountId }
+        : { accountId: row.toAccountId, toAccountId: accountId }) : {}),
       type: row.type,
       minorUnits: row.amountMinorUnits,
       currency: account.currency,
@@ -164,11 +166,19 @@ export default function StatementImport({ vault, updateVault }) {
         <tbody>{rows.map((row, index) => <tr key={`${row.sourceFile}-${row.rowNumber}-${index}`}>
           <td><input type="checkbox" checked={row.selected && !row.exactDuplicate} disabled={row.exactDuplicate || row.invalid} onChange={(event) => updateRow(index, { selected: event.target.checked })}/></td>
           <td>{row.date || "—"}</td><td><strong>{row.description || "Sin descripción"}</strong><small>{row.sourceFile} · fila {row.rowNumber}</small></td>
-          <td><select value={row.type} onChange={(event) => updateRow(index, { type: event.target.value })}><option value="income">Abono</option><option value="expense">Cargo</option><option value="transfer">Transferencia</option></select>{row.type === "transfer" && <select value={row.toAccountId} onChange={(event) => updateRow(index, { toAccountId: event.target.value })}><option value="">Cuenta destino</option>{accounts.filter((item) => item.id !== accountId && item.currency === account?.currency).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>}</td>
+          <td><select value={row.type} onChange={(event) => updateRow(index, { type: event.target.value })}><option value="income">Abono</option><option value="expense">Cargo</option><option value="transfer">Transferencia</option></select>{row.type === "transfer" && <select value={row.toAccountId} onChange={(event) => updateRow(index, { toAccountId: event.target.value })}><option value="">Cuenta contraparte</option>{accounts.filter((item) => item.id !== accountId && item.currency === account?.currency).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>}</td>
           <td className={row.amount < 0 ? "negative" : "positive"}>{money(row.amountMinorUnits, account?.currency)}</td><td>{row.balance == null ? "—" : money(row.balance, account?.currency)}</td>
         </tr>)}</tbody></table></div>
       <div className="form-actions"><button className="button" onClick={() => { setRows([]); setFiles([]); }}>Descartar revisión</button><button className="button primary" onClick={importRows} disabled={!selected.length}>Importar {selected.length} movimientos</button></div>
     </section>}
+    <section className="panel"><div className="panel-head"><div><small>Historial · 2026</small><h3>Seguimiento de extractos Nequi</h3></div><span className="badge">{new Set((vault.statementImports || []).flatMap((item) => item.periods || [])).size}/11 periodos</span></div>
+      <div className="statement-months">{["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov"].map((label, index) => {
+        const period = "2026-" + String(index + 1).padStart(2, "0");
+        const imported = (vault.statementImports || []).some((item) => item.accountId === accountId && (item.periods || []).includes(period));
+        return <div className={imported ? "statement-month imported" : "statement-month"} key={period}><b>{label}</b><small>{imported ? "Importado" : "Pendiente"}</small></div>;
+      })}</div>
+      {(vault.statementImports || []).length > 0 && <div className="stack-list compact">{vault.statementImports.slice().reverse().map((item) => <div className="stack-row" key={item.id}><div><b>{item.sourceFile}</b><small>{item.periods.join(", ")} · {item.transactionCount} movimientos</small></div><span className="badge">Registrado</span></div>)}</div>}
+    </section>
     <section className="panel"><div className="panel-head"><div><small>04 · Conciliación</small><h3>Reglas de integridad</h3></div></div>
       <div className="stack-list compact">
         <div className="stack-row"><div><b>No crear cuentas nuevas</b><small>Los registros se vinculan a la cuenta seleccionada.</small></div><span className="positive">Activo</span></div>

@@ -78,6 +78,7 @@ export function normalizeVault(vault) {
   next.assets = (Array.isArray(next.assets) ? next.assets : []).map((item) => ({ ...item, currency: String(item.currency || "COP").toUpperCase() }));
   next.liabilities = (Array.isArray(next.liabilities) ? next.liabilities : []).map((item) => ({ ...item, currency: String(item.currency || "COP").toUpperCase() }));
   next.education = Array.isArray(next.education) && next.education.length ? next.education : EDUCATION;
+  next.statementImports = Array.isArray(next.statementImports) ? next.statementImports : [];
   return next;
 }
 

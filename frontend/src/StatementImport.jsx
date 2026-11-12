@@ -186,6 +186,6 @@ export default function StatementImport({ vault, updateVault }) {
         <div className="stack-row"><div><b>Saldo mensual encadenado</b><small>Se validará contra el saldo inicial y final de cada extracto PDF.</small></div><span className="badge">Siguiente subfase</span></div>
         <div className="stack-row"><div><b>Registro de auditoría</b><small>Se conserva archivo, cuenta, periodo y fecha de importación, sin guardar el documento original.</small></div><span className="positive">Activo</span></div>
       </div>
-    </section>}
+    </section>
   </div>;
 }

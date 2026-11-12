@@ -50,7 +50,7 @@ export default function StatementImport({ vault, updateVault }) {
           }
           const text = await extractPdfText(file);
           const statement = parseNequiStatementText(text);
-          parsed = { rows: statement.rows, invalid: [] };
+          parsed = { rows: statement.rows.map((row) => ({ ...row, balance: row.balance == null ? null : Math.round(row.balance * 100) })), invalid: [] };
           checks.push({ file: file.name, period: statement.period, summary: statement.summary, validation: statement.validation });
         } else if (/\.csv$/i.test(file.name)) {
           parsed = parseStatementCsv(await file.text());

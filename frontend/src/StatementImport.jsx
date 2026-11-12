@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { makeTransaction } from "./vault/finance";
 import { parseStatementCsv, reconcileStatementRows } from "./vault/statementImport";
+import { extractPdfText, parseNequiStatementText } from "./vault/nequiPdf";
 
 const money = (minorUnits, currency = "COP") => new Intl.NumberFormat("es-CO", {
   style: "currency", currency, maximumFractionDigits: 2,
@@ -21,6 +22,7 @@ export default function StatementImport({ vault, updateVault }) {
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
+  const [pdfChecks, setPdfChecks] = useState([]);
 
   const selected = rows.filter((row) => row.selected && !row.exactDuplicate && !row.invalid);
   const totalIncome = selected.filter((row) => row.type === "income").reduce((sum, row) => sum + Math.abs(row.amountMinorUnits), 0);
@@ -33,17 +35,28 @@ export default function StatementImport({ vault, updateVault }) {
     setError("");
     setStatus("");
     setRows([]);
+    setPdfChecks([]);
     setFiles(chosen.map((file) => ({ name: file.name, size: file.size })));
     if (!chosen.length) return;
     setBusy(true);
     try {
       const allRows = [];
+      const checks = [];
       for (const file of chosen) {
-        if (!/\.csv$/i.test(file.name)) {
-          throw new Error("Esta primera entrega procesa CSV. El lector PDF/OCR de extractos bancarios se incorpora en la siguiente subfase; no se simulará una extracción incompleta.");
+        let parsed;
+        if (/\.pdf$/i.test(file.name)) {
+          if (!/nequi/i.test(account?.name || "")) {
+            throw new Error("El adaptador PDF de esta fase es exclusivo para una cuenta Nequi. Para otras cuentas utiliza CSV.");
+          }
+          const text = await extractPdfText(file);
+          const statement = parseNequiStatementText(text);
+          parsed = { rows: statement.rows, invalid: [] };
+          checks.push({ file: file.name, period: statement.period, summary: statement.summary, validation: statement.validation });
+        } else if (/\.csv$/i.test(file.name)) {
+          parsed = parseStatementCsv(await file.text());
+        } else {
+          throw new Error("Formato no compatible. Selecciona CSV o PDF de Nequi con texto seleccionable.");
         }
-        const text = await file.text();
-        const parsed = parseStatementCsv(text);
         const reconciled = reconcileStatementRows(parsed.rows, accountId, vault.transactions);
         for (const row of reconciled) {
           allRows.push({
@@ -57,6 +70,7 @@ export default function StatementImport({ vault, updateVault }) {
           });
         }
       }
+      setPdfChecks(checks);
       const seen = new Set();
       const withBatchDuplicates = allRows.map((row) => {
         const duplicateInBatch = seen.has(row.fingerprint);
@@ -64,7 +78,7 @@ export default function StatementImport({ vault, updateVault }) {
         return { ...row, exactDuplicate: row.exactDuplicate || duplicateInBatch, selected: row.selected && !duplicateInBatch };
       });
       setRows(withBatchDuplicates);
-      setStatus(`${chosen.length} archivo(s) analizado(s) localmente. Revisa cada clasificación antes de importar.`);
+      setStatus(`${chosen.length} archivo(s) analizado(s) localmente. Revisa cada clasificación y los controles del PDF antes de importar.`);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "No se pudieron leer los archivos.");
       setRows([]);
@@ -78,6 +92,8 @@ export default function StatementImport({ vault, updateVault }) {
 
   const importRows = () => {
     if (!account || !selected.length) return;
+    const failedPdf = pdfChecks.find((item) => !item.validation.summaryComplete || !item.validation.incomeMatches || !item.validation.expenseMatches || !item.validation.openingBalanceMatches || !item.validation.closingBalanceMatches);
+    if (failedPdf) { setError(`El PDF ${failedPdf.file} no supera la conciliación de resumen/saldos. No se importó ningún movimiento.`); return; }
     const invalidTransfer = selected.some((row) => row.type === "transfer" && (!row.toAccountId || row.toAccountId === accountId));
     if (invalidTransfer) { setError("Cada transferencia requiere una cuenta destino distinta."); return; }
     const importedAt = new Date().toISOString();
@@ -137,12 +153,13 @@ export default function StatementImport({ vault, updateVault }) {
         <div className="panel-head"><div><small>01 · Origen</small><h3>Seleccionar extractos</h3></div><span className="badge">Local</span></div>
         <label className="field"><span>Cuenta existente</span><select value={accountId} onChange={(event) => { setAccountId(event.target.value); setRows([]); }}><option value="">Selecciona una cuenta</option>{accounts.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.currency}</option>)}</select></label>
         <label className="statement-drop">
-          <strong>＋ Seleccionar uno o varios archivos CSV</strong>
-          <span>El contenido se procesa en el navegador. No se envía a servidores.</span>
-          <input type="file" accept=".csv,text/csv" multiple onChange={loadFiles} disabled={!accountId || busy}/>
+          <strong>＋ Seleccionar extractos CSV o PDF de Nequi</strong>
+          <span>PDF: extractos Nequi con texto seleccionable. El procesamiento ocurre localmente; no se envía el documento a servidores.</span>
+          <input type="file" accept=".csv,text/csv,.pdf,application/pdf" multiple onChange={loadFiles} disabled={!accountId || busy}/>
         </label>
         {busy && <div className="notice">Analizando archivos localmente…</div>}
-        <div className="notice"><b>Compatibilidad de esta entrega</b><span>CSV con columnas Fecha, Descripción y Valor; Saldo es opcional. El lector PDF/OCR queda como siguiente subfase y no se presentará como funcional hasta validar el parser.</span></div>
+        <div className="notice"><b>Compatibilidad</b><span>CSV genérico y PDF de texto Nequi. Los PDF escaneados, cifrados o con formato diferente no se importan; OCR queda fuera de esta subfase.</span></div>
+        {pdfChecks.map((check) => <div className="notice" key={check.file}><b>Control del extracto · {check.period}</b><span>{check.file} · Abonos: {check.validation.incomeMatches ? "coinciden" : "no coinciden"} · Cargos: {check.validation.expenseMatches ? "coinciden" : "no coinciden"} · Saldo inicial: {check.validation.openingBalanceMatches ? "coincide" : "no coincide"} · Saldo final: {check.validation.closingBalanceMatches ? "coincide" : "no coincide"}</span></div>)}
         {error && <div className="notice error">{error}</div>}
         {status && <div className="notice success">{status}</div>}
       </section>

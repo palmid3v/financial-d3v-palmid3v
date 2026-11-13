@@ -293,3 +293,12 @@ Current implementation is CSV-only. PDF.js/OCR, Nequi PDF parsing, January–Nov
 - Import uses at-least-once delivery with idempotent processing. Financial-D3v must save the encrypted Business vault successfully before acknowledging the cloud event cursor.
 - Inventory purchase cash outflow is recorded once; later stock consumption is operational costing information, not another cash expense.
 - No code, cloud resources, credentials, billing or production configuration were changed by this ADR documentation.
+
+## Maintenance handoff — 2026-11-12
+
+- Current branch: maintenance/ci-recovery-2026-11.
+- Open PR: https://github.com/palmid3v/financial-d3v-palmid3v/pull/21.
+- CI passed on 2026-11-13: 32/32 frontend tests and the Go test/build job.
+- The PDF worker URL is imported only when PDF extraction is invoked, keeping parser-only Node tests independent of Vite asset handling.
+- Keep the Personal vault isolated from Business events. Never send decrypted vault state or .fdv files to cloud services.
+- Latest evidence: QUALITY-CHECKPOINT-2026-11-12.md.

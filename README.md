@@ -18,7 +18,7 @@ Financial-D3v permite registrar, comprender y planificar finanzas personales baj
 
 ## 🔎 Quality checkpoint — 2026-11-12
 
-See [QUALITY-CHECKPOINT-2026-11-12.md](QUALITY-CHECKPOINT-2026-11-12.md) for the latest CI evidence, changes under review and release gates. CI status is not represented as green until the corresponding GitHub Actions run completes successfully.
+Maintenance-branch CI passed: 32/32 frontend tests and the Go test/build job. Manual HTTPS save → lock → reopen, account/ledger reconciliation and independent security review remain open. See [QUALITY-CHECKPOINT-2026-11-12.md](QUALITY-CHECKPOINT-2026-11-12.md) for evidence and release gates.
 
 ## 📊 Estado del proyecto
 **Fases documentadas: 1–31 cerradas en el baseline histórico; Fase 32 en implementación y validación.** Esto representa el cierre de la línea fundacional documentada, no el 100% del producto ni la validación de todos los flujos manuales.

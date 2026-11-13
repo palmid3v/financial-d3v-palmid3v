@@ -126,6 +126,27 @@ Current limitation: PDF.js text extraction is implemented for the January 2026 N
 
 Constraint: preserve the encrypted Vault as source of truth, process files locally, and do not reintroduce remote plaintext financial persistence.
 
+## FASE 34 — PALMI Ecosystem Business Finance Integration
+
+**Status: ACCEPTED / DOCUMENTED — implementation not started.**
+
+Architecture decision: `docs/34-PALMI-ECOSYSTEM-BUSINESS-FINANCE-ADR.md`. Event contract: `docs/contracts/palmi-business-financial-event.schema.json`.
+
+Decisions: separate encrypted Personal and Business `.fdv` vaults; cloud delivery of minimized, authenticated, non-PII commercial events; cash-basis recognition only when money is received or paid. The cloud inbox is an event transport, never a vault or financial plaintext database.
+
+Implementation sequence:
+1. Business vault identity, schema namespace and independent lifecycle/recovery.
+2. Cash ledger, payment/refund/expense and daily close domain rules.
+3. Cloud event inbox with tenant isolation, signature verification, idempotency, cursor, retry and quarantine.
+4. Sandwichies trusted payment/refund producer.
+5. Cupboard/business purchase event producer.
+6. Financial-D3v authenticated importer; encrypted vault save must succeed before event acknowledgement.
+7. Reconciliation, security audit and staging release validation.
+
+Exit gates: no personal vault data or keys leave the device; no event is acknowledged before encrypted Business vault save; duplicate events have no duplicate ledger effect; unpaid orders and unpaid bills are excluded from cash totals; inventory purchase and stock consumption are not double-counted; daily close exposes variances. Production deployment requires explicit approval.
+
+**No implementation, cloud resources, production credentials or billing have been enabled by this documentation decision.**
+
 ## FASE 33+
 
 **Status: CONTINUOUS / PLANNED**

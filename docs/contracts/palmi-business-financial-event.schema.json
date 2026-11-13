@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.palmid3v.local/palmi-business-financial-event-v1.schema.json",
+  "title": "PALMI Business Financial Event v1",
+  "description": "Minimized non-PII commercial event delivered to Financial-D3v Business. This schema does not permit vault payloads, credentials, customer identity, or bank account details.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "schema_version",
+    "event_type",
+    "source",
+    "business_id",
+    "occurred_at",
+    "published_at",
+    "currency",
+    "amount_minor",
+    "payment_method",
+    "external_reference",
+    "idempotency_key"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "event_type": {
+      "enum": [
+        "business.payment_received.v1",
+        "business.refund_paid.v1",
+        "business.expense_paid.v1",
+        "business.inventory_purchase_paid.v1"
+      ]
+    },
+    "source": {
+      "enum": ["sandwichies", "cupboard", "business_owner"]
+    },
+    "business_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "pattern": "^[A-Za-z0-9_-]+$"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "amount_minor": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "payment_method": {
+      "enum": ["cash", "bank_transfer", "card", "digital_wallet", "other"]
+    },
+    "external_reference": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "Opaque order/payment/refund/purchase ID. Must not contain customer information."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 160,
+      "pattern": "^[A-Za-z0-9:._-]+$"
+    },
+    "category_code": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9._-]+$"
+    },
+    "account_code": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9._-]+$"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "channel": {
+          "enum": ["pickup", "delivery", "meeting_point", "online", "in_person", "other"]
+        },
+        "product_code": {
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9._-]+$"
+        },
+        "quantity": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "note_code": {
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9._-]+$"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "event_type": { "const": "business.payment_received.v1" }
+        }
+      },
+      "then": {
+        "properties": {
+          "source": { "const": "sandwichies" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": { "const": "business.refund_paid.v1" }
+        }
+      },
+      "then": {
+        "properties": {
+          "source": { "const": "sandwichies" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": { "const": "business.inventory_purchase_paid.v1" }
+        }
+      },
+      "then": {
+        "properties": {
+          "source": { "enum": ["cupboard", "business_owner"] }
+        }
+      }
+    }
+  ]
+}

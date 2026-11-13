@@ -16,6 +16,10 @@ Financial-D3v permite registrar, comprender y planificar finanzas personales baj
 - React, Vite, Tailwind CSS, PWA/Workbox y despliegue web HTTPS.
 - Stack/versiones exactas: consultar `frontend/package.json` y scripts de `scripts/`.
 
+## 🔎 Quality checkpoint — 2026-11-12
+
+Maintenance-branch CI passed: 32/32 frontend tests and the Go test/build job. Manual HTTPS save → lock → reopen, account/ledger reconciliation and independent security review remain open. See [QUALITY-CHECKPOINT-2026-11-12.md](QUALITY-CHECKPOINT-2026-11-12.md) for evidence and release gates.
+
 ## 📊 Estado del proyecto
 **Fases documentadas: 1–31 cerradas en el baseline histórico; Fase 32 en implementación y validación.** Esto representa el cierre de la línea fundacional documentada, no el 100% del producto ni la validación de todos los flujos manuales.
 
@@ -68,3 +72,16 @@ Web Crypto requiere contexto seguro HTTPS en escenarios móviles; revisar runtim
 **Financial-D3v · PALMI-D3V** — *Build · Create · Improve · Validate.*
 
 Financial-D3v es dueño de las finanzas personales privadas. La bóveda cifrada local es la fuente de verdad; otras aplicaciones no reciben sus datos financieros descifrados.
+
+
+## PALMI Ecosystem — Business Finance
+
+The approved architecture decision for Sandwichies business finances is documented in [ADR-034](docs/34-PALMI-ECOSYSTEM-BUSINESS-FINANCE-ADR.md).
+
+- Personal and Business use separate encrypted `.fdv` vaults with independent keys and lifecycle.
+- Cloud synchronization carries minimized, authenticated, non-PII commercial events only; it never transports or stores vault contents or decrypted financial records.
+- Business-D3v uses cash-basis recognition: income when received, expenses when paid.
+- Event contract: [PALMI Business Financial Event v1](docs/contracts/palmi-business-financial-event.schema.json).
+- Implementation is documented as Phase 34 and has not started. Production integrations remain disabled pending implementation, staging validation and explicit approval.
+
+The existing Personal vault privacy boundary remains unchanged.

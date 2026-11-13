@@ -18,7 +18,7 @@
 ## Evidence
 - Previous failing run: https://github.com/palmid3v/financial-d3v-palmid3v/actions/runs/43317919947
 - Go job passed; frontend test job failed at module import.
-- PR validation passed on 2026-11-13: frontend 32/32 tests passed; the Go job also passed. The workflow completed successfully.
+- Latest successful PR validation: https://github.com/palmid3v/financial-d3v-palmid3v/actions/runs/43360567836 — frontend 32/32 tests and Go test/build passed.
 
 ## Next gates
 1. Confirm frontend tests, Vite build, WASM build and source security audit pass in PR CI.

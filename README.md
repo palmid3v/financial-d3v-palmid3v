@@ -16,6 +16,10 @@ Financial-D3v permite registrar, comprender y planificar finanzas personales baj
 - React, Vite, Tailwind CSS, PWA/Workbox y despliegue web HTTPS.
 - Stack/versiones exactas: consultar `frontend/package.json` y scripts de `scripts/`.
 
+## 🔎 Quality checkpoint — 2026-11-12
+
+See [QUALITY-CHECKPOINT-2026-11-12.md](QUALITY-CHECKPOINT-2026-11-12.md) for the latest CI evidence, changes under review and release gates. CI status is not represented as green until the corresponding GitHub Actions run completes successfully.
+
 ## 📊 Estado del proyecto
 **Fases documentadas: 1–31 cerradas en el baseline histórico; Fase 32 en implementación y validación.** Esto representa el cierre de la línea fundacional documentada, no el 100% del producto ni la validación de todos los flujos manuales.
 

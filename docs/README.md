@@ -1,6 +1,6 @@
 # Financial-D3v Documentation
 
-**Last updated:** 2026-10-05  
+**Last updated:** 2026-11-12  
 **Timezone:** America/Bogota (COT, UTC-05:00)  
 **Source of truth:** GitHub `main`
 
@@ -30,7 +30,7 @@ FASE 32 is the next planned evolution.
 
 | Document | Purpose |
 |---|---|
-| `../CONTEXT.md` | Current continuation context |
+| `../CONTEXT.md` | Current continuation context |\n| `../QUALITY-CHECKPOINT-2026-11-12.md` | Latest CI evidence, maintenance changes and remaining release gates |
 | `../STEP-BY-STEP-FINANCIAL-D3V-2026-10-05.md` | Step-by-step project history |
 | `01-PRODUCT-VISION.md` | Product vision |
 | `02-REQUIREMENTS.md` | Requirements |
@@ -53,7 +53,7 @@ FASE 32 is the next planned evolution.
 | `DESIGN-SYSTEM-REFERENCE.md` | Visual system |
 | `DEPLOYMENT-VERCEL.md` | Vercel deployment |
 
-## Phase history
+## Current validation checkpoint — 2026-11-12\n\nThe maintenance PR fixes the Node/Vite boundary for Nequi PDF worker loading. GitHub Actions passed 32/32 frontend tests and the Go test/build job on the maintenance branch. This does not replace HTTPS save → lock → reopen testing, account/ledger reconciliation, or independent security review. See the root `QUALITY-CHECKPOINT-2026-11-12.md`.\n\n## Phase history
 
 Phase documents are preserved for traceability. Later architecture decisions override earlier deployment assumptions.
 

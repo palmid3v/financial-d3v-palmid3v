@@ -24,7 +24,7 @@ decrypted in-memory state
 Go/WASM local computation
 ```
 
-FASE 32 is the next planned evolution.
+FASE 32 is in implementation/validation (including local bank-statement import and reconciliation). The accepted Phase 34 Business Finance ADR is a documented architecture decision; its production integration is not implemented.
 
 ## Canonical documents
 

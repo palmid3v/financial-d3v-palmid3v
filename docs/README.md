@@ -30,7 +30,8 @@ FASE 32 is the next planned evolution.
 
 | Document | Purpose |
 |---|---|
-| `../CONTEXT.md` | Current continuation context |\n| `../QUALITY-CHECKPOINT-2026-11-12.md` | Latest CI evidence, maintenance changes and remaining release gates |
+| `../CONTEXT.md` | Current continuation context |
+| `../QUALITY-CHECKPOINT-2026-11-12.md` | Latest CI evidence, maintenance changes and remaining release gates |
 | `../STEP-BY-STEP-FINANCIAL-D3V-2026-10-05.md` | Step-by-step project history |
 | `01-PRODUCT-VISION.md` | Product vision |
 | `02-REQUIREMENTS.md` | Requirements |
@@ -44,7 +45,9 @@ FASE 32 is the next planned evolution.
 | `10-DEPLOYMENT.md` | Active deployment |
 | `11-AI-DEVELOPMENT-WORKFLOW.md` | AI workflow |
 | `12-LEARNING-GO.md` | Go learning |
-| `13-ROADMAP.md` | Roadmap |\n| `34-PALMI-ECOSYSTEM-BUSINESS-FINANCE-ADR.md` | Accepted architecture decision for separate Personal/Business vaults and cloud-delivered business events |\n| `contracts/palmi-business-financial-event.schema.json` | Version 1 JSON Schema for minimized commercial events |
+| `13-ROADMAP.md` | Roadmap |
+| `34-PALMI-ECOSYSTEM-BUSINESS-FINANCE-ADR.md` | Accepted architecture decision for separate Personal/Business vaults and cloud-delivered business events |
+| `contracts/palmi-business-financial-event.schema.json` | Version 1 JSON Schema for minimized commercial events |
 | `14-UI-UX-DESIGN.md` | UX direction |
 | `15-FINANCIAL-EDUCATION.md` | Education |
 | `16-PRIVATE-PERSONAL-USE.md` | Private-use scope |
@@ -53,7 +56,11 @@ FASE 32 is the next planned evolution.
 | `DESIGN-SYSTEM-REFERENCE.md` | Visual system |
 | `DEPLOYMENT-VERCEL.md` | Vercel deployment |
 
-## Current validation checkpoint — 2026-11-12\n\nThe maintenance PR fixes the Node/Vite boundary for Nequi PDF worker loading. GitHub Actions passed 32/32 frontend tests and the Go test/build job on the maintenance branch. This does not replace HTTPS save → lock → reopen testing, account/ledger reconciliation, or independent security review. See the root `QUALITY-CHECKPOINT-2026-11-12.md`.\n\n## Phase history
+## Current validation checkpoint — 2026-11-12
+
+The maintenance PR fixes the Node/Vite boundary for Nequi PDF worker loading. GitHub Actions passed 32/32 frontend tests and the Go test/build job on the maintenance branch. This does not replace HTTPS save → lock → reopen testing, account/ledger reconciliation, or independent security review. See the root `QUALITY-CHECKPOINT-2026-11-12.md`.
+
+## Phase history
 
 Phase documents are preserved for traceability. Later architecture decisions override earlier deployment assumptions.
 

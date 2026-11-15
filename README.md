@@ -2,6 +2,19 @@
 
 > **PALMI-D3V** · Finanzas personales y aprendizaje financiero con bóveda cifrada local.
 
+## 🎯 Misión
+
+Dar visibilidad privada sobre el dinero que entra, sale y se mueve, mediante cálculos financieros locales y una bóveda cifrada.
+
+## 🔭 Visión
+
+Ser un espacio de finanzas personales que ayude a comprender flujo de caja, presupuestos, deudas, patrimonio y documentos financieros sin exponer datos descifrados a servicios remotos.
+
+## 🗓️ Revisión documental
+
+README revisado el **14 de noviembre de 2026**. El estado y las capacidades descritas se limitan a lo documentado en este repositorio; una función planificada no se considera implementada sin evidencia y validación.
+
+
 ## 🎯 Producto
 Financial-D3v permite registrar, comprender y planificar finanzas personales bajo control de la persona usuaria. Su fuente persistente es un archivo de bóveda `.fdv` cifrado; no es el libro contable de Sandwichies ni un backend financiero compartido.
 

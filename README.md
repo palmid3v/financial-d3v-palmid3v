@@ -10,6 +10,14 @@ Dar visibilidad privada sobre el dinero que entra, sale y se mueve, mediante cá
 
 Ser un espacio de finanzas personales que ayude a comprender flujo de caja, presupuestos, deudas, patrimonio y documentos financieros sin exponer datos descifrados a servicios remotos.
 
+
+## 🌐 Despliegue en Vercel
+
+- **URL de producción:** https://financiald3v.vercel.app
+- **Proyecto Vercel:** `financiald3v`
+- **Repositorio GitHub:** [`palmid3v/financial-d3v-palmid3v`](https://github.com/palmid3v/financial-d3v-palmid3v)
+- **Alias verificado:** dominio asociado al despliegue de producción READY consultado el 15 de noviembre de 2026.
+
 ## 🗓️ Revisión documental
 
 README revisado el **14 de noviembre de 2026**. El estado y las capacidades descritas se limitan a lo documentado en este repositorio; una función planificada no se considera implementada sin evidencia y validación.

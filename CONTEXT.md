@@ -1,304 +1,108 @@
-# CONTEXT — Financial-D3v
+# CONTEXT — Financial-D3V
 
-## Chat Continuation Context
-
-**Last updated:** 2026-10-05  
+**Document review:** 2026-11-17  
 **Timezone:** America/Bogota (COT, UTC-05:00)  
 **Repository:** `palmid3v/financial-d3v-palmid3v`  
 **Source of truth:** GitHub `main`
 
-> This file reflects the current GitHub state after completion of FASE 31.
+This is the product and engineering continuity reference. Code, dependency manifests and dated validation evidence take precedence over plans or older handoffs.
 
 ## Product identity
 
-Financial-D3v is a private personal-finance application and financial learning workspace.
+Financial-D3V is a private personal-finance and financial-learning application.
 
 Core loop:
 
 **Record → Categorize → Understand → Plan → Save → Review → Learn → Adjust**
 
-Education:
-
-**FACT → CALCULATION → INTERPRETATION → ACTION**
-
-## Current architecture
+## Active architecture
 
 ```text
-GitHub
-  ↓
-Vercel Hobby
-  ↓
+Vercel HTTPS
+    ↓
 React + Vite + Tailwind PWA
-  ↓
-Financial Vault
-  ├── FDV1 encrypted file
-  ├── password-controlled unlock
-  ├── decrypted state only in memory
-  └── lock/auto-lock clears active state
-            ↓
-      Go 1.27 / WASM
-            ↓
-      local financial calculations
+    ↓
+FDV1 encrypted .fdv vault
+    ↓
+Decrypted in-memory state (while unlocked)
+    ↓
+Local Go 1.27 / WebAssembly financial calculations
 ```
 
-The encrypted .fdv file is the financial source of truth.
+The encrypted `.fdv` file is the persistence source of truth. Historical Go REST, Firebase/Firestore and cloud financial persistence are retained for traceability only; they are not the active financial-data path.
 
-Financial plaintext must not intentionally persist in:
-- localStorage;
-- sessionStorage;
-- IndexedDB;
-- remote Firebase/Firestore;
-- Vercel storage;
-- GitHub;
-- a remote Go API.
+## Privacy and vault security boundary
 
-Firebase Auth may remain useful for non-financial identity, but it is not the encryption key and does not receive plaintext financial data in Vault mode.
+- FDV1 is a versioned encrypted envelope.
+- PBKDF2-SHA256 with 600,000 iterations derives the key.
+- AES-256-GCM with a 128-bit authentication tag protects vault contents.
+- Each vault uses fresh random salt and IV.
+- Password and decrypted financial state remain in memory while unlocked.
+- Lock and the documented 15-minute inactivity auto-lock clear active state/password references.
+- No intentional plaintext financial persistence in localStorage, sessionStorage, IndexedDB, Firebase/Firestore, Vercel, GitHub or remote Go APIs.
+- Firebase Auth, if used, is identity only; it is not the vault key.
+- The `.fdv` file and password are separate recovery dependencies. No password recovery service exists.
 
-## Approved stack
-
-| Layer | Technology |
-|---|---|
-| Frontend | React + Vite |
-| UI | Tailwind CSS |
-| Visual | Dark-first, calm, information-first |
-| PWA | Vite PWA / Workbox |
-| Local computation | Go 1.27 + WebAssembly |
-| Legacy API | Go REST/HTTP |
-| Legacy persistence | Firebase Firestore |
-| Optional identity | Firebase Auth |
-| CI | GitHub Actions |
-| Docs | Markdown |
+This is an application-level design, not an external security audit or certification.
 
 ## Financial invariants
 
-- Money uses integer minor units plus currency.
-- Transfers are not budget expenses.
-- Budget actuals come from authoritative expense transactions.
-- Savings contributions are goal-progress records, not ordinary expenses.
-- Debt payments contain amount/principal/interest/fees.
-- Only principal reduces debt balance.
-- Net worth = assets − all liabilities.
-- Debt balances are liabilities.
-- Domain/Go values are authoritative; UI explains them.
+- Monetary values use integer minor units and an explicit currency.
+- Internal transfers are not expenses or income.
+- Savings contributions update goal progress and are not ordinary expenses.
+- Debt payments distinguish principal, interest and fees; only principal reduces outstanding debt.
+- Net worth is assets minus liabilities.
+- The domain/financial engine is the calculation authority; the UI presents and explains results.
 
-## Vault security model
+## Application and engine
 
-- FDV1 versioned envelope.
-- PBKDF2 SHA-256, 600,000 iterations.
-- AES-256-GCM, 128-bit authentication tag.
-- Fresh random salt and IV.
-- Wrong-password rejection.
-- Modified-ciphertext rejection.
-- Unsupported-version rejection.
-- Malformed-input rejection.
-- Password held only in an in-memory reference while unlocked.
-- Lock clears active vault state and password reference.
-- 15-minute inactivity auto-lock.
-- Encrypted export/import.
-- No intentional plaintext browser persistence.
-- No intentional financial plaintext remote transport.
+- Frontend: React, Vite, Tailwind CSS and PWA/Workbox.
+- Local calculation engine: Go 1.27 compiled to WebAssembly.
+- Frontend directory: `frontend/`.
+- Go source and tests: `internal/` and root `go.mod`.
+- WASM build helpers and validation: `scripts/`.
+- Vercel is the web hosting target; financial vault contents remain user-controlled files and in-memory state.
 
-This is an application-level encryption design, not a formal external security audit.
+Exact frontend dependencies are in `frontend/package.json`; Go modules are in `go.mod`.
 
-## Go/WASM boundary
+## Roadmap and ecosystem integrations
 
-```text
-Encrypted FDV1
-     ↓
-browser decrypt
-     ↓
-in-memory financial state
-     ↓
-Go Financial Engine / WASM
-     ↓
-calculated result
-     ↓
-React UI
-```
+- Phases 1–31 are the documented local-first foundation.
+- Phase 32 bank-statement import and financial-history work is under implementation/validation. The latest handoff describes CSV work on a feature branch; do not assume all parser or PDF/Nequi capabilities exist on `main` without checking the selected branch and files.
+- ADR-034 (2026-11-12) accepts a future Business Finance architecture: independent Personal and Business encrypted vaults plus minimized authenticated non-PII commercial events. Implementation has not started.
+- Personal and Business vaults must have independent files, keys/passwords, salts, IVs, backups and lifecycle state.
+- No cloud service or PALMI application may receive a vault, password, derived key, bank statement or decrypted financial ledger.
 
-`frontend/src/vault/goEngine.js` loads the local WASM runtime and `financial-engine.wasm`. Its `fetch()` loads the local WASM resource; it is not the financial-data transport boundary.
+## Ecosystem ownership
 
-Implemented local calculations:
-- cash flow;
-- account balances;
-- transfer effects;
-- budget actuals;
-- savings progress;
-- debt principal reduction;
-- net worth.
+- Financial-D3V owns private personal finance and, if separately implemented, the Business cash ledger.
+- Sandwichies owns orders, payment state and commercial operations.
+- Cupboard owns inventory and stock movements.
+- DayFlow owns tasks, reminders and planning.
+- The shared launcher is not a financial data relay.
 
-## Validación del Proyecto
+## Validation and release limits
 
-```text
-Automated
-   ↓
-Runtime
-   ↓
-Security
-   ↓
-Functional
-   ↓
-PASS / FIX / APPROVED
-```
+The 2026-11-12 quality checkpoint records a successful maintenance PR validation on 2026-11-13: 32/32 frontend tests and Go test/build passed. Manual HTTPS save → lock → reopen, ledger reconciliation and independent security review remained gates in that checkpoint. These are historical results, not a fresh 2026-11-17 run. Do not claim full release validation or an external security audit.
 
-Runner:
+## Development and recovery
 
-```powershell
-.\scripts\validate.ps1
-```
+The frontend is in `frontend/`. Inspect its `package.json` before running frontend scripts. Root scripts include validation and security-audit workflows; inspect them before execution.
 
-Security audit:
+Recovery requires both a valid encrypted `.fdv` file and its correct password. Preserve the file, open the application, select the vault, unlock it and verify representative records/totals. Lost passwords cannot be recovered by the application.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\security-audit.ps1
-```
+## Canonical documents
 
-Runtime:
+- `docs/README.md`
+- `docs/08-SECURITY.md`
+- `docs/13-ROADMAP.md`
+- `docs/07-FINANCIAL-RULES.md`
+- `docs/OPERATIONS-RUNBOOK.md`
+- `docs/32-BANK-STATEMENT-IMPORT.md` (if present on the selected branch)
+- `docs/34-PALMI-ECOSYSTEM-BUSINESS-FINANCE-ADR.md`
+- `QUALITY-CHECKPOINT-2026-11-12.md`
 
-```powershell
-cd frontend
-npm run preview
-```
+Keep historical documents for traceability. Add fresh validation evidence with its actual date, commit and results.
 
-Latest observed automated validation:
-- frontend dependencies: PASS;
-- frontend tests: 10/10 PASS;
-- frontend production build: PASS;
-- WASM build: PASS;
-- Vault security source audit: PASS;
-- Go tests: PASS;
-- Go build: PASS.
-
-Runtime validation observed:
-- Vault create/save/open: PASS;
-- incorrect password rejection: PASS;
-- lock/unlock/recovery: PASS;
-- security behavior reviewed: PASS.
-
-## Phase status
-
-| Phase | Status |
-|---|---|
-| FASES 1–17 | APPROVED / BUILT |
-| FASES 18–24 | APPROVED / BUILT |
-| FASE 25 | APPROVED / BUILT / VALIDATED |
-| FASE 26 | APPROVED / BUILT / VALIDATED |
-| FASE 27 | APPROVED / BUILT / VALIDATED |
-| FASE 28 | APPROVED / BUILT / VALIDATED |
-| FASE 29 | APPROVED / BUILT / VALIDATED |
-| FASE 30 | APPROVED / BUILT / VALIDATED |
-| FASE 31 | APPROVED / BUILT / VALIDATED |
-| FASE 32 | PLANNED |
-| FASE 33+ | CONTINUOUS EVOLUTION |
-
-FASES 27–31 are the first-release local-first foundation.
-
-## Historical architecture
-
-Older Firebase/Firestore/Cloud Run/Artifact Registry/Scheduler implementation and documentation remain for traceability. They are retired from the active financial-data path.
-
-Active deployment:
-
-**GitHub → Vercel Hobby → React/Vite PWA → encrypted local Financial Vault**
-
-## Development workflow
-
-**Palmi → Nexsy → GitHub → Palmi pulls → Palmi runs validation → Palmi reports exact output → Nexsy fixes**
-
-Rules:
-- GitHub `main` is source of truth.
-- Never claim test, CI or deployment success without observed evidence.
-- “Built” means implementation exists in GitHub.
-- “Validated” means evidence exists.
-- Documentation is updated after phase completion.
-
-## Recovery
-
-The .fdv file and password are separate recovery dependencies.
-
-Normal recovery:
-1. Preserve the encrypted file.
-2. Open the application.
-3. Choose Open Vault.
-4. Select the .fdv.
-5. Enter the password.
-6. Verify representative totals/records.
-7. Continue working.
-8. Save a new encrypted vault after meaningful changes.
-
-Lost password:
-- no recovery service exists;
-- the application cannot decrypt the vault without the password;
-- recovery requires another valid encrypted vault/password combination.
-
-## Next phase
-
-FASE 31 is complete.
-
-**FASE 32 — Historical Financial Intelligence** is the next planned evolution.
-
-Do not change the privacy boundary to implement FASE 32.
-
-## Documentation rule
-
-Canonical Step-by-Step file:
-
-`STEP-BY-STEP-FINANCIAL-D3V-2026-10-05.md`
-
-The filename and `Last updated` date use the actual Colombia documentation date.
-
-**Financial-D3v · PALMI-D3V · 2026-10-05 · America/Bogota**
-
-
-## Documentation checkpoint — 2026-10-18
-
-README.md actualizado y se registra el desbloqueo probado en despliegue HTTPS de Vercel desde teléfono. La dirección HTTP local mediante --host no ofrece un contexto seguro fiable para Web Crypto en móvil. Pendiente: ciclo de guardar → bloquear → reabrir y reconciliación de cambios de cuentas/ledger con tests. La bóveda .fdv sigue siendo fuente de persistencia; los datos descifrados se mantienen en memoria.
-
-Status labels describe the latest documented evidence, not a guarantee that every workflow is complete. Update this checkpoint when new validation results arrive.
-
-## Ecosystem handoff — 2026-11-01
-
-Financial-D3v is one of four separate PALMI-D3V applications launched by [PALMI-D3V Connected Workspace](https://github.com/palmid3v/PALMI-D3V-Connected-Workspace). Its local app directory is `frontend/` and local URL is `http://127.0.0.1:5183`. The other apps are DayFlow (5180), Cupboard (HTTPS 5181) and Sandwichies (5182). Workspace root: `D:\\PALMI-D3V\\projects`.
-
-**Domain ownership:** Financial-D3v owns private personal financial records and learning. It must not share plaintext financial data with the other apps or cloud services.
-
-**Active architecture:** React/Vite/Tailwind PWA, FDV1 encrypted `.fdv` vault, decrypted state in memory only, local Go 1.27/WebAssembly calculations, Vercel HTTPS hosting. The encrypted file is the source of truth. Historical Firestore/Go REST cloud architecture is retired from the active financial-data path.
-
-**Privacy invariant:** do not persist decrypted financial plaintext in localStorage, sessionStorage, IndexedDB, Firebase/Firestore, Vercel, GitHub or a remote Go API. Firebase Auth, if used, is identity only, not the encryption key. Keep password and unlocked financial state in memory; lock clears them. Preserve PBKDF2-SHA256 (600,000 iterations), AES-256-GCM and 15-minute inactivity auto-lock unless an explicitly reviewed security decision changes them.
-
-**Financial invariants:** money uses integer minor units and currency; transfers are not expenses; savings contributions update goal progress; debt payments separate principal/interest/fees and only principal reduces balance; net worth = assets minus liabilities.
-
-**Latest documented validation is historical:** 10/10 frontend tests, build, WASM build, Vault security source audit and Go tests/build passed; 2026-10-18 HTTPS mobile unlock was validated. Manual save → lock → reopen and account/ledger reconciliation remained pending. Do not call these fresh tests.
-
-**Next phase:** FASE 32 Historical Financial Intelligence is planned. Implement it without changing the local-first privacy boundary. Use `.\scripts\validate.ps1` and the security audit instructions in the repo after reviewing their current contents.
-
-For the shared launcher, project boundaries and cross-app continuation instructions, read the [PALMI-D3V AI handoff](https://github.com/palmid3v/PALMI-D3V-Connected-Workspace/blob/main/AI-HANDOFF-2026-11-01.md).
-
-
-## Bank statement import handoff — 2026-11-12
-
-A new branch `feat/bank-statement-import-nequi` starts FASE 32.1. It adds a local CSV batch import screen, account selection against existing vault accounts, editable income/expense/transfer classification, destination account selection for transfers, duplicate fingerprints, and audit metadata in `vault.statementImports`. Transaction records keep import source/provider/period/fingerprint and optional statement balance metadata. The import does not create accounts and does not save original files. Changes remain in unlocked memory until the user saves the encrypted .fdv.
-
-Current implementation is CSV-only. PDF.js/OCR, Nequi PDF parsing, January–November monthly balance continuity, cross-account transfer matching and semantic classification remain pending. Do not import the user's real historical PDF set or modify the primary vault until local tests/build/security/runtime validation pass. See `docs/32-BANK-STATEMENT-IMPORT.md`.
-
-
-## PALMI Ecosystem Business Finance — ADR-034 (2026-11-12)
-
-**Decision accepted; implementation not started.** See `docs/34-PALMI-ECOSYSTEM-BUSINESS-FINANCE-ADR.md`, event schema `docs/contracts/palmi-business-financial-event.schema.json`, and Phase 34 in `docs/13-ROADMAP.md`.
-
-- Personal and Business are separate encrypted .fdv files, with independent passwords/keys, salts, IVs, lock state, backups and recovery.
-- Cloud synchronization transports only minimized, authenticated, non-PII commercial events. It never transports a vault, password, derived key, bank statement or decrypted ledger.
-- Business accounting uses cash basis: receipt recognized only when funds are actually received; expense recognized only when paid.
-- Sandwichies owns orders/payment state; Cupboard owns inventory/stock movements; Financial-D3v Business owns the cash ledger; DayFlow owns reminders/workflows; PALMI Connected Workspace remains the local launcher, not the cloud financial relay.
-- Import uses at-least-once delivery with idempotent processing. Financial-D3v must save the encrypted Business vault successfully before acknowledging the cloud event cursor.
-- Inventory purchase cash outflow is recorded once; later stock consumption is operational costing information, not another cash expense.
-- No code, cloud resources, credentials, billing or production configuration were changed by this ADR documentation.
-
-## Maintenance handoff — 2026-11-12
-
-- Current branch: maintenance/ci-recovery-2026-11.
-- Open PR: https://github.com/palmid3v/financial-d3v-palmid3v/pull/21.
-- CI passed on 2026-11-13: 32/32 frontend tests and the Go test/build job.
-- The PDF worker URL is imported only when PDF extraction is invoked, keeping parser-only Node tests independent of Vite asset handling.
-- Keep the Personal vault isolated from Business events. Never send decrypted vault state or .fdv files to cloud services.
-- Latest evidence: QUALITY-CHECKPOINT-2026-11-12.md.
+---
+**Financial-D3V · PALMI-D3V**

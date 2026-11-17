@@ -1,108 +1,65 @@
-# 💰 𝐅𝐢𝐧𝐚𝐧𝐜𝐢𝐚𝐥-𝐃𝟑𝐕 — Finanzas personales privadas
+# Financial-D3V
 
-> **PALMI-D3V** · Finanzas personales y aprendizaje financiero con bóveda cifrada local.
+**Financial-D3V** es una aplicación privada de finanzas personales y aprendizaje financiero. Permite registrar y comprender ingresos, gastos, cuentas, transferencias, presupuestos, ahorro, deudas y patrimonio, manteniendo los datos financieros bajo control local mediante una bóveda cifrada.
 
-## 🎯 Misión
+Su principio central es **local-first y privacy-first**: la bóveda cifrada `.fdv` es la fuente de persistencia financiera, y los datos descifrados solo permanecen en memoria mientras la bóveda está abierta.
 
-Dar visibilidad privada sobre el dinero que entra, sale y se mueve, mediante cálculos financieros locales y una bóveda cifrada.
+## Producto
 
-## 🔭 Visión
+- **Dashboard y flujo de caja:** consulta de saldos, entradas, salidas y evolución financiera.
+- **Cuentas y movimientos:** registro de ingresos, gastos y transferencias entre cuentas.
+- **Presupuestos y ahorro:** seguimiento de presupuestos y metas.
+- **Deudas y patrimonio:** registro de obligaciones, activos, pasivos y patrimonio neto.
+- **Importación de extractos:** herramientas locales de importación por lotes para extractos bancarios compatibles; la disponibilidad de formatos concretos depende del estado de la fase de importación documentada.
+- **Informes y educación:** reportes y explicaciones para apoyar la comprensión de conceptos financieros.
 
-Ser un espacio de finanzas personales que ayude a comprender flujo de caja, presupuestos, deudas, patrimonio y documentos financieros sin exponer datos descifrados a servicios remotos.
+Las reglas del dominio distinguen transferencias de gastos, calculan el patrimonio como activos menos pasivos y separan el abono a capital de intereses y cargos en pagos de deuda.
 
+## Privacidad y bóveda
 
-## 🌐 Despliegue en Vercel
+La bóveda FDV1 utiliza PBKDF2-SHA256 con 600.000 iteraciones y AES-256-GCM con salt e IV aleatorios. La contraseña y el estado financiero descifrado permanecen en memoria mientras la sesión está desbloqueada. El bloqueo y el auto-bloqueo documentado después de 15 minutos limpian el estado activo.
 
-- **URL de producción:** https://financiald3v.vercel.app
-- **Proyecto Vercel:** `financiald3v`
-- **Repositorio GitHub:** [`palmid3v/financial-d3v-palmid3v`](https://github.com/palmid3v/financial-d3v-palmid3v)
-- **Alias verificado:** dominio asociado al despliegue de producción READY consultado el 15 de noviembre de 2026.
+La persistencia de los registros financieros se realiza mediante archivos cifrados controlados por la persona usuaria. El diseño no contempla almacenar intencionalmente datos financieros descifrados en servicios remotos, almacenamiento web persistente o registros de telemetría. La recuperación depende del archivo `.fdv` y su contraseña: no existe un servicio de recuperación de contraseña.
 
-## 🗓️ Revisión documental
+Este diseño describe controles de aplicación; no equivale a una auditoría externa o certificación de seguridad.
 
-README revisado el **14 de noviembre de 2026**. El estado y las capacidades descritas se limitan a lo documentado en este repositorio; una función planificada no se considera implementada sin evidencia y validación.
+## Arquitectura y tecnologías
 
+La interfaz está construida con **React**, **Vite** y **Tailwind CSS**, con capacidades PWA. Los cálculos financieros locales se ejecutan mediante un motor **Go 1.27 compilado a WebAssembly**. La aplicación activa se sirve como frontend web HTTPS; la arquitectura Go REST/Firestore presente en el historial del repositorio es legado y no es la ruta activa de persistencia financiera.
 
-## 🎯 Producto
-Financial-D3v permite registrar, comprender y planificar finanzas personales bajo control de la persona usuaria. Su fuente persistente es un archivo de bóveda `.fdv` cifrado; no es el libro contable de Sandwichies ni un backend financiero compartido.
+Los scripts de validación, pruebas frontend, construcción WASM y pruebas Go están en el repositorio. Consulta `frontend/package.json`, `go.mod` y `scripts/` para las dependencias y herramientas exactas.
 
-## ✨ Capacidades y base técnica
-- Dashboard, flujo de caja, cuentas, movimientos y transferencias.
-- Importación bancaria local por lotes: CSV genérico y parser PDF de texto para extractos Nequi (Fase 32.2 en validación; OCR no incluido).
-- Presupuestos, metas de ahorro, deudas, activos, pasivos y patrimonio neto.
-- Educación e informes financieros.
-- Bóveda FDV1 cifrada con PBKDF2-SHA256 y AES-256-GCM.
-- Datos descifrados solo en memoria mientras la bóveda está abierta.
-- Cálculos locales mediante Go/WebAssembly.
-- React, Vite, Tailwind CSS, PWA/Workbox y despliegue web HTTPS.
-- Stack/versiones exactas: consultar `frontend/package.json` y scripts de `scripts/`.
+## Separación dentro de PALMI-D3V
 
-## 🔎 Quality checkpoint — 2026-11-12
+Financial-D3V conserva la autoridad sobre las finanzas personales privadas. No comparte bóvedas, contraseñas, claves, extractos ni datos financieros descifrados con Sandwichies, Cupboard o DayFlow.
 
-Maintenance-branch CI passed: 32/32 frontend tests and the Go test/build job. Manual HTTPS save → lock → reopen, account/ledger reconciliation and independent security review remain open. See [QUALITY-CHECKPOINT-2026-11-12.md](QUALITY-CHECKPOINT-2026-11-12.md) for evidence and release gates.
+La decisión arquitectónica para una futura modalidad Business define bóvedas Personal y Business independientes y eventos comerciales minimizados. Esa integración está aceptada como arquitectura, pero su implementación no se considera disponible hasta completar desarrollo, validación y autorización explícita.
 
-## 📊 Estado del proyecto
-**Fases documentadas: 1–31 cerradas en el baseline histórico; Fase 32 en implementación y validación.** Esto representa el cierre de la línea fundacional documentada, no el 100% del producto ni la validación de todos los flujos manuales.
+## Desarrollo
 
-**Checkpoint histórico:** 10/10 pruebas frontend, build, WASM, auditoría fuente de seguridad, tests/build Go aprobados; desbloqueo móvil HTTPS probado el 2026-10-18. El ciclo manual guardar → bloquear → reabrir y reconciliación de cambios de cuentas/ledger seguían pendientes en el último contexto. No son pruebas recién ejecutadas.
+La interfaz está en `frontend/`. Desde esa carpeta instala dependencias y utiliza los scripts disponibles para ejecutar Vite, pruebas y build. La construcción del motor WebAssembly y las validaciones ampliadas se gestionan mediante los scripts de la raíz.
 
-## 🧭 Evolución de producto
-1. Fases 1–31: base local-first, bóveda, cálculos y fundamentos de privacidad.
-2. Fase 32 en curso: importación bancaria CSV/PDF Nequi y conciliación histórica.
-3. Cualquier integración con otras aplicaciones debe intercambiar únicamente datos comerciales agregados/no personales y solo mediante contrato explícito; nunca transferir plaintext financiero de la bóveda.
+Para pruebas de runtime con Web Crypto, utiliza un contexto HTTPS seguro cuando corresponda. No uses datos financieros reales en pruebas automatizadas ni compartas archivos de bóveda.
 
-## 🔒 Seguridad y límite de release
-- FDV1 usa PBKDF2-SHA256 (600.000 iteraciones) y AES-256-GCM (tag de 128 bits), con salt e IV aleatorios.
-- La contraseña y el estado financiero descifrado permanecen en memoria; bloqueo/auto-lock limpia el estado activo.
-- Auto-lock documentado: 15 minutos de inactividad.
-- No persistir intencionalmente plaintext financiero en localStorage, sessionStorage, IndexedDB, Firebase/Firestore, Vercel, GitHub ni API Go remota.
-- Firebase Auth, si se usa, es identidad no financiera; nunca es clave de cifrado.
-- Dinero en unidades menores enteras + moneda; transferencias no son gastos; solo principal reduce saldo de deuda; patrimonio = activos − pasivos.
-- Este diseño es seguridad a nivel de aplicación, no auditoría externa formal.
-- La recuperación depende del archivo cifrado y su contraseña. No existe recuperación de contraseña.
+## Documentación
 
-## 🧪 Desarrollo local
-Desde `frontend/`:
+- [Índice de documentación](docs/README.md)
+- [Contexto y arquitectura vigente](CONTEXT.md)
+- [Seguridad y modelo de bóveda](docs/08-SECURITY.md)
+- [Roadmap](docs/13-ROADMAP.md)
+- [Reglas financieras](docs/07-FINANCIAL-RULES.md)
+- [Runbook de operación y recuperación](docs/OPERATIONS-RUNBOOK.md)
+- [Checkpoint de calidad](QUALITY-CHECKPOINT-2026-11-12.md)
+- [ADR-034: Business Finance](docs/34-PALMI-ECOSYSTEM-BUSINESS-FINANCE-ADR.md)
 
-```powershell
-npm install
-npm run dev
-npm test
-npm run build:wasm
-npm run build
-```
+## Repositorio y despliegue
 
-Validación ampliada desde la raíz:
+- Repositorio: [palmid3v/financial-d3v-palmid3v](https://github.com/palmid3v/financial-d3v-palmid3v)
+- Sitio web: [financiald3v.vercel.app](https://financiald3v.vercel.app)
 
-```powershell
-.\scripts\validate.ps1
-powershell -ExecutionPolicy Bypass -File .\scripts\security-audit.ps1
-```
+La disponibilidad del sitio no sustituye la comprobación de los flujos locales de guardar, bloquear, reabrir y reconciliar datos.
 
-Web Crypto requiere contexto seguro HTTPS en escenarios móviles; revisar runtime y despliegue antes de validar dispositivos.
+---
 
-## 📚 Documentación clave
-- `CONTEXT.md` — arquitectura, invariantes y continuidad.
-- `docs/README.md` — índice documental.
-- `docs/13-ROADMAP.md` — fases.
-- `docs/08-SECURITY.md` — privacidad y bóveda.
-- `docs/OPERATIONS-RUNBOOK.md` — operación y recuperación.
-- `STEP-BY-STEP-FINANCIAL-D3V-2026-10-05.md` — historial de ejecución.
-
-## 🤝 Identidad
-**Financial-D3v · PALMI-D3V** — *Build · Create · Improve · Validate.*
-
-Financial-D3v es dueño de las finanzas personales privadas. La bóveda cifrada local es la fuente de verdad; otras aplicaciones no reciben sus datos financieros descifrados.
-
-
-## PALMI Ecosystem — Business Finance
-
-The approved architecture decision for Sandwichies business finances is documented in [ADR-034](docs/34-PALMI-ECOSYSTEM-BUSINESS-FINANCE-ADR.md).
-
-- Personal and Business use separate encrypted `.fdv` vaults with independent keys and lifecycle.
-- Cloud synchronization carries minimized, authenticated, non-PII commercial events only; it never transports or stores vault contents or decrypted financial records.
-- Business-D3v uses cash-basis recognition: income when received, expenses when paid.
-- Event contract: [PALMI Business Financial Event v1](docs/contracts/palmi-business-financial-event.schema.json).
-- Implementation is documented as Phase 34 and has not started. Production integrations remain disabled pending implementation, staging validation and explicit approval.
-
-The existing Personal vault privacy boundary remains unchanged.
+**Financial-D3V · PALMI-D3V**  
+*Build · Create · Improve · Validate.*

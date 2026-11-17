@@ -1,88 +1,56 @@
-# Financial-D3v Documentation
+# Financial-D3V Documentation Index
 
-**Last updated:** 2026-11-12  
-**Timezone:** America/Bogota (COT, UTC-05:00)  
+**Reviewed:** 2026-11-17  
+**Timezone:** America/Bogota  
 **Source of truth:** GitHub `main`
 
-## Current state
+## Current product architecture
 
-FASES 1–31 are complete through the first-release local-first foundation.
+Financial-D3V is a local-first personal finance application. Its active data path is a user-controlled FDV1 encrypted `.fdv` vault, with decrypted state held in memory while unlocked and local Go/WebAssembly financial calculations. Historical Go REST, Firestore and cloud-persistence designs are retained for traceability; they are not the active financial vault path.
 
-Active architecture:
+## Current product status
 
-```text
-GitHub
-  ↓
-Vercel Hobby
-  ↓
-React + Vite + Tailwind PWA
-  ↓
-FDV1 encrypted Financial Vault
-  ↓
-decrypted in-memory state
-  ↓
-Go/WASM local computation
-```
+Phases 1–31 are documented as the local-first foundation. Phase 32 bank-statement import and historical financial intelligence are under development/validation; verify the selected branch before treating any specific parser or workflow as released. ADR-034 records an accepted future Business Finance design, but its integration is not implemented.
 
-FASE 32 is in implementation/validation (including local bank-statement import and reconciliation). The accepted Phase 34 Business Finance ADR is a documented architecture decision; its production integration is not implemented.
+The quality checkpoint dated 2026-11-12 records successful maintenance-PR CI on 2026-11-13: 32/32 frontend tests and Go test/build passed. Manual HTTPS save → lock → reopen, account/ledger reconciliation and independent security review remained open. These are historical results, not a new test run on 2026-11-17.
 
 ## Canonical documents
 
 | Document | Purpose |
 |---|---|
-| `../CONTEXT.md` | Current continuation context |
-| `../QUALITY-CHECKPOINT-2026-11-12.md` | Latest CI evidence, maintenance changes and remaining release gates |
-| `../STEP-BY-STEP-FINANCIAL-D3V-2026-10-05.md` | Step-by-step project history |
-| `01-PRODUCT-VISION.md` | Product vision |
-| `02-REQUIREMENTS.md` | Requirements |
-| `03-ARCHITECTURE.md` | Current architecture |
+| `../README.md` | Public product overview |
+| `../CONTEXT.md` | Current architecture, privacy boundary and continuation context |
+| `../QUALITY-CHECKPOINT-2026-11-12.md` | Dated CI findings and remaining gates |
+| `../STEP-BY-STEP-FINANCIAL-D3V-2026-10-05.md` | Historical step-by-step project record |
+| `01-PRODUCT-VISION.md` | Product direction |
+| `02-REQUIREMENTS.md` | Product requirements |
+| `03-ARCHITECTURE.md` | Architecture history and current design |
 | `04-DOMAIN-MODEL.md` | Domain model |
-| `05-DATABASE-DESIGN.md` | Persistence history and Vault boundary |
-| `06-API-DESIGN.md` | Legacy API boundary |
+| `05-DATABASE-DESIGN.md` | Persistence history and vault boundary |
+| `06-API-DESIGN.md` | Legacy API design |
 | `07-FINANCIAL-RULES.md` | Financial invariants |
-| `08-SECURITY.md` | Active security model |
-| `09-TESTING.md` | Testing |
-| `10-DEPLOYMENT.md` | Active deployment |
-| `11-AI-DEVELOPMENT-WORKFLOW.md` | AI workflow |
-| `12-LEARNING-GO.md` | Go learning |
-| `13-ROADMAP.md` | Roadmap |
-| `34-PALMI-ECOSYSTEM-BUSINESS-FINANCE-ADR.md` | Accepted architecture decision for separate Personal/Business vaults and cloud-delivered business events |
-| `contracts/palmi-business-financial-event.schema.json` | Version 1 JSON Schema for minimized commercial events |
+| `08-SECURITY.md` | Active vault security model |
+| `09-TESTING.md` | Test strategy |
+| `10-DEPLOYMENT.md` | Deployment history/current hosting |
+| `11-AI-DEVELOPMENT-WORKFLOW.md` | AI-assisted workflow |
+| `12-LEARNING-GO.md` | Go learning notes |
+| `13-ROADMAP.md` | Product phases and planned work |
 | `14-UI-UX-DESIGN.md` | UX direction |
-| `15-FINANCIAL-EDUCATION.md` | Education |
+| `15-FINANCIAL-EDUCATION.md` | Financial education content |
 | `16-PRIVATE-PERSONAL-USE.md` | Private-use scope |
-| `VALIDATION-RUNNER.md` | Validación del Proyecto |
-| `OPERATIONS-RUNBOOK.md` | Operations/recovery |
-| `DESIGN-SYSTEM-REFERENCE.md` | Visual system |
-| `DEPLOYMENT-VERCEL.md` | Vercel deployment |
+| `34-PALMI-ECOSYSTEM-BUSINESS-FINANCE-ADR.md` | Accepted but unimplemented Business Finance architecture |
+| `contracts/palmi-business-financial-event.schema.json` | Minimized commercial event schema |
+| `OPERATIONS-RUNBOOK.md` | Operations and recovery |
+| `VALIDATION-RUNNER.md` | Validation workflow |
+| `DESIGN-SYSTEM-REFERENCE.md` | Design system reference |
 
-## Current validation checkpoint — 2026-11-12
+## Documentation rules
 
-The maintenance PR fixes the Node/Vite boundary for Nequi PDF worker loading. GitHub Actions passed 32/32 frontend tests and the Go test/build job on the maintenance branch. This does not replace HTTPS save → lock → reopen testing, account/ledger reconciliation, or independent security review. See the root `QUALITY-CHECKPOINT-2026-11-12.md`.
+- Treat the encrypted `.fdv` file as the financial persistence source of truth.
+- Never document plaintext financial data as being synchronized to cloud services.
+- Keep Personal and future Business vaults fully separate, with independent keys and lifecycle.
+- Preserve historical checkpoints as dated evidence. Append a new checkpoint for new validation; do not rewrite old test results to appear current.
+- Distinguish built, tested, CI-passed, manually verified and production-approved states.
 
-## Phase history
-
-Phase documents are preserved for traceability. Later architecture decisions override earlier deployment assumptions.
-
-Important evolution:
-1. Initial Go + Firestore/API architecture.
-2. Product UX expansion.
-3. Authentication/security hardening.
-4. Re-scope to $0 local-first encrypted Financial Vault.
-5. Go moved to local WASM computation.
-6. FASE 30 established design/PWA/deployment foundation.
-7. FASE 31 completed security/recovery validation.
-
-## Historical cloud documents
-
-These are not active deployment instructions:
-- `PHASE-27-PRIVATE-PRODUCTION-DEPLOYMENT.md`
-- `PHASE-28-BACKUP-RECOVERY.md`
-- Cloud Run / Artifact Registry / Scheduler material under `deploy/`.
-
-Follow current architecture documents for active work.
-
-
-## Documentation checkpoint — 2026-10-18
-
-Current public product description and project continuation context live in the root README.md and CONTEXT.md. The active roadmap is 13-ROADMAP.md; security boundary and operational recovery are documented in 08-SECURITY.md and OPERATIONS-RUNBOOK.md. The latest documented mobile verification confirms that HTTPS deployment is required for Web Crypto in the phone browser. Manual save → lock → reopen validation remains an explicit gate.
+---
+**Financial-D3V · PALMI-D3V**

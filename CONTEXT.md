@@ -98,6 +98,18 @@ Firebase Auth may remain useful for non-financial identity, but it is not the en
 - No intentional plaintext browser persistence.
 - No intentional financial plaintext remote transport.
 
+## Local Payroll implementation status — 2026-11-14
+
+This checkout now includes a Payroll workspace backed by Vault schema 2. The schema migration adds contract/profile, work-record, settlement, receipt, payslip-reference and evidence collections while preserving unknown fields and opening schema 1. Payroll amounts are entered as whole COP pesos and totaled in Go/WASM. The workspace also offers a bounded informational estimate of employee health, pension and solidarity contributions for a confirmed IBC and supported full-month general-regime case, using PILA COP 100 upward rounding. It is not a complete Colombian statutory payroll engine: overtime, benefits, absences, special regimes and individual pension transitions are not calculated, and saved settlements remain user-entered estimates requiring professional review.
+
+Local PDF text, DOCX and TXT extraction can suggest contract fields. Each suggestion carries a line reference, confidence and unconfirmed status. Scanned PDF OCR is unavailable, originals are not retained, and activation requires human confirmation. Turn classification records scheduled/actual times, timezone and multiple non-overlapping timed break intervals; legacy records with one break remain readable and correctable. Go excludes every recorded break from its informational daytime, nighttime, Sunday, manually marked rest-day and holiday minute totals. These categories do not classify overtime or calculate compensation.
+
+Only an explicitly confirmed receipt creates an income transaction. Idempotency is by settlement and bank reference; the target account must be an active COP asset account. A locally extracted payslip can be linked to a settlement and confirmed gross/deduction/net amounts are compared against the saved estimate; differences are informational and are not a legal opinion. Settlements preserve work period, cutoff, creation/settlement timestamp and optional expected payment date separately from actual receipt dates. The conversion from integer COP to ledger `minorUnits` multiplies by 100 to match existing frontend financial representation. Do not interpret that storage scale as a legally meaningful fractional COP amount.
+
+See `docs/audit/18-EXECUTION-STATUS.md` for phase status and exact validation evidence. No remote synchronization or deployment was performed.
+
+PWA updates now use a user-triggered prompt and remain disabled while the Vault is dirty; the browser also warns before closing a dirty workspace. Offline/device update behavior still needs manual runtime verification.
+
 This is an application-level encryption design, not a formal external security audit.
 
 ## Go/WASM boundary

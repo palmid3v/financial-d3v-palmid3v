@@ -90,7 +90,7 @@ function validateEnvelope(envelope) {
 
 export function createEmptyVault() {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     accounts: [],
@@ -104,6 +104,14 @@ export function createEmptyVault() {
     assets: [],
     liabilities: [],
     education: [],
+    employmentProfiles: [],
+    employmentContracts: [],
+    payrollWorkRecords: [],
+    payrollSettlements: [],
+    payrollReceipts: [],
+    payrollPayslips: [],
+    payrollReconciliations: [],
+    payrollEvidence: [],
   };
 }
 
@@ -184,7 +192,7 @@ export async function openVault(serializedVault, password) {
 
     const data = JSON.parse(decoder.decode(plaintext));
 
-    if (!data || typeof data !== "object" || data.schemaVersion !== 1) {
+    if (!data || typeof data !== "object" || ![1, 2].includes(data.schemaVersion)) {
       throw new Error("Financial Vault payload schema is invalid.");
     }
 

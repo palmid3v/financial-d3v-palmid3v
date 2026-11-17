@@ -85,3 +85,7 @@ The approved architecture decision for Sandwichies business finances is document
 - Implementation is documented as Phase 34 and has not started. Production integrations remain disabled pending implementation, staging validation and explicit approval.
 
 The existing Personal vault privacy boundary remains unchanged.
+
+## Current engineering execution status
+
+Payroll foundations and the local visual direction are under active implementation. Verified scope, tests, limitations and remaining release gates are tracked in [the execution status report](docs/audit/18-EXECUTION-STATUS.md). This feature is not a legally certified Colombian payroll calculator.

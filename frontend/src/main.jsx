@@ -1,17 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import VaultGate from "./vault/VaultGate.jsx";
+import PWAUpdatePrompt from "./PWAUpdatePrompt.jsx";
 import { VaultProvider } from "./vault/VaultContext.jsx";
 import "./index.css";
 
-const vaultEnabled = (import.meta.env.VITE_FINANCIAL_VAULT_ENABLED || "true") === "true";
-
 function Root() {
-  if (vaultEnabled) {
-    return <VaultProvider><VaultGate /></VaultProvider>;
-  }
-
-  return <VaultProvider><VaultGate /></VaultProvider>;
+  return <VaultProvider><><VaultGate /><PWAUpdatePrompt /></></VaultProvider>;
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(

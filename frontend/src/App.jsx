@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useVault } from "./vault/VaultContext";
 import { calculateWithGoEngine } from "./vault/goEngine";
 import StatementImport from "./StatementImport";
+import PayrollWorkspace from "./payroll/PayrollWorkspace.jsx";
+import { payrollDashboardSummary } from "./payroll/model.js";
 import {
   accountBalance,
   budgetSummary,
@@ -31,6 +33,9 @@ const money = (minorUnits = 0, currency = "COP") =>
     maximumFractionDigits: 0,
   }).format((Number(minorUnits) || 0) / 100);
 
+const wholeCOP = (pesos = 0) => new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(Number(pesos) || 0);
+const bogotaToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Bogota", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+
 const numberValue = (value) => Math.round((Number(value) || 0) * 100);
 const CURRENCIES = [["COP", "COP · Peso colombiano"], ["USD", "USD · Dólar estadounidense"], ["EUR", "EUR · Euro"], ["MXN", "MXN · Peso mexicano"], ["GBP", "GBP · Libra esterlina"], ["CAD", "CAD · Dólar canadiense"]];
 function CurrencyOptions() { return CURRENCIES.map(([code, label]) => <option key={code} value={code}>{label}</option>); }
@@ -43,6 +48,7 @@ const navGroups = [
   { label: "Finanzas", items: [["dashboard", "Dashboard", "⌂"], ["accounts", "Cuentas", "▣"], ["transactions", "Transacciones", "↕"], ["statement-import", "Importar y conciliar", "⇧"], ["budget", "Presupuestos", "◫"]] },
   { label: "Planeación", items: [["savings", "Ahorro y metas", "◎"], ["debts", "Deudas", "◇"]] },
   { label: "Patrimonio", items: [["net-worth", "Patrimonio neto", "◆"]] },
+  { label: "Trabajo", items: [["payroll", "Trabajo / Nómina", "◷"]] },
   { label: "Aprendizaje", items: [["education", "Educación", "?"]] },
 ];
 
@@ -189,6 +195,7 @@ function Dashboard({ vault, setActive }) {
   const budget = vault.budgets.find((item) => item.currency === "COP" && new Date(item.startDate) <= start && new Date(item.endDate) >= end) || vault.budgets.find((item) => item.currency === "COP");
   const budgetData = budget ? budgetSummary(budget, vault, new Date(budget.startDate), new Date(budget.endDate)) : null;
   const recent = [...vault.transactions].sort((a, b) => new Date(b.occurredAt) - new Date(a.occurredAt)).slice(0, 6);
+  const payrollSummary = payrollDashboardSummary(vault, bogotaToday());
 
   return <div className="workspace dashboard-page">
     <section className="hero reveal">
@@ -204,11 +211,14 @@ function Dashboard({ vault, setActive }) {
     <Panel className="projection-panel reveal"><div className="panel-head"><div><small>Planeación · COP</small><h3>Referencia para el próximo mes</h3></div><span className="badge">Estimación</span></div><p>Promedio de los últimos {cashFlowProjection.basisMonths} meses completos; no es un movimiento registrado ni una garantía.</p><div className="projection-values"><div><small>Ingreso promedio</small><strong>{money(cashFlowProjection.averageIncome)}</strong></div><div><small>Egresos promedio</small><strong>{money(cashFlowProjection.averageExpenses + cashFlowProjection.averagePrincipalPayments)}</strong></div><div><small>Flujo neto promedio</small><strong className={cashFlowProjection.averageNetCashFlow >= 0 ? "positive" : "negative"}>{money(cashFlowProjection.averageNetCashFlow)}</strong></div></div></Panel>
 
     <div className="metrics metrics-4">
+      <Metric label="Disponible en COP" value={money(accountTotals.COP || 0)} detail="Saldo derivado de cuentas" tone="green" />
       <Metric label="Patrimonio neto" value={money(nw.net)} detail="Activos − pasivos" tone="green" />
       <Metric label="Flujo de caja" value={`${totals.netCashFlow > 0 ? "+ " : totals.netCashFlow < 0 ? "− " : ""}${money(Math.abs(totals.netCashFlow))}`} detail="Este mes · COP" tone="green" />
       <Metric label="Ahorro del mes" value={`${Math.round(savingsRate)}%`} detail="Flujo neto / ingresos · COP" tone="yellow" />
       <Metric label="Deuda pendiente" value={money(debt)} detail="Saldo de deudas" tone="blue" />
     </div>
+
+    {vault.employmentContracts.length > 0 && <Panel className="payroll-dashboard-link reveal"><div className="panel-head"><div><small>Trabajo · referencia contractual</small><h3>Ingreso pactado, fuera del saldo disponible</h3></div><Button onClick={() => setActive("payroll")}>Abrir Trabajo</Button></div><div className="payroll-dashboard-values"><div><small>Salario base mensual vigente</small><strong>{payrollSummary.activeContractCount ? payrollSummary.monthlySalaryCOP == null ? "Revisa los datos del contrato" : wholeCOP(payrollSummary.monthlySalaryCOP) : "Sin contrato vigente hoy"}</strong><span>{payrollSummary.activeContractCount} contrato(s) activo(s) con vigencia a la fecha</span></div><div><small>Próxima fecha de pago pactada</small><strong>{payrollSummary.nextExpectedPaymentDate || "Sin fecha próxima"}</strong><span>{payrollSummary.settlementsCount} resumen(es) guardados · no representa pago neto ni dinero recibido</span></div></div><p>Esta referencia proviene del contrato y las fechas acordadas. No se suma al flujo de caja ni al balance; un movimiento se crea solo cuando confirmas un recibo.</p></Panel>}
 
     <div className="dashboard-grid">
       <Panel className="chart-panel reveal">
@@ -901,6 +911,17 @@ export default function App() {
   const [active, setActive] = useState("dashboard");
   const [moreOpen, setMoreOpen] = useState(false);
   const safeVault = useMemo(() => normalizeVault(vault), [vault]);
+  const routes = { dashboard: "/inicio", accounts: "/cuentas", transactions: "/movimientos", "statement-import": "/movimientos/importar", budget: "/planificacion/presupuestos", savings: "/planificacion/ahorro", debts: "/planificacion/deudas", "net-worth": "/patrimonio", payroll: "/trabajo", education: "/aprendizaje" };
+  const keysByRoute = Object.fromEntries(Object.entries(routes).map(([key, path]) => [path, key]));
+  const navigate = (key) => { setActive(key); const nextPath = routes[key] || routes.dashboard; if (window.location.pathname !== nextPath) window.history.pushState({ workspace: key }, "", nextPath); };
+
+  useEffect(() => {
+    const syncRoute = () => setActive(keysByRoute[window.location.pathname] || "dashboard");
+    if (window.location.pathname === "/") window.history.replaceState({ workspace: "dashboard" }, "", routes.dashboard);
+    else syncRoute();
+    window.addEventListener("popstate", syncRoute);
+    return () => window.removeEventListener("popstate", syncRoute);
+  }, []);
 
   const guardedLock = () => {
     if (dirty && !window.confirm("Tienes cambios sin guardar. ¿Bloquear sin guardar?")) return;
@@ -910,7 +931,7 @@ export default function App() {
   if (!vault) return null;
 
   const render = () => {
-    if (active === "dashboard") return <Dashboard vault={safeVault} setActive={setActive} />;
+    if (active === "dashboard") return <Dashboard vault={safeVault} setActive={navigate} />;
     if (active === "transactions") return <Transactions vault={safeVault} updateVault={updateVault} />;
     if (active === "statement-import") return <StatementImport vault={safeVault} updateVault={updateVault} />;
     if (active === "accounts") return <Accounts vault={safeVault} updateVault={updateVault} />;
@@ -918,16 +939,17 @@ export default function App() {
     if (active === "savings") return <Savings vault={safeVault} updateVault={updateVault} />;
     if (active === "debts") return <Debts vault={safeVault} updateVault={updateVault} />;
     if (active === "net-worth") return <NetWorth vault={safeVault} updateVault={updateVault} />;
+    if (active === "payroll") return <PayrollWorkspace vault={safeVault} updateVault={updateVault} />;
     return <Education vault={safeVault} />;
   };
 
   return <div className="app-shell">
-    <Sidebar active={active} setActive={setActive} onLock={guardedLock} dirty={dirty} />
+    <Sidebar active={active} setActive={navigate} onLock={guardedLock} dirty={dirty} />
     <div className="main">
       <Topbar active={active} dirty={dirty} saveVault={saveVault} lock={guardedLock} saveMode={saveMode} />
       <main>{render()}</main>
       <footer>PRIVATE BY DESIGN · FINANCIAL-D3V · BY PALMID3V</footer>
     </div>
-    <MobileNav active={active} setActive={setActive} moreOpen={moreOpen} setMoreOpen={setMoreOpen} />
+    <MobileNav active={active} setActive={navigate} moreOpen={moreOpen} setMoreOpen={setMoreOpen} />
   </div>;
 }

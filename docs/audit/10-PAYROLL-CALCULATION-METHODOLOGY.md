@@ -1,6 +1,17 @@
 # Metodología propuesta para cálculos Payroll
 
-**No hay metodología Payroll implementada en la ruta activa.** Este documento define qué debe diseñarse y comprobarse antes de escribir código de cálculo.
+**Estado actualizado:** existe cálculo determinista de conceptos confirmados, equivalentes presupuestarios y una estimación acotada de aportes del trabajador para un mes calendario completo. No existe aún una liquidación estatutaria integral. Esta metodología conserva el objetivo de producto y delimita el alcance que sí ejecuta el código.
+
+## Cálculo activo verificado
+
+- Go es la autoridad aritmética; el frontend invoca Go/WASM localmente.
+- `CalculateEnteredConcepts` suma conceptos confirmados en pesos enteros y valida que las deducciones no superen el bruto. No deriva recargos ni prestaciones.
+- `ProjectContractEquivalents` muestra equivalentes de planeación con su fórmula y redondeo versionado; no son salario horario legal.
+- `EstimateEmployeeContributions` estima salud y pensión del trabajador al 4% cada una, más aportes de solidaridad conforme a los umbrales investigados de Ley 797/2003. Exige IBC confirmado y limita el alcance a una persona dependiente, no pensionada, un empleador, sistema general, mes completo y una regla de salario mínimo estable durante el mes.
+- La aproximación de cada aporte sigue el múltiplo superior de COP 100 de PILA (Decreto 780/2016, art. 3.2.1.5, modificado por Decreto 1990/2016). El IBC recibido ya debe ser un entero COP y confirmado.
+- El resultado es informativo y requiere revisión profesional; no se integra automáticamente a una liquidación ni al ledger. No calcula aportes del empleador, prestaciones, recargos, ausencias, novedad parcial, regímenes especiales ni cumplimiento legal.
+- La reforma pensional y su transición no se resuelven para personas concretas. Las fechas de vigencia de la Sentencia C-264-26 se reflejan como límite de catálogo, y el estimador no trata periodos desde 2027.
+- Evidencia: `internal/payroll/contributions.go`, `internal/payroll/contributions_test.go`, `cmd/financial-engine-wasm/main.go`, `frontend/src/vault/goEngine.js`, `frontend/src/payroll/PayrollWorkspace.jsx`.
 
 ## Pipeline determinista
 

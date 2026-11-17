@@ -22,6 +22,13 @@ test("Financial Vault round trip preserves domain data", async () => {
   assert.equal(serialized.includes("c2FtcGxlLWltYWdl"), false);
 });
 
+test("Schema 1 Financial Vault remains decryptable for the additive Payroll migration", async () => {
+  const legacy = { schemaVersion: 1, accounts: [{ id: "legacy-account" }], transactions: [], unknownLegacyData: { keep: true } };
+  const serialized = await sealVault(legacy, password);
+  const opened = await openVault(serialized, password);
+  assert.deepEqual(opened, legacy);
+});
+
 test("Financial Vault rejects an incorrect password", async () => {
   const serialized = await sealVault(sampleVault, password);
 

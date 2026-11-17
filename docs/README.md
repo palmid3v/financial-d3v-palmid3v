@@ -6,6 +6,8 @@
 
 ## Current state
 
+The local checkout has subsequent Payroll foundation work in progress. Its verified scope and current release gates are recorded in [`audit/18-EXECUTION-STATUS.md`](audit/18-EXECUTION-STATUS.md); that report takes precedence over the older phase status below for this checkout.
+
 FASES 1–31 are complete through the first-release local-first foundation.
 
 Active architecture:

@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { createEmptyVault, downloadVault, openVault, sealVault } from "./crypto";
 import { normalizeVault } from "./finance";
+import { createSerialQueue, isRevisionCurrent } from "./saveCoordinator";
 
 const VaultContext = createContext(null);
 export const VAULT_AUTO_LOCK_MS = 15 * 60 * 1000;
@@ -17,6 +18,12 @@ export function VaultProvider({ children }) {
   const [fileHandle, setFileHandle] = useState(null);
   const passwordRef = useRef(null);
   const autoLockTimerRef = useRef(null);
+  const vaultRef = useRef(null);
+  const fileNameRef = useRef("");
+  const fileHandleRef = useRef(null);
+  const revisionRef = useRef(0);
+  const enqueueSaveRef = useRef(null);
+  if (!enqueueSaveRef.current) enqueueSaveRef.current = createSerialQueue();
 
   const lock = useCallback(() => {
     if (autoLockTimerRef.current) {
@@ -24,10 +31,14 @@ export function VaultProvider({ children }) {
       autoLockTimerRef.current = null;
     }
 
+    vaultRef.current = null;
+    revisionRef.current += 1;
     setVault(null);
     setFileName("");
     setDirty(false);
     setFileHandle(null);
+    fileNameRef.current = "";
+    fileHandleRef.current = null;
     passwordRef.current = null;
   }, []);
 
@@ -72,16 +83,30 @@ export function VaultProvider({ children }) {
     };
   }, [resetAutoLockTimer, vault]);
 
+  useEffect(() => {
+    if (!dirty) return undefined;
+    const preventUnsavedExit = (event) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", preventUnsavedExit);
+    return () => window.removeEventListener("beforeunload", preventUnsavedExit);
+  }, [dirty]);
+
   const createVault = useCallback(async (password) => {
     const data = createEmptyVault();
     const serialized = await sealVault(data, password);
 
     downloadVault(serialized, "financial-d3v.fdv");
+    vaultRef.current = normalizeVault(data);
     setFileHandle(null);
+    fileHandleRef.current = null;
 
     passwordRef.current = password;
-    setVault(normalizeVault(data));
+    setVault(vaultRef.current);
     setFileName("financial-d3v.fdv");
+    fileNameRef.current = "financial-d3v.fdv";
+    revisionRef.current += 1;
     setDirty(false);
     return data;
   }, []);
@@ -89,33 +114,42 @@ export function VaultProvider({ children }) {
   const unlockFile = useCallback(async (file, password, handle = null) => {
     const serialized = await readFile(file);
     const data = await openVault(serialized, password);
+    const normalized = normalizeVault(data);
+    vaultRef.current = normalized;
     passwordRef.current = password;
-    setVault(normalizeVault(data));
+    setVault(normalized);
     setFileName(file.name || "financial-d3v.fdv");
+    fileNameRef.current = file.name || "financial-d3v.fdv";
     setFileHandle(handle);
-    setDirty(false);
-    return data;
+    fileHandleRef.current = handle;
+    revisionRef.current += 1;
+    setDirty(data.schemaVersion !== normalized.schemaVersion);
+    return normalized;
   }, []);
 
   const updateVault = useCallback((updater) => {
     setVault((current) => {
       if (!current) return current;
       const next = typeof updater === "function" ? updater(current) : updater;
-      return normalizeVault({ ...next, updatedAt: new Date().toISOString() });
+      const normalized = normalizeVault({ ...next, updatedAt: new Date().toISOString() });
+      vaultRef.current = normalized;
+      revisionRef.current += 1;
+      return normalized;
     });
     setDirty(true);
   }, []);
 
-  const saveVault = useCallback(async (nextVault = vault) => {
-    if (!nextVault) throw new Error("The Financial Vault is locked.");
-    if (!passwordRef.current) throw new Error("The vault password is unavailable.");
-
-    const serialized = await sealVault(
-      { ...nextVault, updatedAt: new Date().toISOString() },
-      passwordRef.current,
-    );
-    if (fileHandle && typeof fileHandle.createWritable === "function") {
-      const writable = await fileHandle.createWritable();
+  const saveVault = useCallback(() => enqueueSaveRef.current(async () => {
+    const snapshot = vaultRef.current;
+    const password = passwordRef.current;
+    const handle = fileHandleRef.current;
+    const fileNameSnapshot = fileNameRef.current;
+    if (!snapshot) throw new Error("The Financial Vault is locked.");
+    if (!password) throw new Error("The vault password is unavailable.");
+    const saveRevision = revisionRef.current;
+    const serialized = await sealVault({ ...snapshot, updatedAt: new Date().toISOString() }, password);
+    if (handle && typeof handle.createWritable === "function") {
+      const writable = await handle.createWritable();
       try {
         await writable.write(serialized);
         await writable.close();
@@ -124,12 +158,12 @@ export function VaultProvider({ children }) {
         throw error;
       }
     } else {
-      downloadVault(serialized, fileName || "financial-d3v.fdv");
+      downloadVault(serialized, fileNameSnapshot || "financial-d3v.fdv");
     }
-    setDirty(false);
+    if (isRevisionCurrent(saveRevision, revisionRef.current)) setDirty(false);
     resetAutoLockTimer();
     return serialized;
-  }, [fileHandle, fileName, resetAutoLockTimer, vault]);
+  }), [resetAutoLockTimer]);
 
   const value = useMemo(() => ({
     vault,

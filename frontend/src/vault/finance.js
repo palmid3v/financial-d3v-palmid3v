@@ -47,8 +47,32 @@ export function seedCategories(categories = []) {
   return [...categories, ...DEFAULT_CATEGORIES.filter((item) => !existing.has(item.id))];
 }
 
+export const VAULT_SCHEMA_VERSION = 2;
+
+export function migrateVault(vault) {
+  if (!vault || typeof vault !== "object" || Array.isArray(vault)) {
+    throw new Error("La boveda contiene un objeto de datos no valido.");
+  }
+  const version = Number(vault.schemaVersion || 1);
+  if (![1, VAULT_SCHEMA_VERSION].includes(version)) {
+    throw new Error(`La version de datos ${version} no es compatible con esta aplicacion.`);
+  }
+  return {
+    ...vault,
+    schemaVersion: VAULT_SCHEMA_VERSION,
+    employmentProfiles: Array.isArray(vault.employmentProfiles) ? vault.employmentProfiles : [],
+    employmentContracts: Array.isArray(vault.employmentContracts) ? vault.employmentContracts : [],
+    payrollWorkRecords: Array.isArray(vault.payrollWorkRecords) ? vault.payrollWorkRecords : [],
+    payrollSettlements: Array.isArray(vault.payrollSettlements) ? vault.payrollSettlements : [],
+    payrollReceipts: Array.isArray(vault.payrollReceipts) ? vault.payrollReceipts : [],
+    payrollPayslips: Array.isArray(vault.payrollPayslips) ? vault.payrollPayslips : [],
+    payrollReconciliations: Array.isArray(vault.payrollReconciliations) ? vault.payrollReconciliations : [],
+    payrollEvidence: Array.isArray(vault.payrollEvidence) ? vault.payrollEvidence : [],
+  };
+}
+
 export function normalizeVault(vault) {
-  const next = { ...vault };
+  const next = migrateVault(vault);
   next.accounts = (Array.isArray(next.accounts) ? next.accounts : []).map((account) => ({
     ...account,
     currency: String(account.currency || "COP").toUpperCase(),

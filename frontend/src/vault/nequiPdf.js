@@ -81,7 +81,7 @@ export function parseNequiStatementText(text) {
   };
 }
 
-export async function extractPdfText(file) {
+export async function extractPdfText(file, { maxPages = Infinity } = {}) {
   const pdfjs = await import("pdfjs-dist");
   const workerModule = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
   pdfjs.GlobalWorkerOptions.workerSrc = workerModule.default;
@@ -89,6 +89,7 @@ export async function extractPdfText(file) {
   const document = await pdfjs.getDocument({ data, isEvalSupported: false, useSystemFonts: true }).promise;
   const pages = [];
   try {
+    if (document.numPages > maxPages) throw new Error(`El PDF supera el limite de ${maxPages} paginas para esta operacion.`);
     for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
       const page = await document.getPage(pageNumber);
       const content = await page.getTextContent();

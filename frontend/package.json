@@ -9,18 +9,20 @@
     "preview": "vite preview",
     "test:vault": "node --test src/vault/crypto.test.js",
     "test:finance": "node --test src/vault/finance.test.js",
-    "test": "node --test src/vault/*.test.js",
+    "test:payroll": "node --test src/payroll/*.test.js",
+    "test": "node --test src/vault/*.test.js src/payroll/*.test.js",
     "build:wasm": "node ../scripts/build-financial-engine-wasm.mjs"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "latest",
-    "vite": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "tailwindcss": "latest",
-    "@tailwindcss/vite": "latest",
-    "vite-plugin-pwa": "latest",
-    "pdfjs-dist": "5.4.624"
+    "pdfjs-dist": "5.4.624",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@tailwindcss/vite": "4.3.3",
+    "@vitejs/plugin-react": "6.1.1",
+    "tailwindcss": "4.3.3",
+    "vite": "8.3.8",
+    "vite-plugin-pwa": "2.0.0"
+  }
 }

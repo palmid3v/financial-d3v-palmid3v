@@ -1,3 +1,5 @@
+**Documentation review:** 2026-11-17
+
 # Roadmap — Financial-D3v
 
 **Baseline:** October 5, 2026  

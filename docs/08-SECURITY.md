@@ -1,85 +1,64 @@
-# Security — Financial-D3v
+# Security — Financial-D3V
 
-**Status:** FASE 31 APPROVED / BUILT / VALIDATED  
-**Last updated:** 2026-10-05  
-**Timezone:** America/Bogota (COT, UTC-05:00)
+**Document review:** 2026-11-17  
+**Security scope:** active local-first Personal Vault  
+**Evidence baseline:** quality checkpoint 2026-11-12; successful maintenance CI reported 2026-11-13
 
-Financial-D3v is private by design. The active financial-data security boundary is the encrypted Financial Vault.
+Financial-D3V is private by design. The active financial-data security boundary is the user-controlled encrypted Financial Vault.
 
-## Active boundary
+## Active data path
 
 ```text
-Encrypted FDV1 file
-      ↓
-Browser unlock + password
-      ↓
-decrypted financial state in active memory
-      ↓
-React + Go/WASM local computation
-      ↓
-lock / 15-minute inactivity timeout
-      ↓
-active state + password reference cleared
-      ↓
+Encrypted FDV1 .fdv file
+        ↓
+Browser unlock using the vault password
+        ↓
+Decrypted financial state in active memory
+        ↓
+React UI + local Go/WebAssembly calculations
+        ↓
+Lock / 15-minute inactivity timeout
+        ↓
+Clear active state and password reference
+        ↓
 LOCKED
 ```
 
-## Vault controls
+## Vault cryptography and controls
 
 - FDV1 versioned encrypted envelope.
-- PBKDF2 SHA-256 with 600,000 iterations.
-- AES-256-GCM with 128-bit authentication tag.
-- Fresh random salt and IV.
-- Wrong-password rejection.
-- Modified-ciphertext rejection.
-- Unsupported-version rejection.
-- Malformed-input rejection.
-- Password held only in memory.
-- Lock clears active vault state and password reference.
-- 15-minute inactivity auto-lock.
-- Encrypted .fdv export/import.
-- No intentional financial plaintext in localStorage, sessionStorage or IndexedDB.
-- No intentional financial plaintext sent to a remote financial API.
-- Local WASM loading is allowed; `goEngine.js` uses `fetch()` only to load `/wasm/financial-engine.wasm`.
+- PBKDF2-SHA256 with 600,000 iterations for key derivation.
+- AES-256-GCM with a 128-bit authentication tag.
+- Fresh random salt and IV per vault encryption operation.
+- Reject wrong passwords, modified ciphertext, unsupported versions and malformed inputs.
+- Keep password references and decrypted vault state in memory while unlocked.
+- Lock clears active state and password reference.
+- Documented inactivity auto-lock: 15 minutes.
+- Encrypted `.fdv` import/export; vault file and password are separate recovery dependencies.
+- Local WASM loading is allowed. Loading the local engine resource is not financial-data transmission.
 
-## Validation evidence
+## Data handling invariants
 
-```text
-Frontend dependencies          PASS
-Frontend tests                 10/10 PASS
-Frontend production build      PASS
-Frontend WASM build            PASS
-Vault security source audit    PASS
-Go tests                       PASS
-Go build                       PASS
-Runtime Vault flow             PASS
-Wrong-password rejection       PASS
-Lock/unlock/recovery           PASS
-```
+Do not intentionally persist decrypted financial plaintext in localStorage, sessionStorage, IndexedDB, Firebase/Firestore, Vercel storage, GitHub, logs, analytics, crash reports or remote Go APIs. Do not upload `.fdv` files, passwords, derived keys or bank statements to remote services. Firebase Auth, when used, is identity only and is never the encryption key.
 
-The source audit is scoped to `frontend/src/vault` and distinguishes the legitimate local WASM resource load from financial network transport.
+## Financial integrity invariants
 
-## Commands
+- Money uses integer minor units and explicit currency.
+- Transfers are not income or expenses.
+- Savings contributions update goal progress and are not ordinary expenses.
+- Debt payments distinguish principal, interest and fees; only principal reduces debt balance.
+- Net worth = assets − liabilities.
 
-```powershell
-.\scripts\validate.ps1
-powershell -ExecutionPolicy Bypass -File .\scripts\security-audit.ps1
-cd frontend
-npm run preview
-```
+## Validation evidence and limitations
 
-## Credential handling
+The 2026-11-12 checkpoint documents 32/32 frontend tests and Go test/build passing on the maintenance PR on 2026-11-13. That does not replace manual HTTPS save → lock → reopen, account/ledger reconciliation or independent security review. Do not claim those gates passed unless new evidence is recorded.
 
-Never commit private keys, passwords, refresh tokens, user credentials, CI credential files or decrypted .fdv contents.
+This is an application-level security design. It is not an external penetration test, cryptographic audit or formal certification.
 
-## Recovery
+## Credentials and recovery
 
-The encrypted .fdv file and password are separate recovery dependencies. There is no password recovery service.
-
-## Limitation
-
-FASE 31 is an application validation gate, not an external security audit. Do not describe Financial-D3v as formally audited, independently certified or KDBX-equivalent.
+Never commit passwords, private keys, refresh tokens, CI credential files or decrypted `.fdv` contents. Recovery requires both the encrypted vault file and its correct password. There is no password reset or recovery service.
 
 ## Historical architecture
 
-Firebase/Firestore/Cloud Run/Artifact Registry/Scheduler security controls remain for historical traceability only.
+Older Firebase/Firestore/Cloud Run/Artifact Registry/Scheduler and Go REST security documentation is retained for traceability only. Those designs are not the active Personal Vault data path. Any future Business Finance integration must follow ADR-034, maintain an independent Business vault and transmit only approved minimized non-PII operational events; implementation is not yet started.

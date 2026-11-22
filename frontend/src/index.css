@@ -747,7 +747,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
     radial-gradient(ellipse at 100% 100%,rgba(47,132,111,.08),transparent 38%),
     #090c12;
   color:#f2f3fa;
-  font-family:"Comic Sans MS","Comic Sans",cursive;
+  font-family:Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size:15px;
 }
 .vault-gate *{font-family:inherit}
@@ -845,7 +845,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 
 /* ✦ Global typography and expressive financial dashboard */
 :root{
-  font-family:"Comic Sans MS","Comic Sans",cursive;
+  font-family:Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size:15px;
   --fd-accent-violet:#a99aff;
   --fd-accent-cyan:#69c9f5;
@@ -853,7 +853,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
   --fd-accent-pink:#ff7d9d;
 }
 body,button,input,select,textarea{font-family:inherit}
-.app-shell{font-family:"Comic Sans MS","Comic Sans",cursive;font-size:15px}
+.app-shell{font-family:Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;font-size:15px}
 .app-shell button,.app-shell input,.app-shell select,.app-shell textarea{font-family:inherit}
 .topbar small{font-size:12px}
 .topbar h1{font-size:20px}
@@ -1120,4 +1120,75 @@ body, button, input, select, textarea {
   .dashboard-page .pulse-chart-summary > div { grid-template-columns: 12px minmax(0, 1fr); padding: 9px 10px; }
   .dashboard-page .pulse-chart-summary strong { font-size: 16px; }
   .dashboard-page .dashboard-bottom-compact { grid-template-columns: minmax(0, 1fr); }
+}
+
+
+/* Financial-D3v · readable type + refined motion system */
+:root {
+  font-family: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  font-optical-sizing: auto;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  font-variant-numeric: tabular-nums;
+  --fd-ease-out: cubic-bezier(.22, 1, .36, 1);
+  --fd-transition: 220ms var(--fd-ease-out);
+}
+body, button, input, select, textarea,
+.app-shell, .app-shell button, .app-shell input,
+.app-shell select, .app-shell textarea,
+.vault-gate, .vault-gate * {
+  font-family: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+.app-shell { letter-spacing: -0.01em; }
+.app-shell :is(.panel, .metric, .account-card, .goal-card, .debt-card, .budget-card, .education-card) {
+  transition: transform var(--fd-transition), border-color var(--fd-transition),
+    box-shadow var(--fd-transition), background-color var(--fd-transition);
+}
+.app-shell :is(.panel, .metric, .account-card, .goal-card, .debt-card, .budget-card, .education-card):hover {
+  transform: translateY(-2px);
+}
+.app-shell .dashboard-page .metric:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 42px rgba(0,0,0,.24), 0 0 24px var(--metric-glow, transparent);
+}
+.app-shell :is(.button, .nav, .mobile-nav button, .mobile-more button, .text-link, .vault-tabs button) {
+  transition: color var(--fd-transition), background-color var(--fd-transition),
+    border-color var(--fd-transition), box-shadow var(--fd-transition),
+    transform var(--fd-transition), filter var(--fd-transition);
+}
+.app-shell .button:active,
+.app-shell .nav:active,
+.app-shell .mobile-nav button:active,
+.app-shell .mobile-more button:active {
+  transform: scale(.98);
+}
+.app-shell :is(input, select, textarea, .field input, .field select) {
+  transition: border-color var(--fd-transition), box-shadow var(--fd-transition),
+    background-color var(--fd-transition);
+}
+.app-shell :is(input, select, textarea):focus-visible {
+  box-shadow: 0 0 0 3px rgba(85,230,179,.12);
+}
+.app-shell .dashboard-page .metric:nth-child(1) { animation-delay: 30ms; }
+.app-shell .dashboard-page .metric:nth-child(2) { animation-delay: 90ms; }
+.app-shell .dashboard-page .metric:nth-child(3) { animation-delay: 150ms; }
+.app-shell .dashboard-page .metric:nth-child(4) { animation-delay: 210ms; }
+.app-shell .dashboard-page .metric:nth-child(5) { animation-delay: 270ms; }
+.app-shell .dashboard-page .panel { animation: fdPanelEnter 560ms var(--fd-ease-out) both; }
+@keyframes fdPanelEnter {
+  from { opacity: 0; transform: translateY(9px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell *, .app-shell *::before, .app-shell *::after,
+  .vault-gate, .vault-gate * {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .app-shell :is(.panel, .metric, .account-card, .goal-card, .debt-card, .budget-card, .education-card):hover {
+    transform: none !important;
+  }
 }

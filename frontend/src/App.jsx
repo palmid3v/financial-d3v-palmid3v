@@ -1,9 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useVault } from "./vault/VaultContext";
-import { calculateWithGoEngine } from "./vault/goEngine";
 import StatementImport from "./StatementImport";
 import PayrollWorkspace from "./payroll/PayrollWorkspace.jsx";
-import { payrollDashboardSummary } from "./payroll/model.js";
 import {
   accountBalance,
   budgetSummary,
@@ -21,7 +19,6 @@ import {
   monthSeries,
   netWorth,
   normalizeVault,
-  projectMonthlyCashFlow,
   savingsProgress,
   transactionTotals,
 } from "./vault/finance";
@@ -33,7 +30,6 @@ const money = (minorUnits = 0, currency = "COP") =>
     maximumFractionDigits: 0,
   }).format((Number(minorUnits) || 0) / 100);
 
-const wholeCOP = (pesos = 0) => new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(Number(pesos) || 0);
 const bogotaToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Bogota", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 
 const numberValue = (value) => Math.round((Number(value) || 0) * 100);
@@ -151,29 +147,6 @@ function Topbar({ active, dirty, saveVault, lock, saveMode }) {
 
 function Dashboard({ vault, setActive }) {
   const { start, end } = useMemo(() => currentMonthRange(), []);
-  const [goAnalysis, setGoAnalysis] = useState(null);
-  const [goEngineStatus, setGoEngineStatus] = useState("loading");
-
-  useEffect(() => {
-    let cancelled = false;
-    setGoEngineStatus("loading");
-    calculateWithGoEngine({
-      vault,
-      currency: "COP",
-      period: { start: start.toISOString(), end: end.toISOString() },
-    }).then((result) => {
-      if (!cancelled) {
-        setGoAnalysis(result);
-        setGoEngineStatus("ready");
-      }
-    }).catch(() => {
-      if (!cancelled) {
-        setGoAnalysis(null);
-        setGoEngineStatus("fallback");
-      }
-    });
-    return () => { cancelled = true; };
-  }, [vault, start, end]);
   const jsTotals = transactionTotals(vault.transactions, start, end, "COP", vault.debtPayments);
   const jsNetWorth = netWorth(vault);
   // Account-linked debt payments are currently authoritative in the JS domain engine.
@@ -184,13 +157,6 @@ function Dashboard({ vault, setActive }) {
   const savingsRate = totals.income > 0 ? (totals.netCashFlow / totals.income) * 100 : 0;
   const debt = nw.debtLiabilities;
   const series = monthSeries(vault.transactions, 6, new Date(), "COP", vault.debtPayments);
-  const cashFlowProjection = projectMonthlyCashFlow(vault.transactions, vault.debtPayments, new Date(), "COP", 3);
-  const max = Math.max(...series.flatMap((row) => [row.income, row.expenses]), 1);
-  const chartX = (index) => 48 + index * (624 / Math.max(series.length - 1, 1));
-  const chartY = (value) => 190 - (value / max) * 145;
-  const incomePoints = series.map((row, index) => `${chartX(index)},${chartY(row.income)}`).join(" ");
-  const expensePoints = series.map((row, index) => `${chartX(index)},${chartY(row.expenses)}`).join(" ");
-  const incomeArea = `48,190 ${incomePoints} 672,190`;
   const expenseCategories = vault.categories.filter((item) => item.kind === "expense").map((category) => ({
     ...category,
     value: vault.transactions.filter((tx) => tx.type === "expense" && (tx.currency || "COP") === "COP" && tx.categoryId === category.id && new Date(tx.occurredAt) >= start && new Date(tx.occurredAt) < end).reduce((sum, tx) => sum + tx.minorUnits, 0)
@@ -200,7 +166,6 @@ function Dashboard({ vault, setActive }) {
   const budget = vault.budgets.find((item) => item.currency === "COP" && new Date(item.startDate) <= start && new Date(item.endDate) >= end) || vault.budgets.find((item) => item.currency === "COP");
   const budgetData = budget ? budgetSummary(budget, vault, new Date(budget.startDate), new Date(budget.endDate)) : null;
   const recent = [...vault.transactions].sort((a, b) => new Date(b.occurredAt) - new Date(a.occurredAt)).slice(0, 6);
-  const payrollSummary = payrollDashboardSummary(vault, bogotaToday());
 
   return <div className="workspace dashboard-page">
     <section className="hero reveal">
@@ -208,22 +173,14 @@ function Dashboard({ vault, setActive }) {
       <Button primary onClick={() => setActive("transactions")}>＋ Nueva transacción</Button>
     </section>
 
-    <Notice tone={goEngineStatus === "ready" ? "success" : ""}>
-      <b>Go Financial Engine</b>
-      <span>{goEngineStatus === "ready" ? "WASM disponible · dashboard usa reglas JS para integrar cuentas y pagos" : goEngineStatus === "loading" ? "Inicializando motor local…" : "WASM no disponible · cálculo JS local"}</span>
-    </Notice>
-
-    <Panel className="projection-panel reveal"><div className="panel-head"><div><small>Planeación · COP</small><h3>Referencia para el próximo mes</h3></div><span className="badge">Estimación</span></div><p>Promedio de los últimos {cashFlowProjection.basisMonths} meses completos; no es un movimiento registrado ni una garantía.</p><div className="projection-values"><div><small>Ingreso promedio</small><strong>{money(cashFlowProjection.averageIncome)}</strong></div><div><small>Egresos promedio</small><strong>{money(cashFlowProjection.averageExpenses + cashFlowProjection.averagePrincipalPayments)}</strong></div><div><small>Flujo neto promedio</small><strong className={cashFlowProjection.averageNetCashFlow >= 0 ? "positive" : "negative"}>{money(cashFlowProjection.averageNetCashFlow)}</strong></div></div></Panel>
-
     <div className="metrics metrics-4">
       <Metric label="Disponible en COP" value={money(accountTotals.COP || 0)} detail="Saldo derivado de cuentas" tone="green" />
       <Metric label="Patrimonio neto" value={money(nw.net)} detail="Activos − pasivos" tone="green" />
       <Metric label="Flujo de caja" value={`${totals.netCashFlow > 0 ? "+ " : totals.netCashFlow < 0 ? "− " : ""}${money(Math.abs(totals.netCashFlow))}`} detail="Este mes · COP" tone="green" />
-      <Metric label="Ahorro del mes" value={`${Math.round(savingsRate)}%`} detail="Flujo neto / ingresos · COP" tone="yellow" />
       <Metric label="Deuda pendiente" value={money(debt)} detail="Saldo de deudas" tone="blue" />
     </div>
 
-    {vault.employmentContracts.length > 0 && <Panel className="payroll-dashboard-link reveal"><div className="panel-head"><div><small>Trabajo · referencia contractual</small><h3>Ingreso pactado, fuera del saldo disponible</h3></div><Button onClick={() => setActive("payroll")}>Abrir Trabajo</Button></div><div className="payroll-dashboard-values"><div><small>Salario base mensual vigente</small><strong>{payrollSummary.activeContractCount ? payrollSummary.monthlySalaryCOP == null ? "Revisa los datos del contrato" : wholeCOP(payrollSummary.monthlySalaryCOP) : "Sin contrato vigente hoy"}</strong><span>{payrollSummary.activeContractCount} contrato(s) activo(s) con vigencia a la fecha</span></div><div><small>Próxima fecha de pago pactada</small><strong>{payrollSummary.nextExpectedPaymentDate || "Sin fecha próxima"}</strong><span>{payrollSummary.settlementsCount} resumen(es) guardados · no representa pago neto ni dinero recibido</span></div></div><p>Esta referencia proviene del contrato y las fechas acordadas. No se suma al flujo de caja ni al balance; un movimiento se crea solo cuando confirmas un recibo.</p></Panel>}
+
 
     <Panel className="pulse-panel reveal">
       <div className="pulse-heading">
@@ -259,43 +216,8 @@ function Dashboard({ vault, setActive }) {
       <div className="pulse-footnote"><span>✦</span> Visualización basada en movimientos registrados. No proyecta ingresos futuros.</div>
     </Panel>
 
-    <div className="dashboard-grid">
-      <Panel className="chart-panel reveal">
-        <div className="panel-head"><div><small>Últimos 6 meses</small><h3>Ingresos vs egresos de caja</h3></div><div className="legend"><span><i className="green-dot" />Ingresos</span><span><i className="red-dot" />Egresos</span></div></div>
-        <div className="bar-chart">
-          {series.map((row) => <div className="bar-group" key={row.label}>
-            <div className="bar-pair">
-              <i className="bar income-bar" style={{ height: `${(row.income > 0 ? Math.max(2, row.income / max * 100) : 0)}%` }} />
-              <i className="bar expense-bar" style={{ height: `${(row.expenses > 0 ? Math.max(2, row.expenses / max * 100) : 0)}%` }} />
-            </div>
-            <small>{row.label}</small>
-          </div>)}
-        </div>
-      </Panel>
+    <div className="dashboard-bottom dashboard-bottom-compact">
 
-      <Panel className="chart-panel reveal">
-        <div className="panel-head"><div><small>Este mes · COP</small><h3>Gasto por categoría</h3></div></div>
-        {totalCategorySpend === 0 ? <Empty title="Sin gastos todavía" text="Registra una transacción y aquí aparecerá la distribución." /> :
-          <div className="donut-wrap">
-            <div className="donut" style={{
-              background: `conic-gradient(${expenseCategories.slice(0, 6).map((item, index) => {
-                const colors = ["#3b82f6", "#22c55e", "#f5b700", "#a78bfa", "#f0525b", "#64748b"];
-                const from = expenseCategories.slice(0, index).reduce((sum, current) => sum + current.value, 0) / totalCategorySpend * 360;
-                const to = expenseCategories.slice(0, index + 1).reduce((sum, current) => sum + current.value, 0) / totalCategorySpend * 360;
-                return `${colors[index % colors.length]} ${from}deg ${to}deg`;
-              }).join(",")})`
-            }}><strong>{money(totalCategorySpend)}</strong><span>gastado</span></div>
-            <div className="donut-legend">{expenseCategories.slice(0, 6).map((item, index) => <div key={item.id}><span className={`series-dot series-${index + 1}`} />{item.name}<b>{Math.round(item.value / totalCategorySpend * 100)}%</b></div>)}</div>
-          </div>}
-      </Panel>
-    </div>
-
-    <div className="dashboard-bottom">
-      <Panel className="reveal"><div className="panel-head"><div><small>Tu dinero</small><h3>Cuentas</h3></div><button onClick={() => setActive("accounts")} className="text-link">Ver todas</button></div>
-        {vault.accounts.length === 0 ? <Empty title="Crea tu primera cuenta" text="Las cuentas son el punto de partida del ledger." action={<Button primary onClick={() => setActive("accounts")}>Agregar cuenta</Button>} /> :
-          <div className="stack-list">{vault.accounts.slice(0, 4).map((account) => <div className="stack-row" key={account.id}><span className="account-icon">{account.type === "credit" ? "▭" : "▣"}</span><div><b>{account.name}</b><small>{account.type} · {account.currency}</small></div><strong>{money(accountBalance(account, vault.transactions, vault.debtPayments), account.currency)}</strong></div>)}</div>}
-        <div className="panel-total"><span>Saldos de cuentas no crediticias por moneda</span><div className="currency-totals">{Object.entries(accountTotals).sort(([a],[b]) => a.localeCompare(b)).map(([currency, total]) => <b key={currency}>{money(total, currency)}</b>)}</div></div>
-      </Panel>
 
       <Panel className="reveal"><div className="panel-head"><div><small>Presupuesto</small><h3>Presupuesto del mes</h3></div><button onClick={() => setActive("budget")} className="text-link">Ver todo</button></div>
         {!budgetData ? <Empty title="Sin presupuesto" text="Crea un presupuesto para comparar plan contra realidad." action={<Button primary onClick={() => setActive("budget")}>Crear presupuesto</Button>} /> :

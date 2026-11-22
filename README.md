@@ -61,7 +61,7 @@ Este modelo describe controles de la aplicación; no constituye una auditoría e
 
 ### 🎨 Identidad visual
 
-La interfaz utiliza una tipografía sans-serif profesional con alternativas nativas (Inter, Segoe UI, Roboto y Arial), jerarquía clara y cifras tabulares para facilitar la lectura financiera. El dashboard prioriza cuatro indicadores, un gráfico principal de flujo de caja y módulos secundarios de presupuesto y movimientos recientes. El diseño oscuro y la paleta verde esmeralda se mantienen con una presentación más sobria, consistente y responsive para escritorio y móvil. Los gráficos se alimentan de los movimientos de la bóveda; no generan datos financieros ficticios.
+La interfaz utiliza **Inter** como tipografía principal, con alternativas nativas (Segoe UI, Roboto y Arial), jerarquía clara y cifras tabulares para facilitar la lectura financiera. Las tarjetas y paneles incorporan transiciones suaves, elevación sutil al pasar el cursor, entradas escalonadas y estados de foco visibles. Las animaciones respetan la preferencia del sistema para reducir movimiento. El dashboard prioriza sus indicadores y el gráfico financiero principal. El diseño oscuro y la paleta verde esmeralda se mantienen con una presentación consistente y responsive para escritorio y móvil. Los gráficos se alimentan de los movimientos de la bóveda; no generan datos financieros ficticios.
 
 ---
 

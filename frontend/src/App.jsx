@@ -186,6 +186,11 @@ function Dashboard({ vault, setActive }) {
   const series = monthSeries(vault.transactions, 6, new Date(), "COP", vault.debtPayments);
   const cashFlowProjection = projectMonthlyCashFlow(vault.transactions, vault.debtPayments, new Date(), "COP", 3);
   const max = Math.max(...series.flatMap((row) => [row.income, row.expenses]), 1);
+  const chartX = (index) => 48 + index * (624 / Math.max(series.length - 1, 1));
+  const chartY = (value) => 190 - (value / max) * 145;
+  const incomePoints = series.map((row, index) => `${chartX(index)},${chartY(row.income)}`).join(" ");
+  const expensePoints = series.map((row, index) => `${chartX(index)},${chartY(row.expenses)}`).join(" ");
+  const incomeArea = `48,190 ${incomePoints} 672,190`;
   const expenseCategories = vault.categories.filter((item) => item.kind === "expense").map((category) => ({
     ...category,
     value: vault.transactions.filter((tx) => tx.type === "expense" && (tx.currency || "COP") === "COP" && tx.categoryId === category.id && new Date(tx.occurredAt) >= start && new Date(tx.occurredAt) < end).reduce((sum, tx) => sum + tx.minorUnits, 0)
@@ -219,6 +224,40 @@ function Dashboard({ vault, setActive }) {
     </div>
 
     {vault.employmentContracts.length > 0 && <Panel className="payroll-dashboard-link reveal"><div className="panel-head"><div><small>Trabajo · referencia contractual</small><h3>Ingreso pactado, fuera del saldo disponible</h3></div><Button onClick={() => setActive("payroll")}>Abrir Trabajo</Button></div><div className="payroll-dashboard-values"><div><small>Salario base mensual vigente</small><strong>{payrollSummary.activeContractCount ? payrollSummary.monthlySalaryCOP == null ? "Revisa los datos del contrato" : wholeCOP(payrollSummary.monthlySalaryCOP) : "Sin contrato vigente hoy"}</strong><span>{payrollSummary.activeContractCount} contrato(s) activo(s) con vigencia a la fecha</span></div><div><small>Próxima fecha de pago pactada</small><strong>{payrollSummary.nextExpectedPaymentDate || "Sin fecha próxima"}</strong><span>{payrollSummary.settlementsCount} resumen(es) guardados · no representa pago neto ni dinero recibido</span></div></div><p>Esta referencia proviene del contrato y las fechas acordadas. No se suma al flujo de caja ni al balance; un movimiento se crea solo cuando confirmas un recibo.</p></Panel>}
+
+    <Panel className="pulse-panel reveal">
+      <div className="pulse-heading">
+        <div><small>FINANCIAL PULSE · COP</small><h3>Tu dinero, en movimiento.</h3><p>La historia de tus ingresos y egresos durante los últimos seis meses.</p></div>
+        <span className="pulse-live"><i /> DATOS DE TU BÓVEDA</span>
+      </div>
+      <div className="pulse-chart-wrap">
+        <div className="pulse-chart-summary">
+          <div><span className="pulse-key income-key" /> <small>Ingresos</small><strong>{money(totals.income)}</strong><em>Mes actual</em></div>
+          <div><span className="pulse-key expense-key" /> <small>Egresos</small><strong>{money(totals.expenses + totals.principalPayments)}</strong><em>Incluye capital de deuda</em></div>
+          <div><span className="pulse-key net-key" /> <small>Flujo neto</small><strong className={totals.netCashFlow >= 0 ? "positive" : "negative"}>{money(totals.netCashFlow)}</strong><em>Ingresos − salidas</em></div>
+        </div>
+        <div className="pulse-chart">
+          <svg viewBox="0 0 720 238" role="img" aria-label="Gráfico de líneas de ingresos y egresos de los últimos seis meses">
+            <defs>
+              <linearGradient id="pulse-income-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#55e6b3" stopOpacity=".30"/><stop offset="100%" stopColor="#55e6b3" stopOpacity="0"/></linearGradient>
+              <linearGradient id="pulse-expense-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#ff7d9d" stopOpacity=".18"/><stop offset="100%" stopColor="#ff7d9d" stopOpacity="0"/></linearGradient>
+              <filter id="pulse-glow"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            {[45,92,139,190].map((y) => <line key={y} x1="38" x2="682" y1={y} y2={y} className="pulse-gridline" />)}
+            <polygon points={incomeArea} fill="url(#pulse-income-fill)" />
+            <polygon points={`48,190 ${expensePoints} 672,190`} fill="url(#pulse-expense-fill)" />
+            <polyline points={incomePoints} className="pulse-line pulse-line-income" filter="url(#pulse-glow)" />
+            <polyline points={expensePoints} className="pulse-line pulse-line-expense" />
+            {series.map((row,index) => <g key={row.label}>
+              <circle cx={chartX(index)} cy={chartY(row.income)} r="5" className="pulse-point pulse-point-income"/>
+              <circle cx={chartX(index)} cy={chartY(row.expenses)} r="4.5" className="pulse-point pulse-point-expense"/>
+              <text x={chartX(index)} y="220" textAnchor="middle" className="pulse-axis-label">{row.label}</text>
+            </g>)}
+          </svg>
+        </div>
+      </div>
+      <div className="pulse-footnote"><span>✦</span> Visualización basada en movimientos registrados. No proyecta ingresos futuros.</div>
+    </Panel>
 
     <div className="dashboard-grid">
       <Panel className="chart-panel reveal">

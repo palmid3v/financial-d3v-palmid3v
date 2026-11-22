@@ -157,6 +157,13 @@ function Dashboard({ vault, setActive }) {
   const savingsRate = totals.income > 0 ? (totals.netCashFlow / totals.income) * 100 : 0;
   const debt = nw.debtLiabilities;
   const series = monthSeries(vault.transactions, 6, new Date(), "COP", vault.debtPayments);
+  // Chart geometry is derived from the current six-month series.
+  const max = Math.max(...series.flatMap((row) => [row.income, row.expenses]), 1);
+  const chartX = (index) => 48 + index * (624 / Math.max(series.length - 1, 1));
+  const chartY = (value) => 190 - (value / max) * 145;
+  const incomePoints = series.map((row, index) => `${chartX(index)},${chartY(row.income)}`).join(" ");
+  const expensePoints = series.map((row, index) => `${chartX(index)},${chartY(row.expenses)}`).join(" ");
+  const incomeArea = `48,190 ${incomePoints} 672,190`;
   const expenseCategories = vault.categories.filter((item) => item.kind === "expense").map((category) => ({
     ...category,
     value: vault.transactions.filter((tx) => tx.type === "expense" && (tx.currency || "COP") === "COP" && tx.categoryId === category.id && new Date(tx.occurredAt) >= start && new Date(tx.occurredAt) < end).reduce((sum, tx) => sum + tx.minorUnits, 0)

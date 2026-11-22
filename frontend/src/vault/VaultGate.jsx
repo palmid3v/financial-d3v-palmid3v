@@ -3,7 +3,7 @@ import App from "../App.jsx";
 import { useVault } from "./VaultContext";
 
 function Field({ label, ...props }) {
-  return <label className="field"><span>{label}</span><input {...props} /></label>;
+  return <label className="field vault-field"><span>{label}</span><input {...props} /></label>;
 }
 
 export default function VaultGate() {
@@ -20,6 +20,13 @@ export default function VaultGate() {
 
   if (!locked) return <App />;
 
+  const acceptFile = (file, handle = null) => {
+    setFileHandle(handle);
+    setSelectedFile(file || null);
+    setSelectedFileName(file?.name || "");
+    setError("");
+  };
+
   const submit = async (event) => {
     event.preventDefault();
     setBusy(true);
@@ -33,7 +40,7 @@ export default function VaultGate() {
         await createVault(password);
       } else {
         const file = selectedFile || fileRef.current?.files?.[0];
-        if (!file) throw new Error("Select your Financial Vault file.");
+        if (!file) throw new Error("Choose your encrypted .fdv vault file first.");
         await unlockFile(file, password, fileHandle);
       }
 
@@ -46,45 +53,132 @@ export default function VaultGate() {
     }
   };
 
-  const chooseVaultFile = async () => {
+  const chooseWithNativePicker = () => {
+    setError("");
+    fileRef.current?.click();
+  };
+
+  const chooseWithSystemPicker = async () => {
     setError("");
     if (typeof window.showOpenFilePicker !== "function") {
-      fileRef.current?.click();
+      chooseWithNativePicker();
       return;
     }
+
     try {
       const [handle] = await window.showOpenFilePicker({
         multiple: false,
-        types: [{ description: "Financial-D3v encrypted vault", accept: { "application/json": [".fdv", ".json"] } }],
+        excludeAcceptAllOption: false,
+        types: [{
+          description: "Financial-D3v encrypted vault",
+          accept: { "application/json": [".fdv", ".json"] },
+        }],
       });
       const file = await handle.getFile();
-      setFileHandle(handle);
-      setSelectedFile(file);
-      setSelectedFileName(file.name);
+      acceptFile(file, handle);
     } catch (err) {
-      if (err?.name !== "AbortError") setError("No se pudo seleccionar el archivo. Puedes usar el selector tradicional.");
+      if (err?.name === "AbortError") return;
+      // Keep the second route available if a browser exposes but cannot use the File System Access API.
+      chooseWithNativePicker();
     }
   };
 
-  return <main className="vault-gate">
-    <section className="vault-card">
-      <div className="vault-brand"><b>F</b><div><strong>Financial-D3v</strong><small>Private finance</small></div></div>
-      <div className="panel-head">
-        <div><small>FINANCIAL-D3V · PRIVATE VAULT</small><h2>🔒 Your financial workspace is locked</h2></div>
-      </div>
-      <p>Your financial data is opened only after you provide the encrypted vault file and its password. The decrypted workspace stays in memory.</p>
-      <div className="actions vault-tabs">
-        <button type="button" className={mode === "open" ? "active" : ""} onClick={() => { setMode("open"); setError(""); }}>Open vault</button>
-        <button type="button" className={mode === "create" ? "active" : ""} onClick={() => { setMode("create"); setError(""); setSelectedFile(null); setSelectedFileName(""); setFileHandle(null); }}>Create vault</button>
-      </div>
-      <form onSubmit={submit} className="form-grid">
-        {mode === "open" && <div className="field"><span>Archivo de bóveda cifrada</span><button className="button" type="button" onClick={chooseVaultFile}>Elegir archivo .fdv</button><input ref={fileRef} type="file" required onChange={(event) => { const file = event.target.files?.[0] || null; setFileHandle(null); setSelectedFile(file); setSelectedFileName(file?.name || ""); }} /><small>{selectedFileName || "En el teléfono, abre Archivos/Descargas y selecciona tu bóveda .fdv. Si no aparece, cambia el filtro del selector a todos los archivos."}</small><small>Se permite elegir el archivo sin filtro de extensión porque algunos selectores móviles ocultan archivos .fdv. La aplicación intentará validarlo al desbloquear.</small></div>}
-        <Field label="Vault password" type="password" autoComplete={mode === "create" ? "new-password" : "current-password"} required value={password} onChange={(event) => setPassword(event.target.value)} />
-        {mode === "create" && <Field label="Confirm password" type="password" autoComplete="new-password" required value={confirm} onChange={(event) => setConfirm(event.target.value)} />}
-        {error && <div className="notice error"><b>Vault unavailable.</b><span>{error}</span></div>}
-        <div className="form-actions"><button className="button primary" disabled={busy} type="submit">{busy ? "Working…" : mode === "create" ? "Create encrypted vault" : "Unlock vault"}</button></div>
-      </form>
-      <div className="notice"><b>Privacy boundary</b><span>No plaintext financial data is intentionally persisted by this application.</span><span>The encrypted .fdv file is the persistence boundary.</span></div>
-    </section>
-  </main>;
+  const switchMode = (nextMode) => {
+    setMode(nextMode);
+    setError("");
+    if (nextMode === "create") acceptFile(null);
+  };
+
+  return (
+    <main className="vault-gate">
+      <section className="vault-card" aria-labelledby="vault-title">
+        <header className="vault-brand">
+          <b aria-hidden="true">F</b>
+          <div><strong>Financial-D3v</strong><small>PRIVATE FINANCE · PERSONAL VAULT</small></div>
+          <span className="vault-secure-pill"><i /> ENCRYPTED</span>
+        </header>
+
+        <div className="vault-intro">
+          <span className="vault-eyebrow">YOUR PRIVATE FINANCIAL SPACE</span>
+          <h1 id="vault-title">{mode === "create" ? "Create your vault." : "Your money. Your privacy."}</h1>
+          <p>{mode === "create"
+            ? "Set a strong password to create your encrypted financial workspace."
+            : "Unlock your workspace securely. Your decrypted financial data stays in memory."}</p>
+        </div>
+
+        <div className="vault-tabs" role="tablist" aria-label="Vault action">
+          <button type="button" role="tab" aria-selected={mode === "open"} className={mode === "open" ? "active" : ""} onClick={() => switchMode("open")}>Open vault</button>
+          <button type="button" role="tab" aria-selected={mode === "create"} className={mode === "create" ? "active" : ""} onClick={() => switchMode("create")}>Create vault</button>
+        </div>
+
+        <form onSubmit={submit} className="vault-form">
+          {mode === "open" && (
+            <section className="vault-file-section" aria-labelledby="vault-file-label">
+              <div className="vault-section-heading">
+                <span className="vault-step">01</span>
+                <div><label id="vault-file-label">Encrypted vault file</label><small>Select the .fdv file stored on your device</small></div>
+              </div>
+
+              <div className="vault-picker-actions">
+                <button className="vault-picker-primary" type="button" onClick={chooseWithNativePicker}>
+                  <span aria-hidden="true">↥</span><span>Browse device</span>
+                </button>
+                <button className="vault-picker-secondary" type="button" onClick={chooseWithSystemPicker}>
+                  <span aria-hidden="true">▤</span><span>System file picker</span>
+                </button>
+              </div>
+              <input
+                ref={fileRef}
+                className="vault-file-input"
+                type="file"
+                tabIndex={-1}
+                aria-label="Choose encrypted Financial-D3v vault file"
+                onChange={(event) => acceptFile(event.target.files?.[0] || null)}
+              />
+              <div className={selectedFileName ? "vault-selected-file is-selected" : "vault-selected-file"}>
+                <span className="vault-file-icon" aria-hidden="true">▧</span>
+                <span>{selectedFileName || "No vault selected yet"}</span>
+                {selectedFileName && <b>READY</b>}
+              </div>
+              <p className="vault-picker-hint">Both options work with desktop and mobile browsers. If your phone hides .fdv files, choose “All files” in the device picker.</p>
+            </section>
+          )}
+
+          <div className="vault-password-section">
+            <div className="vault-section-heading">
+              <span className="vault-step">{mode === "create" ? "01" : "02"}</span>
+              <div><label htmlFor="vault-password">Vault password</label><small>{mode === "create" ? "Protect your new encrypted vault" : "Enter the password used to encrypt this vault"}</small></div>
+            </div>
+            <input
+              id="vault-password"
+              className="vault-password-input"
+              type="password"
+              autoComplete={mode === "create" ? "new-password" : "current-password"}
+              required
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Enter your password"
+            />
+          </div>
+
+          {mode === "create" && (
+            <Field label="Confirm password" type="password" autoComplete="new-password" required value={confirm} onChange={(event) => setConfirm(event.target.value)} />
+          )}
+
+          {error && <div className="vault-error" role="alert"><b>Unable to continue</b><span>{error}</span></div>}
+
+          <button className="vault-submit" disabled={busy} type="submit">
+            {busy ? "Please wait…" : mode === "create" ? "Create encrypted vault" : "Unlock my vault"}
+            {!busy && <span aria-hidden="true">→</span>}
+          </button>
+        </form>
+
+        <footer className="vault-privacy">
+          <span className="vault-privacy-icon" aria-hidden="true">◈</span>
+          <div><strong>Privacy is the foundation.</strong><p>No plaintext financial data is intentionally persisted by this application. Your encrypted .fdv file is the persistence boundary.</p></div>
+        </footer>
+      </section>
+      <p className="vault-page-caption">FINANCIAL-D3V <span>·</span> PRIVATE BY DESIGN</p>
+    </main>
+  );
 }

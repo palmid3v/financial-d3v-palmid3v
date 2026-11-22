@@ -86,7 +86,10 @@ export default function VaultGate() {
   const switchMode = (nextMode) => {
     setMode(nextMode);
     setError("");
-    if (nextMode === "create") {\n      acceptFile(null);\n      if (fileRef.current) fileRef.current.value = "";\n    }
+    if (nextMode === "create") {
+      acceptFile(null);
+      if (fileRef.current) fileRef.current.value = "";
+    }
   };
 
   return (

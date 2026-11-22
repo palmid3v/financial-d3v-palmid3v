@@ -14,7 +14,7 @@
 
 ## ✨ ¿Qué puedes hacer?
 
-- 📊 **Dashboard financiero:** consulta saldos, flujo de caja, ingresos, gastos y evolución.
+- 📊 **Dashboard financiero:** consulta saldos, flujo de caja, ingresos, gastos y evolución. Incluye tarjetas visuales, un gráfico de líneas Financial Pulse, barras comparativas y distribución por categorías.
 - 💳 **Cuentas y movimientos:** registra ingresos, gastos y transferencias entre tus cuentas.
 - 🎯 **Presupuestos y metas:** organiza límites de gasto y sigue objetivos de ahorro.
 - 🧾 **Deudas y patrimonio:** controla obligaciones, activos, pasivos y patrimonio neto.
@@ -56,6 +56,12 @@ El selector permite explorar archivos aunque el dispositivo no filtre correctame
 > ⚠️ **Importante:** la recuperación requiere el archivo `.fdv` y su contraseña. La aplicación no ofrece recuperación de contraseñas. Conserva copias seguras del archivo y no compartas bóvedas ni credenciales.
 
 Este modelo describe controles de la aplicación; no constituye una auditoría externa ni una certificación de seguridad.
+
+---
+
+### 🎨 Identidad visual
+
+La interfaz utiliza **Comic Sans MS** como tipografía principal, con un aumento moderado de tamaños para facilitar la lectura en escritorio y móvil. El dashboard combina tema oscuro, acentos violeta, cian, menta y coral, tarjetas con profundidad, gráficos SVG animados y visualizaciones de flujo de caja. Los gráficos se alimentan de los movimientos de la bóveda; no generan datos financieros ficticios.
 
 ---
 

@@ -2,7 +2,7 @@
 @import "./styles/design-system.css";
 
 :root{
-  font-family: "Rajdhani", "Trebuchet MS", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color:#f2f4f7;
   background:#0b0d10;
   font-synthesis:none;
@@ -992,3 +992,132 @@ body,button,input,select,textarea{font-family:inherit}
   .dashboard-page .donut-legend>div{font-size:10px}
 }
 @media(prefers-reduced-motion:reduce){.pulse-line{animation:none;stroke-dasharray:none;stroke-dashoffset:0}}
+
+
+/* Financial-D3v typography + focused dashboard refinement */
+:root {
+  font-family: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  font-optical-sizing: auto;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  font-variant-numeric: tabular-nums;
+}
+body, button, input, select, textarea {
+  font-family: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+.app-shell { font-size: 14px; letter-spacing: -0.01em; }
+.metric strong,
+.stack-row strong,
+.account-card > strong,
+.goal-head strong,
+.budget-card-head strong {
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.035em;
+}
+.dashboard-page { gap: 22px; }
+.dashboard-page > .hero { padding: 8px 0 2px; }
+.dashboard-page > .hero h2 {
+  max-width: 720px;
+  font-size: clamp(30px, 3.2vw, 42px);
+  line-height: 1.12;
+  letter-spacing: -0.045em;
+}
+.dashboard-page > .hero p { font-size: 13px; }
+.dashboard-page .metrics.metrics-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.dashboard-page .metric {
+  min-height: 118px;
+  padding: 16px;
+  border: 1px solid #263b2e;
+  border-radius: 12px;
+  background: #111a14;
+  box-shadow: none;
+}
+.dashboard-page .metric::before { display: none; }
+.dashboard-page .metric::after { display: none; }
+.dashboard-page .metric:hover {
+  transform: translateY(-2px);
+  border-color: #3a5b44;
+  box-shadow: 0 9px 24px rgb(0 0 0 / 12%);
+}
+.dashboard-page .metric strong {
+  margin-top: 15px;
+  font-size: clamp(17px, 1.5vw, 22px);
+}
+.dashboard-page .pulse-panel {
+  padding: 21px !important;
+  border-color: #294234;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #142019, #101813) !important;
+  box-shadow: 0 10px 28px rgb(0 0 0 / 10%);
+}
+.dashboard-page .pulse-panel::before { display: none; }
+.dashboard-page .pulse-heading h3 {
+  font-size: clamp(19px, 1.8vw, 24px);
+  letter-spacing: -0.035em;
+}
+.dashboard-page .pulse-live {
+  border-color: #294b36;
+  background: #14251a;
+  color: #9bcdb0;
+}
+.dashboard-page .pulse-chart-wrap {
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-top: 16px;
+}
+.dashboard-page .pulse-chart-summary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.dashboard-page .pulse-chart-summary > div {
+  padding: 11px 12px;
+  border: 1px solid #263b2e;
+  border-radius: 10px;
+  background: rgb(7 13 9 / 28%);
+}
+.dashboard-page .pulse-chart-summary strong { font-size: clamp(15px, 1.4vw, 19px); }
+.dashboard-page .pulse-chart {
+  border-color: #263b2e;
+  border-radius: 11px;
+  background: rgb(7 13 9 / 22%);
+}
+.dashboard-page .pulse-line { filter: none; }
+.dashboard-page .pulse-line-income { stroke-width: 3; }
+.dashboard-page .pulse-line-expense { stroke-width: 2.5; }
+.dashboard-page .pulse-point { stroke: #111a14; }
+.dashboard-page .pulse-footnote { margin-top: 10px; }
+.dashboard-page .dashboard-bottom-compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.dashboard-page .dashboard-bottom-compact > .panel { min-width: 0; }
+.dashboard-page .panel {
+  border-radius: 13px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 8%);
+}
+.dashboard-page .panel:hover { box-shadow: 0 10px 28px rgb(0 0 0 / 12%); }
+@media (max-width: 1050px) {
+  .dashboard-page .metrics.metrics-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+  .app-shell { font-size: 14px; }
+  .dashboard-page { gap: 16px; }
+  .dashboard-page > .hero { padding-top: 2px; }
+  .dashboard-page > .hero h2 { font-size: clamp(28px, 8vw, 34px); }
+  .dashboard-page .metrics.metrics-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .dashboard-page .metric { min-height: 106px; padding: 12px; }
+  .dashboard-page .metric strong { margin-top: 12px; font-size: clamp(15px, 4.2vw, 18px); }
+  .dashboard-page .metric small { font-size: 10px; }
+  .dashboard-page .metric em { font-size: 9px; }
+  .dashboard-page .pulse-panel { padding: 16px !important; }
+  .dashboard-page .pulse-heading { gap: 9px; }
+  .dashboard-page .pulse-live { padding: 6px 9px; font-size: 9px; }
+  .dashboard-page .pulse-chart-summary { grid-template-columns: 1fr; gap: 7px; }
+  .dashboard-page .pulse-chart-summary > div { grid-template-columns: 12px minmax(0, 1fr); padding: 9px 10px; }
+  .dashboard-page .pulse-chart-summary strong { font-size: 16px; }
+  .dashboard-page .dashboard-bottom-compact { grid-template-columns: minmax(0, 1fr); }
+}

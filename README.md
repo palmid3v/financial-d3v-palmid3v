@@ -213,3 +213,8 @@ La disponibilidad del sitio no sustituye la validación de los flujos de crear b
   🔐 <strong>Financial-D3V · PALMI-D3V</strong><br/>
   <sub>Build · Create · Improve · Validate.</sub>
 </p>
+
+
+## 📚 Documentation status · 2026-11-26
+
+See [DOCUMENTATION-STATUS-2026-11-26.md](docs/DOCUMENTATION-STATUS-2026-11-26.md) for current scope, ownership boundaries and validation gates.
